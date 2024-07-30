@@ -1,0 +1,10 @@
+{
+    "env": {
+        "name": "prod"
+    },
+    "serviceUrl": {
+         "loyaltyService": "https://uatloyalty.e-kedai.my",
+        "profileService": "https://uatprofile.e-kedai.my"
+    },
+    "logging": 6
+}
