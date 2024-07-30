@@ -98,7 +98,7 @@ export class LoyaltyService {
                     const agingDataList = response.data.records;
 
                     this._logging.debug(
-                        'Response from Bill Service (getAgingData)',
+                        'Response from Loyalty Service (getAgingData)',
                         response
                     );
 
