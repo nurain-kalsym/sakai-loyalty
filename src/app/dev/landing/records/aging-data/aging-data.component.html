@@ -1,19 +1,99 @@
 <div class="grid">
-    <div class="col-12">
-        <div class="card">
-            <h4>Aging Data</h4>
-            <p>This is where view aging data.</p>
-            <!-- <div *ngFor="let item of allAging">
-                <div> {{ item.month }} | {{ item.year }} </div>
-                <div> Loyalty </div>
-                <div> {{ item.loyalty.totalEarned }} </div>
-                <div> {{ item.loyalty.totalExpired }} </div>
-                <div> {{ item.loyalty.totalUsed }} </div>
-                <div> Referral </div>
-                <div> {{ item.referral.totalEarned }} </div>
-                <div> {{ item.referral.totalExpired }} </div>
-                <div> {{ item.referral.totalUsed }} </div>
-            </div> -->
+  <div class="col-12">
+    <div class="card">
+      <h4 class="font-semibold">Aging Data</h4>
+      <h6 class="font-italic">This section displays the aging data of coins based on month, year and channel.</h6>
+      <div class="mt-3">
+        <div class="mb-2 flex flex-row gap-5 place-content-end" [formGroup]="filterForm">
+          <div class="flex-1 flex align-items-center justify-content-center">
+            <p-dropdown placeholder="Select month" [formControlName]="'month'" [options]="months" optionLabel="display" optionValue="month">
+              <ng-template pTemplate="selectedItem" let-selectedItem>
+                <span>Month: </span>
+                <span>{{selectedItem?.display || 'Select month'}}</span>
+              </ng-template>
+              <ng-template pTemplate="item" let-option>
+                <span>{{option.display}}</span>
+              </ng-template>
+            </p-dropdown>
+          </div>
+          <div class="flex-1 flex align-items-center justify-content-center">
+            <p-dropdown placeholder="Select year" [formControlName]="'year'" [options]="years">
+              <ng-template pTemplate="selectedItem" let-selectedItem>
+                <span>Year: </span>
+                <span>{{selectedItem || 'Select year'}}</span>
+              </ng-template>
+              <ng-template pTemplate="item" let-option>
+                <span>{{option}}</span>
+              </ng-template>
+            </p-dropdown>
+          </div>
+          <div class="flex-1 flex align-items-center justify-content-center">
+            <p-dropdown 
+              placeholder="Select Channel" 
+              [formControl]="filterForm.get('channel')" 
+              [options]="channels" 
+              optionLabel="label" 
+              optionValue="value">
+              <ng-template pTemplate="selectedItem" let-selectedItem>
+                <span>Channel: </span>
+                <span>{{selectedItem?.label || 'All'}}</span>
+              </ng-template>
+              <ng-template pTemplate="item" let-option>
+                <span>{{option.label}}</span>
+              </ng-template>
+            </p-dropdown>
+          </div>
         </div>
+        <div class="mt-3">
+          <p-table [value]="allAging" [loading]="isLoading" [paginator]="true" [rows]="5" 
+            [rowsPerPageOptions]="[5,10,15,20]" [showCurrentPageReport]="true" 
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+            <ng-template pTemplate="header">
+              <tr>
+                <th class="border-top-left text-center">Month</th>
+                <th class="border-top text-center">Referral</th>
+                <th class="border-top-right text-center">Loyalty</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-rowData>
+              <tr>
+                <td class="text-xl border-left text-center">
+                  {{ getMonthName(rowData.month) }} 
+                  <div>({{ rowData.year }})</div>
+                </td>
+                <td class="text-center">
+                  <div class="w-full h-full p-3 py-5 my-3 text-center border-round-lg bg-green-50">
+                    <div class="font-semibold pb-1">Total Earned</div>
+                    <div class="text-xl">{{ rowData.referral.totalEarned | number:'1.0-0' }}</div>
+                  </div>
+                  <div class="w-full h-full p-3 py-5 my-3 text-center border-round-lg bg-yellow-50">
+                    <div class="font-semibold pb-1">Total Used</div>
+                    <div class="text-xl">{{ rowData.referral.totalUsed | number:'1.0-0' }}</div>
+                  </div>
+                  <div class="w-full h-full p-3 py-5 my-3 text-center border-round-lg bg-pink-50">
+                    <div class="font-semibold pb-1">Total Expired</div>
+                    <div class="text-xl">{{ rowData.referral.totalExpired | number:'1.0-0' }}</div>
+                  </div>
+                </td>
+                <td class="border-right text-center">
+                  <div class="w-full h-full p-3 py-5 my-3 text-center border-round-lg bg-green-50">
+                    <div class="font-semibold pb-1">Total Earned</div>
+                    <div class="text-xl">{{ rowData.loyalty.totalEarned | number:'1.0-0' }}</div>
+                  </div>
+                  <div class="w-full h-full p-3 py-5 my-3 text-center border-round-lg bg-yellow-50">
+                    <div class="font-semibold pb-1">Total Used</div>
+                    <div class="text-xl">{{ rowData.loyalty.totalUsed | number:'1.0-0' }}</div>
+                  </div>
+                  <div class="w-full h-full p-3 py-5 my-3 text-center border-round-lg bg-pink-50">
+                    <div class="font-semibold pb-1">Total Expired</div>
+                    <div class="text-xl">{{ rowData.loyalty.totalExpired | number:'1.0-0' }}</div>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </div>
     </div>
+  </div>
 </div>

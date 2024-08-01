@@ -22,3 +22,7 @@ export interface Pagination {
     startIndex: number;
     endIndex: number;
 }
+export interface Month {
+    month: number;
+    display: string;
+}

@@ -12,3 +12,29 @@ $gutter: 1rem; //for primeflex grid system
 @import "assets/demo/styles/flags/flags.css";
 @import "assets/demo/styles/badges.scss";
 @import "assets/demo/styles/code.scss";
+
+.border-top {
+    border-top: 1px solid #e5e7eb;
+}
+
+.border-left {
+    border-left: 1px solid #e5e7eb;
+}
+
+.border-bottom {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.border-right {
+    border-right: 1px solid #e5e7eb;
+}
+
+.border-top-left {
+    border-top: 1px solid #e5e7eb;
+    border-left: 1px solid #e5e7eb;
+}
+
+.border-top-right {
+    border-top: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+}

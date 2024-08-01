@@ -9,6 +9,9 @@ import { StyleClassModule } from 'primeng/styleclass';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { RecordsRoutingModule } from './records.routes';
 import { AgingDataComponent } from './aging-data/aging-data.component';
+import { DropdownModule } from 'primeng/dropdown';
+import { ReactiveFormsModule } from '@angular/forms';
+import { PaginatorModule } from 'primeng/paginator';
 @NgModule({
     imports: [
         CommonModule,
@@ -19,7 +22,10 @@ import { AgingDataComponent } from './aging-data/aging-data.component';
         StyleClassModule,
         PanelMenuModule,
         ButtonModule,
-        RecordsRoutingModule
+        RecordsRoutingModule,
+        DropdownModule,
+        ReactiveFormsModule,
+        PaginatorModule
     ],
     declarations: [
         AgingDataComponent
