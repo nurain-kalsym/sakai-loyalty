@@ -1,11 +1,12 @@
 <div class="grid">
   <div class="col-12">
     <div class="card">
-      <h4 class="font-semibold">Aging Data</h4>
-      <h6 class="font-italic">This section displays the aging data of coins based on month, year and channel.</h6>
+      <div class="text-2xl font-bold tracking-tight truncate sm:text-3xl">Aging Data</div>
+      <div class="text-s font-medium font-italic s:text-base text-secondary">This section displays the aging data of coins based on month, year and channel.</div>
       <div class="mt-3">
-        <div class="mb-2 flex flex-row gap-5 place-content-end" [formGroup]="filterForm">
-          <div class="flex-1 flex align-items-center justify-content-center">
+        <div class="mb-2 flex justify-content-end flex-wrap gap-2" [formGroup]="filterForm">
+          <!-- Month Filter -->
+          <div class="flex align-items-center justify-content-center">
             <p-dropdown placeholder="Select month" [formControlName]="'month'" [options]="months" optionLabel="display" optionValue="month">
               <ng-template pTemplate="selectedItem" let-selectedItem>
                 <span>Month: </span>
@@ -16,7 +17,8 @@
               </ng-template>
             </p-dropdown>
           </div>
-          <div class="flex-1 flex align-items-center justify-content-center">
+          <!-- Year Filter -->
+          <div class="flex align-items-center justify-content-center">
             <p-dropdown placeholder="Select year" [formControlName]="'year'" [options]="years">
               <ng-template pTemplate="selectedItem" let-selectedItem>
                 <span>Year: </span>
@@ -27,7 +29,8 @@
               </ng-template>
             </p-dropdown>
           </div>
-          <div class="flex-1 flex align-items-center justify-content-center">
+          <!-- Channel Filter -->
+          <div class="flex align-items-center justify-content-center">
             <p-dropdown 
               placeholder="Select Channel" 
               [formControl]="filterForm.get('channel')" 
@@ -44,6 +47,7 @@
             </p-dropdown>
           </div>
         </div>
+        <!-- Table -->
         <div class="mt-3">
           <p-table [value]="allAging" [loading]="isLoading" [paginator]="true" [rows]="5" 
             [rowsPerPageOptions]="[5,10,15,20]" [showCurrentPageReport]="true" 
