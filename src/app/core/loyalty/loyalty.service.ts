@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, map, Observable, ReplaySubject } from "rxjs";
-import { Aging, Earner, Pagination } from "./loyalty.types";
+import { Aging, CoinsHistory, Earner, Pagination } from "./loyalty.types";
 import { HttpClient } from "@angular/common/http";
 import { AppConfig } from "src/app/config/service.config";
 import { LogService } from "../logging/log.service";
@@ -17,6 +17,8 @@ export class LoyaltyService {
     private _agingData: ReplaySubject<Aging[]> = new ReplaySubject<Aging[]>(1);
     private _agingDataPagination: BehaviorSubject<Pagination | null> = new BehaviorSubject(null);
     private _topEarner: ReplaySubject<Earner[]> = new ReplaySubject<Earner[]>(1);
+    private _coinsHistory: ReplaySubject<CoinsHistory[]> = new ReplaySubject<CoinsHistory[]>(1);
+    private _coinsHistoryPagination: BehaviorSubject<Pagination | null> = new BehaviorSubject(null);
 
     // -----------------------------------------------------------------------------------------------------
     // @ Constructor
@@ -55,6 +57,24 @@ export class LoyaltyService {
     }
     get topEarner$(): Observable<Earner[]> {
         return this._topEarner.asObservable();
+    }
+
+    /** Setter and Getter for Coins History */
+    set coinsHistory(value: CoinsHistory[]) {
+        this._coinsHistory.next(value);
+    }
+    get coinsHistory$(): Observable<CoinsHistory[]> {
+        return this._coinsHistory.asObservable();
+    }
+
+   /** Setter and Getter for Coins History Paginations */
+   set coinsHistoryPagination(value: Pagination) {
+        // Store the value
+        this._coinsHistoryPagination.next(value);
+    }
+
+    get coinsHistoryPagination$(): Observable<Pagination> {
+        return this._coinsHistoryPagination.asObservable();
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -179,6 +199,80 @@ export class LoyaltyService {
                         this._topEarner.next(topEarnerList);
     
                         return topEarnerList;
+                    })
+                );
+        }
+        
+        getAllCoinsHistory(
+            params: {
+                page?: number;
+                pageSize?: number;
+                search?: string;
+                type?: string;
+                channel?: string;
+                startDate?: string;
+                endDate?: string;
+            } = {
+                    page: 1,
+                    pageSize: 20,
+                    search: null,
+                    type: 'ALL',
+                    channel: 'ALL',
+                    startDate: null,
+                    endDate: null,
+                }
+        ): Observable<any> {
+            let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+    
+            const header = {
+                params,
+            };
+    
+            // Delete empty value
+            Object.keys(params).forEach((key) => {
+                if (Array.isArray(params[key])) {
+                    params[key] = params[key].filter((element) => element !== null);
+                }
+                if (
+                    params[key] === null ||
+                    params[key] === undefined ||
+                    params[key] === '' ||
+                    (Array.isArray(params[key]) && params[key].length === 0)
+                ) {
+                    delete params[key];
+                }
+            });
+    
+            return this._httpClient
+                .get<any>(
+                    loyaltyService + '/admin/api/get-coins-history',
+                    header
+                )
+                .pipe(
+                    map((response) => {
+                        const coinsHistoryList = response.data.records;
+    
+                        this._logging.debug(
+                            'Response from Loyalty Service (getAllCoinsHistory)',
+                            response
+                        );
+    
+                        const coinsHistoryPagination = {
+                            length: response.data.pagination.length,
+                            size: response.data.pagination.size,
+                            page: response.data.pagination.page,
+                            lastPage: response.data.pagination.lastPage,
+                            startIndex: response.data.pagination.startIndex,
+                            endIndex: response.data.pagination.endIndex,
+                        };
+    
+                        //  return pagination
+                        this._coinsHistoryPagination.next(coinsHistoryPagination);
+    
+                        // return data
+                        this._coinsHistory.next(coinsHistoryList);
+    
+                        return coinsHistoryList;
                     })
                 );
         }

@@ -33,3 +33,11 @@ export interface Earner {
     rank: number;
     totalCoins: number;
 }
+export interface CoinsHistory {
+    phone: string;
+    amount: number;
+    type: string;
+    channel: string;
+    status: string;
+    date: Date;
+}

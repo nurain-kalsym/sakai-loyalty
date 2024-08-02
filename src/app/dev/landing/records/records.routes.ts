@@ -3,6 +3,8 @@ import { RouterModule } from '@angular/router';
 import { AgingDataComponent } from './aging-data/aging-data.component';
 import { TopEarnerComponent } from './top-earner/top-earner.component';
 import { topEarnerResolver } from './top-earner/top-earner.resolver';
+import { CoinsHistoryComponent } from './coins-history/coins-history.component';
+import { coinsHistoryResolver } from './coins-history/coins-history.resolver';
 
 @NgModule({
     imports: [RouterModule.forChild([
@@ -10,10 +12,13 @@ import { topEarnerResolver } from './top-earner/top-earner.resolver';
         //     path: 'members-listing',
         //     component: 
         // },
-        // {
-        //     path: 'coins-history',
-        //     component: 
-        // },
+        {
+            path: 'coins-history',
+            component: CoinsHistoryComponent,
+            resolve: {
+                data: coinsHistoryResolver,
+            },
+        },
         {
             path: 'top-earner',
             component: TopEarnerComponent,

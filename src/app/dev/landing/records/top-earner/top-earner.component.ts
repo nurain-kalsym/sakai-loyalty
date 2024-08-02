@@ -83,27 +83,6 @@ export class TopEarnerComponent implements OnInit, OnDestroy {
                 }
             }
         );
-
-        //filter channel
-        /* this.filterForm.get('channel').valueChanges.subscribe((value) => {
-            this.selectedChannel = value.value === 'ALL' ? null : value.value;
-            const params = {
-                page: 1,
-                pageSize: 20,
-                month: this.selectedMonth,
-                year: this.selectedYear,
-                channel: this.selectedChannel
-            };
-    
-            this._loyaltyService.getAgingData(params).subscribe(
-                (list: Aging[]) => {
-                    this.allAging = list;
-                },
-                (error) => {
-                    console.error('Error fetching aging data list:', error);
-                }
-            );
-        }); */
     }
 
     ngOnDestroy() {

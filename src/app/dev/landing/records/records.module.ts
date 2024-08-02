@@ -13,6 +13,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ReactiveFormsModule } from '@angular/forms';
 import { PaginatorModule } from 'primeng/paginator';
 import { TopEarnerComponent } from './top-earner/top-earner.component';
+import { CoinsHistoryComponent } from './coins-history/coins-history.component';
+import { CalendarModule } from 'primeng/calendar';
 @NgModule({
     imports: [
         CommonModule,
@@ -26,11 +28,13 @@ import { TopEarnerComponent } from './top-earner/top-earner.component';
         RecordsRoutingModule,
         DropdownModule,
         ReactiveFormsModule,
-        PaginatorModule
+        PaginatorModule,
+        CalendarModule
     ],
     declarations: [
         AgingDataComponent,
-        TopEarnerComponent
+        TopEarnerComponent,
+        CoinsHistoryComponent
     ]
 })
 export class RecordsModule { }

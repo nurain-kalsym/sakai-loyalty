@@ -1,0 +1,96 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card">
+            <div class="text-2xl font-bold tracking-tight truncate sm:text-3xl">Coins History</div>
+            <div class="text-s font-medium font-italic s:text-base text-secondary">This section displays the overall coins distribution history.</div>
+            <div class="mt-3">
+                <div class="mb-2 flex justify-content-end flex-wrap gap-2" [formGroup]="filterForm">
+                    <div class="flex align-items-center justify-content-center position-relative">
+                        <p-dropdown 
+                            placeholder="Select Type" 
+                            [formControl]="filterForm.get('type')" 
+                            [options]="types" 
+                            optionLabel="label" 
+                            optionValue="value">
+                            <ng-template pTemplate="selectedItem" let-selectedItem>
+                                <span>Type: </span>
+                                <span>{{selectedItem?.label || 'All'}}</span>
+                            </ng-template>
+                            <ng-template pTemplate="item" let-option>
+                                <span>{{option.label}}</span>
+                            </ng-template>
+                        </p-dropdown>
+                    </div>
+                    <div class="flex align-items-center justify-content-center position-relative">
+                        <p-dropdown 
+                            placeholder="Select Channel" 
+                            [formControl]="filterForm.get('channel')" 
+                            [options]="channels" 
+                            optionLabel="label" 
+                            optionValue="value">
+                            <ng-template pTemplate="selectedItem" let-selectedItem>
+                                <span>Channel: </span>
+                                <span>{{selectedItem?.label || 'All'}}</span>
+                            </ng-template>
+                            <ng-template pTemplate="item" let-option>
+                                <span>{{option.label}}</span>
+                            </ng-template>
+                        </p-dropdown>
+                    </div>
+                    <div class="flex align-items-center justify-content-center position-relative">
+                        <p-calendar 
+                            placeholder="Start Date - End Date" 
+                            formControlName="rangeDates" 
+                            selectionMode="range"
+                            [showClear]="true" 
+                            [readonlyInput]="true" 
+                            [showIcon]="true"
+                            inputId="buttondisplay" 
+                            [showOnFocus]="false"
+                            dateFormat="dd/mm/yy">
+                        </p-calendar>
+                    </div>
+                    <div class="flex align-items-center justify-content-center">
+                        <span class="p-input-icon-left">
+							<i class="pi pi-search"></i>
+							<input pInputText type="text" formControlName="search" placeholder="Search" class="w-full" pTooltip="Search by Phone Number" tooltipPosition="top"/>
+						</span>
+                    </div>                                      
+                </div>                
+            </div>
+            <div class="mt-">
+                <p-table [value]="allHistory" [loading]="isLoading" [paginator]="true" 
+                         [rows]="pagination?.size" [totalRecords]="pagination?.length" 
+                         [rowsPerPageOptions]="[20, 50, 100, 1000]" [showCurrentPageReport]="true" 
+                         [lazy]="true" (onLazyLoad)="loadCoinsHistory($event)"
+                         currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th class="border-top-left text-center">Phone Number</th>
+                      <th class="border-top text-center">Amount</th>
+                      <th class="border-top text-center">Type</th>
+                      <th class="border-top text-center">channel</th>
+                      <th class="border-top text-center">Status</th>
+                      <th class="border-top-right text-center">Date</th>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="body" let-coins>
+                    <tr>
+                      <td class="border-left-right text-center">{{ coins.phone }}</td>
+                      <td class="border-right text-center">{{ coins.amount | number:'1.0-0' }}</td>
+                      <td class="border-right text-center">{{ coins.type |titlecase }}</td>
+                      <td class="border-right text-center">{{ coins.channel }}</td>
+                      <td class="border-right text-center">{{ coins.status | titlecase }}</td>
+                      <td class="border-right text-center">{{ coins.date | date: 'dd-MM-yyyy' }}</td>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="emptymessage">
+                    <tr>
+                      <td class="border-left-right text-center" colspan="8">No record found</td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+            </div>
+        </div>
+    </div>
+</div>
