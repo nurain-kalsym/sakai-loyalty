@@ -9,15 +9,12 @@ import { Aging, Month, Pagination } from 'src/app/core/loyalty/loyalty.types';
 })
 export class AgingDataComponent implements OnInit, OnDestroy {
     
-    @ViewChild('paginator', { read: PaginatorModule })
-    private paginator: PaginatorModule;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
     agingDataColumns: string[] = ['month', 'referral', 'loyalty'];
     allAging: Aging[] = [];
     pagination: Pagination;
     isLoading = false;
     months: Month[] = [];
-    // years: number[] = [];
     years: (string | number)[] = [];
     filterForm: FormGroup;
     selectedMonth: number = null;
@@ -65,17 +62,6 @@ export class AgingDataComponent implements OnInit, OnDestroy {
                 console.error('Error fetching aging data list:', error);
             }
         );
-
-        // Get pagination
-        this._loyaltyService.agingDataPagination$
-        .pipe(takeUntil(this._unsubscribeAll))
-        .subscribe((pagination: Pagination) => {
-            if (pagination) {
-            this.pagination = pagination;
-            }
-            // Mark for check
-            this._changeDetectorRef.markForCheck();
-        });
 
         //filter month
         this.filterForm.get('month').valueChanges.subscribe(

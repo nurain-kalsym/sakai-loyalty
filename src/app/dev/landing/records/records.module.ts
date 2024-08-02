@@ -12,6 +12,7 @@ import { AgingDataComponent } from './aging-data/aging-data.component';
 import { DropdownModule } from 'primeng/dropdown';
 import { ReactiveFormsModule } from '@angular/forms';
 import { PaginatorModule } from 'primeng/paginator';
+import { TopEarnerComponent } from './top-earner/top-earner.component';
 @NgModule({
     imports: [
         CommonModule,
@@ -28,7 +29,8 @@ import { PaginatorModule } from 'primeng/paginator';
         PaginatorModule
     ],
     declarations: [
-        AgingDataComponent
+        AgingDataComponent,
+        TopEarnerComponent
     ]
 })
 export class RecordsModule { }

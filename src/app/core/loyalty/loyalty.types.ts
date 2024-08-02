@@ -26,3 +26,10 @@ export interface Month {
     month: number;
     display: string;
 }
+
+export interface Earner {
+    name: string;
+    phone: string;
+    rank: number;
+    totalCoins: number;
+}

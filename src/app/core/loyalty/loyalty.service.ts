@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, map, Observable, ReplaySubject } from "rxjs";
-import { Aging, Pagination } from "./loyalty.types";
+import { Aging, Earner, Pagination } from "./loyalty.types";
 import { HttpClient } from "@angular/common/http";
 import { AppConfig } from "src/app/config/service.config";
 import { LogService } from "../logging/log.service";
@@ -16,6 +16,7 @@ export class LoyaltyService {
 
     private _agingData: ReplaySubject<Aging[]> = new ReplaySubject<Aging[]>(1);
     private _agingDataPagination: BehaviorSubject<Pagination | null> = new BehaviorSubject(null);
+    private _topEarner: ReplaySubject<Earner[]> = new ReplaySubject<Earner[]>(1);
 
     // -----------------------------------------------------------------------------------------------------
     // @ Constructor
@@ -46,6 +47,14 @@ export class LoyaltyService {
 
     get agingDataPagination$(): Observable<Pagination> {
         return this._agingDataPagination.asObservable();
+    }
+
+    /** Setter and Getter for Top Earner */
+    set topEarner(value: Earner[]) {
+        this._topEarner.next(value);
+    }
+    get topEarner$(): Observable<Earner[]> {
+        return this._topEarner.asObservable();
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -120,6 +129,58 @@ export class LoyaltyService {
                     return agingDataList;
                 })
             );
+        }
+
+        getTopEarner(
+            params: {
+                type?: string;
+                channel?: string;
+            } = {
+                type: 'ALL',
+                channel: null
+            }
+        ): Observable<any> {
+            let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+    
+            const header = {
+                params,
+            };
+    
+            // Delete empty value
+            Object.keys(params).forEach((key) => {
+                if (Array.isArray(params[key])) {
+                    params[key] = params[key].filter((element) => element !== null);
+                }
+                if (
+                    params[key] === null ||
+                    params[key] === undefined ||
+                    params[key] === '' ||
+                    (Array.isArray(params[key]) && params[key].length === 0)
+                ) {
+                    delete params[key];
+                }
+            });
+    
+            return this._httpClient
+                .get<any>(
+                    loyaltyService + '/admin/api/get-top-earner',
+                    header
+                )
+                .pipe(
+                    map((response) => {
+                        const topEarnerList = response.data;
+    
+                        this._logging.debug(
+                            'Response from Loyalty Service (getTopEarner)',
+                            response
+                        );
+    
+                       // return data
+                        this._topEarner.next(topEarnerList);
+    
+                        return topEarnerList;
+                    })
+                );
         }
 
 }
