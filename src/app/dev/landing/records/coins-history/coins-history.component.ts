@@ -123,6 +123,10 @@ export class CoinsHistoryComponent implements OnInit, OnDestroy {
         this._loyaltyService.getAllCoinsHistory(params).subscribe();
     }
 
+    clearSearch(): void {
+        this.filterForm.get('search').setValue(null);
+    }
+
     ngOnDestroy() {
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();

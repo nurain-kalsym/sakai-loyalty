@@ -51,11 +51,12 @@
                         </p-calendar>
                     </div>
                     <div class="flex align-items-center justify-content-center">
-                        <span class="p-input-icon-left">
-							<i class="pi pi-search"></i>
-							<input pInputText type="text" formControlName="search" placeholder="Search" class="w-full" pTooltip="Search by Phone Number" tooltipPosition="top"/>
-						</span>
-                    </div>                                      
+                        <span class="p-input-icon-right p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <i class="pi pi-times" pTooltip="Clear Search" tooltipPosition="top" (click)="clearSearch()"></i>
+                            <input pInputText type="text" formControlName="search" placeholder="Search" class="w-full" pTooltip="Search by Phone Number" tooltipPosition="top"/>
+                        </span>
+                    </div>                                                          
                 </div>                
             </div>
             <div class="mt-">

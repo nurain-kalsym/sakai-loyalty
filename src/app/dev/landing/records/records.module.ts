@@ -15,6 +15,7 @@ import { PaginatorModule } from 'primeng/paginator';
 import { TopEarnerComponent } from './top-earner/top-earner.component';
 import { CoinsHistoryComponent } from './coins-history/coins-history.component';
 import { CalendarModule } from 'primeng/calendar';
+import { InputTextModule } from 'primeng/inputtext';
 @NgModule({
     imports: [
         CommonModule,
@@ -29,7 +30,8 @@ import { CalendarModule } from 'primeng/calendar';
         DropdownModule,
         ReactiveFormsModule,
         PaginatorModule,
-        CalendarModule
+        CalendarModule,
+        InputTextModule
     ],
     declarations: [
         AgingDataComponent,
