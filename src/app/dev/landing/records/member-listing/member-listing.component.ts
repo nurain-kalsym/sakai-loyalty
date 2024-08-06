@@ -44,13 +44,14 @@ export class MemberListingComponent implements OnInit, OnDestroy {
     allMembers: Members[] = [];
     isLoading = false;
     filterForm: FormGroup;
+    channelFilter: FormGroup;
     summary: CoinsData[] = [];
     referralTree: TreeNode[] = [];
     summaryEkedai: any;
     summaryHelloSim: any;
-    displayMessage: boolean = false;
+    displayMessage = false;
     openIndex: number | null = null;
-    showTree: boolean = false;
+    showTree = false;
     pagination: Pagination;
     selectedChannel: string = 'ALL';
     selectedType: string = 'ALL';
@@ -71,10 +72,15 @@ export class MemberListingComponent implements OnInit, OnDestroy {
         { label: 'Active', value: 'ACTIVE' },
         { label: 'Inactive', value: 'INACTIVE' }
     ];
+    treeChannel: { label: string, value: string }[] = [
+        { label: 'E-Kedai', value: 'e-kedai' },
+        { label: 'Hello Sim', value: 'hello-sim' }
+    ];
 
     constructor(
         private _loyaltyService: LoyaltyService,
         private _formBuilder: FormBuilder,
+        private _formChannel: FormBuilder,
         private _changeDetectorRef: ChangeDetectorRef,
     ) {}
 
@@ -87,6 +93,9 @@ export class MemberListingComponent implements OnInit, OnDestroy {
             type: ['ALL'],
             search: [null],
         });
+
+        // create channel form 
+        this.channelFilter = this._formChannel.group({channelTree: []});
         
         // Subscribe to data
         this._loyaltyService.membersList$
@@ -147,6 +156,16 @@ export class MemberListingComponent implements OnInit, OnDestroy {
                 this.loadMembers({ first: 0, rows: this.pagination.size });
             }
         );
+
+        //filter Tree channel
+        this.channelFilter.valueChanges.subscribe(() => {
+            console.log('Referral Tree Data:', this.referralTree);
+            this.showTree = false;
+            const { channelTree } = this.channelFilter.value;
+            if (channelTree) {
+              this.referralTree = this.referralTree.filter(tree => tree.data.name.includes(channelTree));
+            }
+          });
     }
 
     populateSummary() {
@@ -188,6 +207,63 @@ export class MemberListingComponent implements OnInit, OnDestroy {
         };
 
         this._loyaltyService.getAllMembers(params).subscribe();
+    }
+
+    refTree(phone: string, channel: string) {
+        // console.log('Ref Tree called with phone:', phone, 'and channel:', channel);
+    
+        const validChannels = ['e-kedai', 'hello-sim'];
+        const channels = validChannels.includes(channel) ? [channel] : [];
+    
+        if (channels.length === 0) {
+          this.referralTree = [];
+          this.showTree = false;
+          this.displayMessage = true;
+          this.updateTreeDisplay();
+          return;
+        }
+    
+        const observables = channels.map(ch => this._loyaltyService.getReferralTree({ phone: phone, channel: ch }));
+    
+        forkJoin(observables).subscribe({
+          next: responses => {
+            this.referralTree = []; // Clear existing tree
+            responses.forEach(response => {
+              if (response) {
+                this.referralTree.push(response);
+              }
+            });
+            this.referralTree.forEach(tree => this.updateStyleClass(tree));
+            this.showTree = true;
+            this.updateTreeDisplay();
+          },
+          error: err => {
+            console.error('Error:', err);
+            this.referralTree = [];
+            this.showTree = false;
+            this.updateTreeDisplay();
+          }
+        });
+    }
+
+    updateTreeDisplay() {
+        // console.log('Updating Tree Display with:', this.referralTree);
+        this.showTree = this.referralTree.length > 0;
+        this.displayMessage = this.referralTree.length === 0;
+    }
+    
+    updateStyleClass(tree: TreeNode) {
+        tree.styleClass = (tree.data.layer === 2) ? 'custom-node' : 'treeStyle';
+
+        if (tree.children && tree.children.length > 0) {
+            tree.children.forEach(child => this.updateStyleClass(child));
+        }
+    }
+    
+    /* icon in referral tree */
+    closeTree() {
+        this.showTree = false;
+        this.displayMessage = false;
     }
 
     clearSearch(): void {

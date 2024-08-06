@@ -204,22 +204,53 @@
                                                     </tr>
                                                 </tbody>
                                             </table>
+                                        </div>                                         
+
+                                        <!-- Tree Channel Filter -->
+                                        <div class="text-start flex items-center pt-2" [formGroup]="channelFilter">
+                                            <p-dropdown
+                                                [options]="treeChannel"
+                                                formControlName="channelTree"
+                                                placeholder="Select Channel"
+                                                class="w-44 pr-4"
+                                                appendTo="body"
+                                            ></p-dropdown>
+                                            <button pButton pRipple
+                                                label="Referral Tree"
+                                                class="py-3.5 px-4 flex items-center text-sm text-white rounded-md bg-primary-700"
+                                                (click)="refTree(member.phone, channelFilter.get('channelTree').value)"
+                                                pTooltip="View Tree">
+                                                <i class="pi pi-eye text-white icon-size-5 pr-1"></i>
+                                            </button>
                                         </div>
-
-                                        <!-- tree -->
+                                        
+                                        <!-- Tree -->
                                         <div class="relative mb-4 pt-5 overflow-hidden">
-                                            <p-organizationChart [value]="referralTree" [collapsible]="true">
-                                                <ng-template pTemplate="node" let-node>
-                                                    <div class="flex flex-column align-items-center">
-                                                        <div class="font-bold">{{ node.data.name }}</div>
-                                                        <div>{{ node.data.phone }}</div>
-                                                        <div>{{ node.data.email }}</div>
-                                                    </div>
-                                                </ng-template>
-                                            </p-organizationChart>
-                                        </div>                                          
-
-
+                                            <div *ngIf="showTree" @expandCollapse>
+                                                <div class="flex justify-end pr-4 cursor-pointer" (click)="closeTree()">
+                                                    <i class="pi pi-times text-gray-700 icon-size-5"></i>
+                                                    <span class="pl-1">Close</span>
+                                                </div>
+                                                <div class="w-full" style="overflow-x: auto;">
+                                                    <p-organizationChart [value]="referralTree" [collapsible]="false">
+                                                        <ng-template pTemplate="default" let-node>
+                                                            <div class="text-md font-semibold">{{node.data.name}}</div>
+                                                            <div *ngIf="node.data.name !== 'SYSTEM'" class="text-sm italic">
+                                                                {{node.data.phone}}
+                                                            </div>
+                                                            <div *ngIf="node.data.name !== 'SYSTEM'" class="text-sm">
+                                                                {{node.data.refCode}}
+                                                            </div>
+                                                        </ng-template>
+                                                    </p-organizationChart>
+                                                </div>
+                                            </div>
+                                            <!-- No tree Message -->
+                                            <div *ngIf="displayMessage" class="text-center mt-4">
+                                                <p>No Referral Tree Found</p>
+                                            </div>
+                                        </div>
+                                        
                                     </div>
                                 </div>
                             </td>
