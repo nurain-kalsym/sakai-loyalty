@@ -41,3 +41,34 @@ export interface CoinsHistory {
     status: string;
     date: Date;
 }
+
+export interface Members {
+    phone: string;
+    name: string;
+    email: string;
+    channels: Channels[];
+    totalCoins: number;
+    loyalty: CoinsData[];
+    referral: CoinsData[];
+    microDealer: CoinsData[]; 
+    summary?: CoinsData[];
+}
+
+export interface Channels {
+    channelName: string;
+    registrationDate: Date;
+    status: string;
+}
+export interface ReferralTree {
+    expanded: boolean;
+    styleClass: string;
+    data: TreeObj;
+    children: ReferralTree[];
+}
+
+export interface TreeObj {
+    name: string;
+    phone: string;
+    refCode: string;
+    layer: number;
+}

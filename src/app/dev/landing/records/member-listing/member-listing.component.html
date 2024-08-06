@@ -1,0 +1,237 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card">
+            <div class="text-2xl font-bold tracking-tight truncate sm:text-3xl">Member Listing</div>
+            <div class="text-s font-medium font-italic s:text-base text-secondary">This section displays the list of members and their involvement in the programs.</div>
+            <div class="mt-3">
+                <div class="mb-2 flex justify-content-end flex-wrap gap-2" [formGroup]="filterForm">
+                    <!-- Channel Filter -->
+                    <div class="flex align-items-center justify-content-center position-relative">
+                        <p-dropdown 
+                            placeholder="Select Channel" 
+                            [formControl]="filterForm.get('channel')" 
+                            [options]="channels" 
+                            optionLabel="label" 
+                            optionValue="value">
+                            <ng-template pTemplate="selectedItem" let-selectedItem>
+                                <span>Channel: </span>
+                                <span>{{selectedItem?.label || 'All'}}</span>
+                            </ng-template>
+                            <ng-template pTemplate="item" let-option>
+                                <span>{{option.label}}</span>
+                            </ng-template>
+                        </p-dropdown>
+                    </div>
+
+                    <!-- Type Filter -->
+                    <div class="flex align-items-center justify-content-center position-relative">
+                        <p-dropdown 
+                            placeholder="Select Type" 
+                            [formControl]="filterForm.get('type')" 
+                            [options]="types" 
+                            optionLabel="label" 
+                            optionValue="value">
+                            <ng-template pTemplate="selectedItem" let-selectedItem>
+                                <span>Type: </span>
+                                <span>{{selectedItem?.label || 'All'}}</span>
+                            </ng-template>
+                            <ng-template pTemplate="item" let-option>
+                                <span>{{option.label}}</span>
+                            </ng-template>
+                        </p-dropdown>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="flex align-items-center justify-content-center position-relative">
+                        <p-dropdown 
+                            placeholder="Select Status" 
+                            [formControl]="filterForm.get('status')" 
+                            [options]="status" 
+                            optionLabel="label" 
+                            optionValue="value">
+                            <ng-template pTemplate="selectedItem" let-selectedItem>
+                                <span>Status: </span>
+                                <span>{{selectedItem?.label || 'All'}}</span>
+                            </ng-template>
+                            <ng-template pTemplate="item" let-option>
+                                <span>{{option.label}}</span>
+                            </ng-template>
+                        </p-dropdown>
+                    </div>
+
+                    <!-- Search Filter -->
+                    <div class="flex align-items-center justify-content-center">
+                        <span class="p-input-icon-right p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <i class="pi pi-times" pTooltip="Clear Search" tooltipPosition="top" (click)="clearSearch()"></i>
+                            <input pInputText type="text" formControlName="search" placeholder="Search" class="w-full" pTooltip="Search by Phone Number, Name and Email" tooltipPosition="top"/>
+                        </span>
+                    </div>                                                          
+                </div>
+            </div>
+            <div class="mt-3">
+                <p-table [value]="allMembers" [loading]="isLoading" [paginator]="true" 
+                [rows]="pagination?.size" [totalRecords]="pagination?.length" 
+                [rowsPerPageOptions]="[20, 50, 100, 1000]" [showCurrentPageReport]="true" 
+                [lazy]="true" (onLazyLoad)="loadMembers($event)"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th class="border-top-left text-center">Phone Number</th>
+                            <th class="border-top text-center">Name</th>
+                            <th class="border-top text-center">Email</th>
+                            <th class="border-top text-center">Referral</th>
+                            <th class="border-top text-center">Loyalty</th>
+                            <th class="border-top text-center">Microdealer</th>
+                            <th class="border-top-right text-center">Action</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-member let-i="rowIndex">
+                        <tr>
+                            <td class="border-left-right text-center">{{ member.phone }}</td>
+                            <td class="border-right text-center">{{ member.name | uppercase }}</td>
+                            <td class="border-right text-center">{{ member.email }}</td>
+                            <td class="border-right text-center">
+                                <div *ngFor="let referral of member.referral" class="py-1">
+                                  <span
+                                    class="p-badge p-component p-rounded p-text-sm"
+                                    [ngStyle]="{
+                                      'background-color': referral.status === 'ACTIVE' ? '#d4edda' : referral.status === 'INACTIVE' ? '#f8d7da' : '',
+                                      'color': referral.status === 'ACTIVE' ? '#155724' : referral.status === 'INACTIVE' ? '#721c24' : '',
+                                      'white-space': 'nowrap',
+                                      'display': 'inline-block',
+                                      'min-width': '100px'
+                                    }">
+                                    {{ referral.channel }}
+                                  </span>
+                                </div>
+                            </td>                              
+                            <td class="border-right text-center">
+                                <div *ngFor="let loyalty of member.loyalty" class="py-1">
+                                    <span
+                                        class="p-badge p-component p-rounded p-text-sm"
+                                        [ngStyle]="{
+                                        'background-color': loyalty.status === 'ACTIVE' ? '#d4edda' : loyalty.status === 'INACTIVE' ? '#f8d7da' : '',
+                                        'color': loyalty.status === 'ACTIVE' ? '#155724' : loyalty.status === 'INACTIVE' ? '#721c24' : '',
+                                        'white-space': 'nowrap',
+                                        'display': 'inline-block',
+                                        'min-width': '100px'
+                                        }">
+                                        {{ loyalty.channel }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="border-right text-center">
+                                <div *ngFor="let microdealer of member.microDealer" class="py-1">
+                                    <span
+                                        class="p-badge p-component p-rounded p-text-sm"
+                                        [ngStyle]="{
+                                        'background-color': microdealer.status === 'ACTIVE' ? '#d4edda' : microdealer.status === 'INACTIVE' ? '#f8d7da' : '',
+                                        'color': microdealer.status === 'ACTIVE' ? '#155724' : microdealer.status === 'INACTIVE' ? '#721c24' : '',
+                                        'white-space': 'nowrap',
+                                        'display': 'inline-block',
+                                        'min-width': '100px'
+                                        }">
+                                        {{ microdealer.channel }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="border-right text-center">
+                                <button (click)="toggleOpen(i)" pButton type="button" [icon]="openIndex === i ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></button>
+                            </td>
+                        </tr>
+                        <tr *ngIf="openIndex === i">
+                            <td colspan="7" class="p-0">
+                                <div class="p-accordion">
+                                    <div class="p-accordion-content">
+                                        <div *ngIf="summaryEkedai">
+                                            <div class="text-sm font-semibold tracking-tight truncate sm:text-xl pb-1">E-Kedai Coins Summary</div>
+                                            <table class="w-full">
+                                                <thead>
+                                                    <tr class="bg-primary text-white">
+                                                        <th class="px-4 py-2 text-center">Type</th>
+                                                        <th class="px-4 py-2 text-center">Total Earned</th>
+                                                        <th class="px-4 py-2 text-center">Total Used</th>
+                                                        <th class="px-4 py-2 text-center">Total Expired</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr *ngFor="let summary of summaryEkedai">
+                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ summary.type }}</td>
+                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ summary.totalEarned | number:'1.0-0' }}</td>
+                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ summary.totalUsed | number:'1.0-0' }}</td>
+                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ summary.totalExpired | number:'1.0-0' }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div *ngIf="summaryHelloSim">
+                                            <div class="text-sm font-semibold tracking-tight truncate sm:text-xl pb-1 pt-4">Hello Sim Coins Summary</div>
+                                            <table class="w-full">
+                                                <thead>
+                                                    <tr class="bg-primary text-white">
+                                                        <th class="px-4 py-2 text-center">Type</th>
+                                                        <th class="px-4 py-2 text-center">Total Earned</th>
+                                                        <th class="px-4 py-2 text-center">Total Used</th>
+                                                        <th class="px-4 py-2 text-center">Total Expired</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr *ngFor="let summary of summaryHelloSim">
+                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ summary.type }}</td>
+                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ summary.totalEarned | number:'1.0-0' }}</td>
+                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ summary.totalUsed | number:'1.0-0' }}</td>
+                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ summary.totalExpired | number:'1.0-0' }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div *ngIf="member.microDealer">
+                                            <div class="text-sm font-semibold tracking-tight truncate sm:text-xl pb-1 pt-4">Micro Dealer Status</div>
+                                            <table class="w-full">
+                                                <thead>
+                                                    <tr class="bg-primary text-white">
+                                                        <th class="px-4 py-2 text-center">Channel</th>
+                                                        <th class="px-4 py-2 text-center">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr *ngFor="let summary of member.microDealer">
+                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ summary.channel }}</td>
+                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ summary.status }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <!-- tree -->
+                                        <div class="relative mb-4 pt-5 overflow-hidden">
+                                            <p-organizationChart [value]="referralTree" [collapsible]="true">
+                                                <ng-template pTemplate="node" let-node>
+                                                    <div class="flex flex-column align-items-center">
+                                                        <div class="font-bold">{{ node.data.name }}</div>
+                                                        <div>{{ node.data.phone }}</div>
+                                                        <div>{{ node.data.email }}</div>
+                                                    </div>
+                                                </ng-template>
+                                            </p-organizationChart>
+                                        </div>                                          
+
+
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td class="border-left-right text-center" colspan="8">No record found</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>     
+        </div>
+    </div>
+</div>

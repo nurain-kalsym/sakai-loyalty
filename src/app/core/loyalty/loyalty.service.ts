@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, map, Observable, ReplaySubject } from "rxjs";
-import { Aging, CoinsHistory, Earner, Pagination } from "./loyalty.types";
+import { Aging, CoinsHistory, Earner, Members, Pagination, ReferralTree } from "./loyalty.types";
 import { HttpClient } from "@angular/common/http";
 import { AppConfig } from "src/app/config/service.config";
 import { LogService } from "../logging/log.service";
@@ -19,6 +19,9 @@ export class LoyaltyService {
     private _topEarner: ReplaySubject<Earner[]> = new ReplaySubject<Earner[]>(1);
     private _coinsHistory: ReplaySubject<CoinsHistory[]> = new ReplaySubject<CoinsHistory[]>(1);
     private _coinsHistoryPagination: BehaviorSubject<Pagination | null> = new BehaviorSubject(null);
+    private _membersList: ReplaySubject<Members[]> = new ReplaySubject<Members[]>(1);
+    private _membersListPagination: BehaviorSubject<Pagination | null> = new BehaviorSubject(null);
+    private _referralTree: ReplaySubject<ReferralTree> = new ReplaySubject<ReferralTree>(1);
 
     // -----------------------------------------------------------------------------------------------------
     // @ Constructor
@@ -75,6 +78,32 @@ export class LoyaltyService {
 
     get coinsHistoryPagination$(): Observable<Pagination> {
         return this._coinsHistoryPagination.asObservable();
+    }
+
+    /** Setter and Getter for Members Listing */
+    set membersList(value: Members[]) {
+        this._membersList.next(value);
+    }
+    get membersList$(): Observable<Members[]> {
+        return this._membersList.asObservable();
+    }
+
+    /** Setter and Getter for Members Listing Paginations */
+    set membersListPagination(value: Pagination) {
+        // Store the value
+        this._membersListPagination.next(value);
+    }
+
+    get membersListPagination$(): Observable<Pagination> {
+        return this._membersListPagination.asObservable();
+    }
+
+    /** Setter and Getter for Referral Tree */
+    set referralTree(value: ReferralTree) {
+        this._referralTree.next(value);
+    }
+    get referralTree$(): Observable<ReferralTree> {
+        return this._referralTree.asObservable();
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -273,6 +302,130 @@ export class LoyaltyService {
                         this._coinsHistory.next(coinsHistoryList);
     
                         return coinsHistoryList;
+                    })
+                );
+        }
+
+        getAllMembers(
+            params: {
+                page?: number;
+                pageSize?: number;
+                search?: string;
+                channel?: string;
+                status?: string;
+                type?: string;
+            } = {
+                    page: 1,
+                    pageSize: 20,
+                    search: null,
+                    channel: 'ALL',
+                    status: 'ALL',
+                    type: null,
+                }
+        ): Observable<any> {
+            let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+    
+            const header = {
+                params,
+            };
+    
+            // Delete empty value
+            Object.keys(params).forEach((key) => {
+                if (Array.isArray(params[key])) {
+                    params[key] = params[key].filter((element) => element !== null);
+                }
+                if (
+                    params[key] === null ||
+                    params[key] === undefined ||
+                    params[key] === '' ||
+                    (Array.isArray(params[key]) && params[key].length === 0)
+                ) {
+                    delete params[key];
+                }
+            });
+    
+            return this._httpClient
+                .get<any>(
+                    loyaltyService + '/admin/api/get-members-list',
+                    header
+                )
+                .pipe(
+                    map((response) => {
+                        const membersList = response.data.records;
+    
+                        this._logging.debug(
+                            'Response from Loyalty Service (getAllMembers)',
+                            response
+                        );
+    
+                        const membersListPagination = {
+                            length: response.data.pagination.length,
+                            size: response.data.pagination.size,
+                            page: response.data.pagination.page,
+                            lastPage: response.data.pagination.lastPage,
+                            startIndex: response.data.pagination.startIndex,
+                            endIndex: response.data.pagination.endIndex,
+                        };
+    
+                        //  return pagination
+                        this._membersListPagination.next(membersListPagination);
+    
+                        // return data
+                        this._membersList.next(membersList);
+    
+                        return membersList;
+                    })
+                );
+        }
+
+        getReferralTree(
+            params: {
+                phone?: string;
+                channel?: string;
+            } = {
+                phone: null,
+                channel: null,
+            }
+        ): Observable<any> {
+            let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+    
+            const header = {
+                params,
+            };
+    
+            // Delete empty value
+            Object.keys(params).forEach((key) => {
+                if (Array.isArray(params[key])) {
+                    params[key] = params[key].filter((element) => element !== null);
+                }
+                if (
+                    params[key] === null ||
+                    params[key] === undefined ||
+                    params[key] === '' ||
+                    (Array.isArray(params[key]) && params[key].length === 0)
+                ) {
+                    delete params[key];
+                }
+            });
+    
+            return this._httpClient
+                .get<any>(
+                    loyaltyService + '/admin/api/get-referral-tree',
+                    header
+                )
+                .pipe(
+                    map((response) => {
+                        const referralTree = response.data;
+    
+                        this._logging.debug(
+                            'Response from Loyalty Service (getReferralTree)',
+                            response
+                        );
+    
+                        // return data
+                        this._referralTree.next(referralTree);
+    
+                        return referralTree;
                     })
                 );
         }

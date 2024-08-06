@@ -16,6 +16,9 @@ import { TopEarnerComponent } from './top-earner/top-earner.component';
 import { CoinsHistoryComponent } from './coins-history/coins-history.component';
 import { CalendarModule } from 'primeng/calendar';
 import { InputTextModule } from 'primeng/inputtext';
+import { MemberListingComponent } from './member-listing/member-listing.component';
+import { AccordionModule } from 'primeng/accordion';
+import { OrganizationChartModule } from 'primeng/organizationchart';
 @NgModule({
     imports: [
         CommonModule,
@@ -31,12 +34,15 @@ import { InputTextModule } from 'primeng/inputtext';
         ReactiveFormsModule,
         PaginatorModule,
         CalendarModule,
-        InputTextModule
+        InputTextModule,
+        AccordionModule,
+        OrganizationChartModule
     ],
     declarations: [
         AgingDataComponent,
         TopEarnerComponent,
-        CoinsHistoryComponent
+        CoinsHistoryComponent,
+        MemberListingComponent
     ]
 })
 export class RecordsModule { }

@@ -5,13 +5,18 @@ import { TopEarnerComponent } from './top-earner/top-earner.component';
 import { topEarnerResolver } from './top-earner/top-earner.resolver';
 import { CoinsHistoryComponent } from './coins-history/coins-history.component';
 import { coinsHistoryResolver } from './coins-history/coins-history.resolver';
+import { MemberListingComponent } from './member-listing/member-listing.component';
+import { membersListResolver } from './member-listing/member-listing.resolver';
 
 @NgModule({
     imports: [RouterModule.forChild([
-        // {
-        //     path: 'members-listing',
-        //     component: 
-        // },
+        {
+            path: 'members-listing',
+            component: MemberListingComponent,
+                resolve: {   
+                    data: membersListResolver,
+                },
+        },
         {
             path: 'coins-history',
             component: CoinsHistoryComponent,
