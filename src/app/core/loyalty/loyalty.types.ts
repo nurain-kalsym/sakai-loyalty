@@ -72,3 +72,53 @@ export interface TreeObj {
     refCode: string;
     layer: number;
 }
+
+export interface MicrodealerDetails {
+    id: string;
+    name: string;
+    createdAt: Date;
+    email: string;
+    phone: string;
+    referral: ReferralObj;
+    channel: Channels[];
+    cashback: CashBack;
+    loyaltyPrograms: LoyaltyProgram;
+    microDealer: MicroDealer[];
+}
+export interface ReferralObj {
+    channel: string;
+    referralCount: string;
+    originCode: string;
+    referralCode: string;
+}
+export interface CashBack {
+    totalCoins: number;
+    totalCoinsUsed: number;
+    totalCoinsExpired:number;
+}
+
+export interface LoyaltyProgram {
+    totalCoins: number;
+    totalCoinsUsed: number;
+    totalCoinsExpired:number;
+    memberTiers: number;
+}
+
+export interface MicroDealer {
+    channel: string;
+    status: string;
+    createdDate: Date;
+    updatedDate: Date;
+}
+export interface MicrodealerChannel {
+    id: string;
+    name: string;
+    createdAt: Date;
+    email: string;
+    phone: string;
+    referral: ReferralObj;
+    cashback: CashBack;
+    loyaltyPrograms: LoyaltyProgram;
+    channel: string;
+    microDealerStatus: string;
+}

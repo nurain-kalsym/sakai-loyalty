@@ -11,6 +11,15 @@ import { LoyaltySettingsComponent } from './loyalty-settings/loyalty-settings.co
 import { ConfigurationsRoutingModule } from './configurations.routes';
 import { ConversionSettingsComponent } from './conversion-settings/conversion-settings.component';
 import { AppointReferralAgentComponent } from './referral-agents/referral-agents.component';
+import { MicroDealerComponent } from './micro-dealer/micro-dealer.component';
+import { ToolbarModule } from 'primeng/toolbar';
+import { DropdownModule } from 'primeng/dropdown';
+import { DialogModule } from 'primeng/dialog';
+import { ReactiveFormsModule } from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { InputNumberModule } from 'primeng/inputnumber';
 @NgModule({
     imports: [
         CommonModule,
@@ -21,12 +30,21 @@ import { AppointReferralAgentComponent } from './referral-agents/referral-agents
         StyleClassModule,
         PanelMenuModule,
         ButtonModule,
-        ConfigurationsRoutingModule
+        ConfigurationsRoutingModule,
+        ToolbarModule,
+        DropdownModule,
+        DialogModule,
+        ReactiveFormsModule,
+        InputTextModule,
+        InputTextareaModule,
+        RadioButtonModule,
+        InputNumberModule
     ],
     declarations: [
         LoyaltySettingsComponent,
         ConversionSettingsComponent,
-        AppointReferralAgentComponent
+        AppointReferralAgentComponent,
+        MicroDealerComponent
     ]
 })
 export class ConfigurationsModule { }

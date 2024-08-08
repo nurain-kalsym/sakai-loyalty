@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
-import { BehaviorSubject, map, Observable, ReplaySubject } from "rxjs";
-import { Aging, CoinsHistory, Earner, Members, Pagination, ReferralTree } from "./loyalty.types";
-import { HttpClient } from "@angular/common/http";
+import { BehaviorSubject, catchError, map, Observable, ReplaySubject, switchMap, take, throwError } from "rxjs";
+import { Aging, CoinsHistory, Earner, Members, MicroDealer, MicrodealerDetails, Pagination, ReferralTree } from "./loyalty.types";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { AppConfig } from "src/app/config/service.config";
 import { LogService } from "../logging/log.service";
 
@@ -22,6 +22,7 @@ export class LoyaltyService {
     private _membersList: ReplaySubject<Members[]> = new ReplaySubject<Members[]>(1);
     private _membersListPagination: BehaviorSubject<Pagination | null> = new BehaviorSubject(null);
     private _referralTree: ReplaySubject<ReferralTree> = new ReplaySubject<ReferralTree>(1);
+    private _microDealer: ReplaySubject<MicrodealerDetails[]> = new ReplaySubject<MicrodealerDetails[]>(1);
 
     // -----------------------------------------------------------------------------------------------------
     // @ Constructor
@@ -104,6 +105,14 @@ export class LoyaltyService {
     }
     get referralTree$(): Observable<ReferralTree> {
         return this._referralTree.asObservable();
+    }
+
+    /** Setter and Getter for MicroDealer */
+    set microDealers(value: MicrodealerDetails[]) {
+        this._microDealer.next(value);
+    }
+    get microDealers$(): Observable<MicrodealerDetails[]> {
+        return this._microDealer.asObservable();
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -429,5 +438,162 @@ export class LoyaltyService {
                     })
                 );
         }
+
+        getMicroDealer(
+            params: {
+                page?: number;
+                pageSize?: number;
+                channel?: string;
+            } = {
+                    page: 1,
+                    pageSize: 100,
+                    channel: 'ALL',
+                }
+        ): Observable<any> {
+            let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+    
+            const header = {
+                params,
+            };
+    
+            // Delete empty value
+            Object.keys(params).forEach((key) => {
+                if (Array.isArray(params[key])) {
+                    params[key] = params[key].filter((element) => element !== null);
+                }
+                if (
+                    params[key] === null ||
+                    params[key] === undefined ||
+                    params[key] === '' ||
+                    (Array.isArray(params[key]) && params[key].length === 0)
+                ) {
+                    delete params[key];
+                }
+            });
+    
+            return this._httpClient
+                .get<any>(loyaltyService + '/micro-dealer/get-users-list', header)
+                .pipe(
+                    map((response) => {
+                        const microDealerList = response.data.records;
+    
+                        this._logging.debug(
+                            'Response from Loyalty Service (getMicroDealer)',
+                            response
+                        );
+    
+                        // return data
+                        this._microDealer.next(microDealerList);
+    
+                        return microDealerList;
+                    })
+                );
+            }
+
+            setMicrodealer( params: { phone?: string; channel?: string; } = { phone: null, channel: 'ALL' }): Observable<any> {
+                let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+            
+                const header = {
+                    params,
+                };
+            
+                // Delete empty value
+                Object.keys(params).forEach((key) => {
+                    if (Array.isArray(params[key])) {
+                        params[key] = params[key].filter((element) => element !== null);
+                    }
+                    if (
+                        params[key] === null ||
+                        params[key] === undefined ||
+                        params[key] === '' ||
+                        (Array.isArray(params[key]) && params[key].length === 0)
+                    ) {
+                        delete params[key];
+                    }
+                });
+            
+                return this._httpClient
+                    .post<any>(loyaltyService + '/micro-dealer/setup-dealers', null, header)
+                    .pipe(
+                        catchError((error) => {
+                            this._logging.error('Error add new Microdealer:', error);
+                            return throwError(error);
+                        }),
+                        map((response) => {
+                            this._logging.debug('Response from Loyalty Service (setMicrodealer)', response);
+                            return response;
+                        })
+                    );
+            }
+
+            updateDealerStatus(
+                params: {
+                    phone?: string;
+                    channel?: string;
+                    status?: string;
+                } = {
+                    phone: null,
+                    channel: null,
+                    status: null,
+                }
+            ): Observable<MicroDealer> {
+                let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+                const header = {
+                    params,
+                };
+        
+                // Delete empty value
+                Object.keys(params).forEach((key) => {
+                    if (Array.isArray(params[key])) {
+                        params[key] = params[key].filter((element) => element !== null);
+                    }
+                    if (
+                        params[key] === null ||
+                        params[key] === undefined ||
+                        params[key] === '' ||
+                        (Array.isArray(params[key]) && params[key].length === 0)
+                    ) {
+                        delete params[key];
+                    }
+                });
+        
+                return this.microDealers$.pipe(
+                    take(1),
+                    switchMap((microDealers) =>
+                        this._httpClient
+                            .put<any>(loyaltyService + '/micro-dealer/update-status/' + params.phone, null, header)
+                            .pipe(
+                                map((response) => {
+                                    this._logging.debug(
+                                        'Response from Loyalty Service (updateDealerStatus)',
+                                        response
+                                    );
+        
+                                    const dealerIndex = microDealers.findIndex(
+                                        (dealer) =>
+                                            dealer.phone === params.phone
+                                    );
+        
+                                    if (dealerIndex !== -1 && response.status === 200) {
+                                        const microDealerIndex = microDealers[dealerIndex].microDealer.findIndex(
+                                            (item) => item.channel === params.channel
+                                        );
+        
+                                        if (microDealerIndex !== -1) {
+                                            microDealers[dealerIndex].microDealer[microDealerIndex].status = params.status;
+                                        }
+        
+                                        // Update the microDealers
+                                        this._microDealer.next(microDealers);
+        
+                                        return microDealers[dealerIndex].microDealer[microDealerIndex];
+                                    }
+        
+                                    return null;
+                                })
+                            )
+                    )
+                );
+            }
 
 }

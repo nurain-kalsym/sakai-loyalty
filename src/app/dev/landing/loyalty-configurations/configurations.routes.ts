@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { LoyaltySettingsComponent } from './loyalty-settings/loyalty-settings.component';
 import { ConversionSettingsComponent } from './conversion-settings/conversion-settings.component';
 import { AppointReferralAgentComponent } from './referral-agents/referral-agents.component';
+import { MicroDealerComponent } from './micro-dealer/micro-dealer.component';
 
 @NgModule({
     imports: [RouterModule.forChild([
@@ -18,10 +19,10 @@ import { AppointReferralAgentComponent } from './referral-agents/referral-agents
             path: 'appoint-referral-agents',
             component: AppointReferralAgentComponent
         },
-        // {
-        //     path: 'appoint-micro-dealers',
-        //     component:
-        // }
+        {
+            path: 'appoint-micro-dealers',
+            component: MicroDealerComponent
+        }
     ])],
     exports: [RouterModule]
 })
