@@ -1,4 +1,6 @@
 <div class="grid">
+    <p-toast key="tost" position="top-right">
+    </p-toast>
     <div class="col-12">
         <div class="card">
             <div class="text-2xl font-bold tracking-tight truncate sm:text-3xl">Appoint Micro-Dealers</div>
@@ -52,33 +54,58 @@
                 <p-table [value]="filteredMicrodealers" [loading]="isLoading">
                   <ng-template pTemplate="header">
                     <tr>
-                      <th class="border-top-left text-center font-bold">Name</th>
-                      <th class="border-top text-center font-bold">Phone Number</th>
-                      <th class="border-top text-center font-bold">Email</th>
-                      <th class="border-top text-center font-bold">Channel</th>
-                      <th class="border-top text-center font-bold">Microdealer</th>
-                      <th class="border-top-right text-center font-bold">Actions</th>
+                      <th class="border-top-left text-center font-bold font-bold text-gray-800">Name</th>
+                      <th class="border-top text-center font-bold font-bold text-gray-800">Phone Number</th>
+                      <th class="border-top text-center font-bold font-bold text-gray-800">Email</th>
+                      <th class="border-top text-center font-bold font-bold text-gray-800">Channel</th>
+                      <th class="border-top text-center font-bold font-bold text-gray-800">Status</th>
+                      <th class="border-top-right text-center font-bold font-bold text-gray-800">Actions</th>
                     </tr>
                   </ng-template>
-                  <ng-template pTemplate="body" let-dealer>
+                  <ng-template pTemplate="body" let-dealer let-i="rowIndex">
                     <tr>
-                      <td class="border-left-right text-center">{{ dealer.name }}</td>
-                      <td class="border-right text-center">{{ dealer.phone }}</td>
-                      <td class="border-right text-center">{{ dealer.email }}</td>
-                      <td class="border-right text-center">{{ formatChannel(dealer.channel) | titlecase }}</td>
-                      <td class="border-right text-center">{{ dealer.microDealerStatus }}</td>
-                      <td class="border-right text-center">
-                        <button pButton pRipple icon="pi pi-pencil" class="border-transparent p-button-rounded bg-orange-300 mr-2" (click)="updateStatus()"></button>
-                      </td>
+                        <td class="border-left-right text-center">{{ dealer.name }}</td>
+                        <td class="border-right text-center">{{ dealer.phone }}</td>
+                        <td class="border-right text-center">{{ dealer.email }}</td>
+                        <td class="border-right text-center">{{ formatChannel(dealer.channel) }}</td>
+                        <td class="border-right text-center">
+                            <ng-container *ngIf="editingRowIndex === i; else viewMode">
+                                <p-dropdown 
+                                    [options]="[{label: 'Active', value: 'ACTIVE'}, {label: 'Inactive', value: 'INACTIVE'}]" 
+                                    [(ngModel)]="dealer.microDealerStatus"
+                                    (ngModelChange)="onStatusChange($event)"
+                                    [appendTo]="'body'"
+                                    [autoWidth]="false"
+                                ></p-dropdown>
+                            </ng-container>
+                            <ng-template #viewMode>
+                                {{ dealer.microDealerStatus }}
+                            </ng-template>
+                        </td>
+                        <td class="border-right text-center">
+                            <!-- Edit button -->
+                            <button pButton pRipple 
+                                icon="pi pi-pencil" 
+                                class="border-transparent p-button-raised p-button-rounded bg-orange-300 mr-2" 
+                                (click)="updateStatus(i)">
+                            </button>
+                            <!-- Save button -->
+                            <button pButton pRipple 
+                                icon="pi pi-save" 
+                                class="border-transparent p-button-raised p-button-rounded bg-green-300 mr-2" 
+                                (click)="saveChanges()"
+                                [disabled]="editingRowIndex !== i || !isModified"
+                            ></button>
+                        </td>
                     </tr>
-                  </ng-template>
+                </ng-template>                
                   <ng-template pTemplate="emptymessage">
                     <tr>
                         <td class="border-left-right text-center" colspan="8">No record found</td>
                     </tr>
                   </ng-template>
                 </p-table>
-              </div>
+            </div>
         </div>
     </div>
 </div>
@@ -110,28 +137,4 @@
                 <button pButton type="button" label="Submit" (click)="submit()"></button>
             </div>
         </div>
-</p-dialog>
-
-<!-- status update Popup -->
-<p-dialog [(visible)]="updateStatusDialog" [style]="{width: '450px'}" header="Microdealer Setup Details" [modal]="true" class="p-fluid" [formGroup]="updateForm">
-    <div class="field">
-        <p-dropdown 
-            placeholder="Select Status"
-            [options]="[{label: 'Active', value: 'ACTIVE'}, {label: 'Inactive', value: 'Inactive'}]" 
-            optionLabel="label" 
-            optionValue="value">
-            <ng-template pTemplate="selectedItem" let-selectedItem>
-                <span>Status: </span>
-                <span>{{selectedItem?.label}}</span>
-            </ng-template>
-            <ng-template pTemplate="item" let-option>
-                <span>{{option.label}}</span>
-            </ng-template>
-        </p-dropdown>
-    </div>
-    <div class="flex align-items-end justify-content-end position-relative">
-        <div class="w-fit">
-            <button pButton type="button" label="Update" (click)="update()"></button>
-        </div>
-    </div>
 </p-dialog>

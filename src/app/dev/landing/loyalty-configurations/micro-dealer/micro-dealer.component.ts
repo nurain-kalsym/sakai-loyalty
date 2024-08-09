@@ -1,23 +1,29 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { LoyaltyService } from 'src/app/core/loyalty/loyalty.service';
 import { MicrodealerChannel, MicrodealerDetails } from 'src/app/core/loyalty/loyalty.types';
+import { Message, MessageService } from 'primeng/api';
 
 @Component({
     templateUrl: './micro-dealer.component.html',
+    providers: [MessageService]
 })
 export class MicroDealerComponent implements OnInit, OnDestroy {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
-    topEarnerColumns: String[] = ['name', 'phone', 'email', 'channel', 'microdealer', 'actions'];
+    topEarnerColumns: String[] = ['name', 'phone', 'email', 'channel', 'status', 'actions'];
     allDealer: MicrodealerDetails[] = [];
     filteredMicrodealers: MicrodealerChannel[] = [];
     filterForm: FormGroup;
     setupForm: FormGroup;
     updateForm: FormGroup;
+    messages: Message[] = [];
     selectedChannel: string = 'ALL';
     selectedStatus: string = 'ALL';
     isLoading = false;
+    editingRowIndex: number | null = null;
+    originalChannel: string | null = null;
+    isModified: boolean = false; 
     addNewDialog: boolean = false;
     updateStatusDialog: boolean = false;
     channels: { label: string, value: string }[] = [
@@ -34,7 +40,8 @@ export class MicroDealerComponent implements OnInit, OnDestroy {
     constructor(
         private _loyaltyService: LoyaltyService,
         private _formBuilder: FormBuilder,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        private messageService: MessageService
     ) {}
 
     ngOnInit() {
@@ -46,15 +53,15 @@ export class MicroDealerComponent implements OnInit, OnDestroy {
 
         // Setup Form
         this.setupForm = this._formBuilder.group({
-            phone: [null, Validators.required],
-            channel: [null, Validators.required]
+            phone: ['', Validators.required],
+            channel: ['', Validators.required]
         });
 
         // Update Form
         this.updateForm = this._formBuilder.group({
-            status: [null, Validators.required]
+            status: ['']
         });
-
+        
         // Fetch micro dealers
         this._loyaltyService.getMicroDealer().subscribe();
         this._loyaltyService.microDealers$
@@ -140,26 +147,96 @@ export class MicroDealerComponent implements OnInit, OnDestroy {
         this.addNewDialog = true;
     }
 
-    updateStatus() {
-        this.updateStatusDialog = true;
+    updateStatus(index: number): void {
+        this.editingRowIndex = index;
+        const currentStatus = this.filteredMicrodealers[index].microDealerStatus || '';
+        this.originalChannel = currentStatus;
+        this.isModified = false;
+        this.updateForm.patchValue({
+            status: currentStatus
+        });
+    }    
+
+    onStatusChange(changeStatus: string) {
+        this.isModified = changeStatus !== this.originalChannel;
     }
+
+    saveChanges() {
+        if (this.editingRowIndex !== null && this.isModified) {
+            const updatedDealer = this.filteredMicrodealers[this.editingRowIndex];
+            const params = {
+                phone: updatedDealer.phone,
+                channel: updatedDealer.channel,
+                status: updatedDealer.microDealerStatus
+            };
+            this._loyaltyService.updateDealerStatus(params).subscribe(
+                (response) => {
+                    if (response) {
+                        console.log('Status updated successfully:', response);
+                        this.messageService.add({ 
+                            key: 'tost', 
+                            severity: 'success', 
+                            summary: 'Success', 
+                            detail: 'Status updated successfully' 
+                        });
+                        this.editingRowIndex = null;
+                        this.isModified = false;
+                    }
+                },
+                (error) => {
+                    console.error('Error updating status:', error);
+                    this.messageService.add({ 
+                        key: 'tost', 
+                        severity: 'error', 
+                        summary: 'Error', 
+                        detail: error.error.message
+                    });
+                }
+            );
+        }
+    }    
+
+    // Check if the click is outside of the edit button or dropdown
+    @HostListener('document:click', ['$event'])
+    handleClickOutside(event: MouseEvent) {
+        const target = event.target as HTMLElement;
+        const isClickInsideEditButton = target.closest('.p-button');
+        const isClickInsideDropdown = target.closest('.p-dropdown') || target.closest('.p-dropdown-panel');
+        
+        if (!isClickInsideEditButton && !isClickInsideDropdown) {
+            this.editingRowIndex = null;
+            this.isModified = false;
+            this.cdr.detectChanges();
+        }
+    }               
 
     /* Submit Button */
     submit() {
         console.log(this.setupForm.getRawValue());
     }
 
-    /* Update Button */
-    update() {
-        console.log('Updated',this.updateForm.getRawValue());
-    }
-
     formatChannel(channel: string): string {
         if (channel === 'hello-sim') {
-            return channel.replace('-', ' ');
+            return channel
+                .split('-')
+                .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+                .join('');
+        } else if (channel === 'e-kedai') {
+            return 'E-Kedai';
         } else {
             return channel;
         }
+    }
+
+    checkPhoneNumber(phone: string): string {
+        if (!phone.startsWith('6')) {
+            phone = '6' + phone;
+        }
+        return phone;
+    }
+
+    showSuccessViaToast() {
+        this.messageService.add({ key: 'tost', severity: 'success', summary: 'Success', detail: 'Message sent' });
     }
 
     ngOnDestroy() {

@@ -19,7 +19,7 @@ export class TopEarnerComponent implements OnInit, OnDestroy {
     channels: { label: string, value: string }[] = [
         { label: 'All', value: 'ALL' },
         { label: 'E-Kedai', value: 'e-kedai' },
-        { label: 'Hello Sim', value: 'hello-sim' }
+        { label: 'HelloSim', value: 'hello-sim' }
     ];
     types: { label: string, value: string }[] = [
         { label: 'All', value: 'ALL' },

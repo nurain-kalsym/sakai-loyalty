@@ -122,3 +122,15 @@ export interface MicrodealerChannel {
     channel: string;
     microDealerStatus: string;
 }
+export interface ReferralUsers {
+    name: string;
+    phone: string;
+    email: string;
+    referral?: ReferralObj[];
+}
+export interface ReferralObj {
+    channel: string;
+    referralCount: string;
+    originCode: string;
+    referralCode: string;
+}

@@ -77,21 +77,21 @@
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
                     <ng-template pTemplate="header">
                         <tr>
-                            <th class="border-top-left text-center">Phone Number</th>
-                            <th class="border-top text-center">Name</th>
-                            <th class="border-top text-center">Email</th>
-                            <th class="border-top text-center">Referral</th>
-                            <th class="border-top text-center">Loyalty</th>
-                            <th class="border-top text-center">Microdealer</th>
-                            <th class="border-top-right text-center">Action</th>
+                            <th class="border-top-left text-center font-bold text-gray-800">Phone Number</th>
+                            <th class="border-top text-center font-bold text-gray-800">Name</th>
+                            <th class="border-top text-center font-bold text-gray-800">Email</th>
+                            <th class="border-top text-center font-bold text-gray-800">Referral</th>
+                            <th class="border-top text-center font-bold text-gray-800">Loyalty</th>
+                            <th class="border-top text-center font-bold text-gray-800">Microdealer</th>
+                            <th class="border-top-right text-center font-bold text-gray-800">Action</th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-member let-i="rowIndex">
                         <tr>
-                            <td class="border-left-right text-center">{{ member.phone }}</td>
-                            <td class="border-right text-center">{{ member.name | uppercase }}</td>
-                            <td class="border-right text-center">{{ member.email }}</td>
-                            <td class="border-right text-center">
+                            <td class="border-left text-center">{{ member.phone }}</td>
+                            <td class="text-center">{{ member.name | uppercase }}</td>
+                            <td class="text-center">{{ member.email }}</td>
+                            <td class="text-center">
                                 <div *ngFor="let referral of member.referral" class="py-1">
                                   <span
                                     class="p-badge p-component p-rounded p-text-sm"
@@ -102,11 +102,11 @@
                                       'display': 'inline-block',
                                       'min-width': '100px'
                                     }">
-                                    {{ referral.channel | uppercase }}
+                                    {{ formatChannel(referral.channel) }}
                                   </span>
                                 </div>
                             </td>                              
-                            <td class="border-right text-center">
+                            <td class="text-center">
                                 <div *ngFor="let loyalty of member.loyalty" class="py-1">
                                     <span
                                         class="p-badge p-component p-rounded p-text-sm"
@@ -117,11 +117,11 @@
                                         'display': 'inline-block',
                                         'min-width': '100px'
                                         }">
-                                        {{ loyalty.channel | uppercase }}
+                                        {{ formatChannel(loyalty.channel) }}
                                     </span>
                                 </div>
                             </td>
-                            <td class="border-right text-center">
+                            <td class="text-center">
                                 <div *ngFor="let microdealer of member.microDealer" class="py-1">
                                     <span
                                         class="p-badge p-component p-rounded p-text-sm"
@@ -132,7 +132,7 @@
                                         'display': 'inline-block',
                                         'min-width': '100px'
                                         }">
-                                        {{ microdealer.channel | uppercase }}
+                                        {{ formatChannel(microdealer.channel) }}
                                     </span>
                                 </div>
                             </td>
@@ -167,7 +167,7 @@
                                         </div>
 
                                         <div *ngIf="summaryHelloSim">
-                                            <div class="text-sm font-semibold tracking-tight truncate sm:text-xl pb-1 pt-4">Hello Sim Coins Summary</div>
+                                            <div class="text-sm font-semibold tracking-tight truncate sm:text-xl pb-1 pt-4">HelloSim Coins Summary</div>
                                             <table class="w-full">
                                                 <thead>
                                                     <tr class="bg-primary text-white">
@@ -199,7 +199,7 @@
                                                 </thead>
                                                 <tbody>
                                                     <tr *ngFor="let summary of member.microDealer">
-                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ summary.channel }}</td>
+                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ formatChannel(summary.channel) }}</td>
                                                         <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ summary.status }}</td>
                                                     </tr>
                                                 </tbody>
@@ -216,10 +216,10 @@
                                                 appendTo="body"
                                             ></p-dropdown>
                                             <button pButton pRipple
-                                                label="Referral Tree"
+                                                label="Geneology"
                                                 class="py-3.5 px-4 flex items-center text-sm text-white rounded-md bg-primary-700"
                                                 (click)="refTree(member.phone, channelFilter.get('channelTree').value)"
-                                                pTooltip="View Tree">
+                                                pTooltip="View Geneology">
                                                 <i class="pi pi-eye text-white icon-size-5 pr-1"></i>
                                             </button>
                                         </div>

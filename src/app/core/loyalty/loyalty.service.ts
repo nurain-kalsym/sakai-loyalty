@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, catchError, map, Observable, ReplaySubject, switchMap, take, throwError } from "rxjs";
-import { Aging, CoinsHistory, Earner, Members, MicroDealer, MicrodealerDetails, Pagination, ReferralTree } from "./loyalty.types";
+import { Aging, CoinsHistory, Earner, Members, MicroDealer, MicrodealerDetails, Pagination, ReferralTree, ReferralUsers } from "./loyalty.types";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { AppConfig } from "src/app/config/service.config";
 import { LogService } from "../logging/log.service";
@@ -23,6 +23,8 @@ export class LoyaltyService {
     private _membersListPagination: BehaviorSubject<Pagination | null> = new BehaviorSubject(null);
     private _referralTree: ReplaySubject<ReferralTree> = new ReplaySubject<ReferralTree>(1);
     private _microDealer: ReplaySubject<MicrodealerDetails[]> = new ReplaySubject<MicrodealerDetails[]>(1);
+    private _referralUsers: ReplaySubject<ReferralUsers[]> = new ReplaySubject<ReferralUsers[]>(1);
+    private _referralUsersPagination: BehaviorSubject<Pagination | null> = new BehaviorSubject(null);
 
     // -----------------------------------------------------------------------------------------------------
     // @ Constructor
@@ -113,6 +115,24 @@ export class LoyaltyService {
     }
     get microDealers$(): Observable<MicrodealerDetails[]> {
         return this._microDealer.asObservable();
+    }
+
+    /** Setter and Getter for Referral Users */
+    set referralUsers(value: ReferralUsers[]) {
+        this._referralUsers.next(value);
+    }
+    get referralUsers$(): Observable<ReferralUsers[]> {
+        return this._referralUsers.asObservable();
+    }
+    
+    /** Setter and Getter for Referral Users Paginations */
+    set referralUsersPagination(value: Pagination) {
+        // Store the value
+        this._referralUsersPagination.next(value);
+    }
+
+    get referralUsersPagination$(): Observable<Pagination> {
+        return this._referralUsersPagination.asObservable();
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -536,7 +556,7 @@ export class LoyaltyService {
                     channel: null,
                     status: null,
                 }
-            ): Observable<MicroDealer> {
+            ): Observable<any> {
                 let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
                 const header = {
                     params,
@@ -563,37 +583,86 @@ export class LoyaltyService {
                         this._httpClient
                             .put<any>(loyaltyService + '/micro-dealer/update-status/' + params.phone, null, header)
                             .pipe(
+                                catchError((error) => {
+                                    this._logging.error(
+                                        'Error updating microdealer',
+                                        error
+                                    );
+                                    return throwError(error);
+                                }),
                                 map((response) => {
                                     this._logging.debug(
                                         'Response from Loyalty Service (updateDealerStatus)',
                                         response
                                     );
-        
-                                    const dealerIndex = microDealers.findIndex(
-                                        (dealer) =>
-                                            dealer.phone === params.phone
-                                    );
-        
-                                    if (dealerIndex !== -1 && response.status === 200) {
-                                        const microDealerIndex = microDealers[dealerIndex].microDealer.findIndex(
-                                            (item) => item.channel === params.channel
-                                        );
-        
-                                        if (microDealerIndex !== -1) {
-                                            microDealers[dealerIndex].microDealer[microDealerIndex].status = params.status;
-                                        }
-        
-                                        // Update the microDealers
-                                        this._microDealer.next(microDealers);
-        
-                                        return microDealers[dealerIndex].microDealer[microDealerIndex];
-                                    }
-        
-                                    return null;
+                                    return response;
                                 })
                             )
                     )
                 );
+            }
+
+            getReferralUsers(params: {
+                channel: string;
+                page: number;
+                pageSize: number;
+            } = {
+                channel: 'ALL',
+                page: null,
+                pageSize: null,
+            }): Observable<any> {
+                let profileService = this._apiServer.settings.serviceUrl.loyaltyService;
+        
+                 // Delete empty value
+                 Object.keys(params).forEach((key) => {
+                    if (Array.isArray(params[key])) {
+                        params[key] = params[key].filter((element) => element !== null);
+                    }
+                    if (
+                        params[key] === null ||
+                        params[key] === undefined ||
+                        params[key] === '' ||
+                        (Array.isArray(params[key]) && params[key].length === 0)
+                    ) {
+                        delete params[key];
+                    }
+                });
+        
+                const header = {
+                    params,
+                };
+        
+                return this._httpClient
+                    .get<any>(
+                        profileService + '/admin-referral/get-referral-users', header,
+                    )
+                    .pipe(
+                        map((response) => {
+                            const userList = response ? response.context.records : [];
+        
+                            this._logging.debug(
+                                'Response from Loyalty Service (getReferralUsers)',
+                                response
+                            );
+        
+                            const userListPagination = {
+                                length: response.context.pagination.length,
+                                size: response.context.pagination.size,
+                                page: response.context.pagination.page,
+                                lastPage: response.context.pagination.lastPage,
+                                startIndex: response.context.pagination.startIndex,
+                                endIndex: response.context.pagination.endIndex,
+                            };
+        
+                            //  return pagination
+                            this._referralUsersPagination.next(userListPagination);
+        
+                            // return bills
+                            this._referralUsers.next(userList);
+        
+                            return userList;
+                        })
+                    );
             }
 
 }

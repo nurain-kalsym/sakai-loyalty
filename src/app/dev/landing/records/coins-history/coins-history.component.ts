@@ -20,7 +20,7 @@ export class CoinsHistoryComponent implements OnInit, OnDestroy {
     channels: { label: string, value: string }[] = [
         { label: 'All', value: 'ALL' },
         { label: 'E-Kedai', value: 'e-kedai' },
-        { label: 'Hello Sim', value: 'hello-sim' }
+        { label: 'HelloSim', value: 'hello-sim' }
     ];
     types: { label: string, value: string }[] = [
         { label: 'All', value: 'ALL' },
@@ -125,6 +125,19 @@ export class CoinsHistoryComponent implements OnInit, OnDestroy {
 
     clearSearch(): void {
         this.filterForm.get('search').setValue(null);
+    }
+
+    formatChannel(channel: string): string {
+        if (channel === 'hello-sim') {
+            return channel
+                .split('-')
+                .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+                .join('');
+        } else if (channel === 'e-kedai') {
+            return 'E-Kedai';
+        } else {
+            return channel;
+        }
     }
 
     ngOnDestroy() {

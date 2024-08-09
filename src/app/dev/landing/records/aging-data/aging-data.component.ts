@@ -23,7 +23,7 @@ export class AgingDataComponent implements OnInit, OnDestroy {
     channels: { label: string, value: string }[] = [
         { label: 'All', value: 'ALL' },
         { label: 'E-Kedai', value: 'e-kedai' },
-        { label: 'Hello Sim', value: 'hello-sim' }
+        { label: 'HelloSim', value: 'hello-sim' }
     ];
 
     constructor(

@@ -67,12 +67,12 @@
                          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
                   <ng-template pTemplate="header">
                     <tr>
-                      <th class="border-top-left text-center">Phone Number</th>
-                      <th class="border-top text-center">Amount</th>
-                      <th class="border-top text-center">Type</th>
-                      <th class="border-top text-center">channel</th>
-                      <th class="border-top text-center">Status</th>
-                      <th class="border-top-right text-center">Date</th>
+                      <th class="border-top-left text-center font-bold text-gray-800">Phone Number</th>
+                      <th class="border-top text-center font-bold text-gray-800">Amount</th>
+                      <th class="border-top text-center font-bold text-gray-800">Type</th>
+                      <th class="border-top text-center font-bold text-gray-800">Channel</th>
+                      <th class="border-top text-center font-bold text-gray-800">Status</th>
+                      <th class="border-top-right text-center font-bold text-gray-800">Date</th>
                     </tr>
                   </ng-template>
                   <ng-template pTemplate="body" let-coins>
@@ -80,7 +80,7 @@
                       <td class="border-left-right text-center">{{ coins.phone }}</td>
                       <td class="border-right text-center">{{ coins.amount | number:'1.0-0' }}</td>
                       <td class="border-right text-center">{{ coins.type | titlecase }}</td>
-                      <td class="border-right text-center">{{ coins.channel }}</td>
+                      <td class="border-right text-center">{{ formatChannel(coins.channel) }}</td>
                       <td class="border-right text-center">{{ coins.status | titlecase }}</td>
                       <td class="border-right text-center">{{ coins.date | date: 'dd-MM-yyyy' }}</td>
                     </tr>

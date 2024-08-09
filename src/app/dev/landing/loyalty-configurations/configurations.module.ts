@@ -20,6 +20,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { MessagesModule } from 'primeng/messages';
+import { ToastModule } from 'primeng/toast';
 @NgModule({
     imports: [
         CommonModule,
@@ -38,7 +40,9 @@ import { InputNumberModule } from 'primeng/inputnumber';
         InputTextModule,
         InputTextareaModule,
         RadioButtonModule,
-        InputNumberModule
+        InputNumberModule,
+        MessagesModule,
+        ToastModule
     ],
     declarations: [
         LoyaltySettingsComponent,

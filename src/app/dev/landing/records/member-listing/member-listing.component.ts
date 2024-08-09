@@ -274,6 +274,19 @@ export class MemberListingComponent implements OnInit, OnDestroy {
         this.openIndex = this.openIndex === index ? null : index;
     }
 
+    formatChannel(channel: string): string {
+        if (channel === 'hello-sim') {
+            return channel
+                .split('-')
+                .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+                .join('');
+        } else if (channel === 'e-kedai') {
+            return 'E-Kedai';
+        } else {
+            return channel;
+        }
+    } 
+
     ngOnDestroy() {
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
