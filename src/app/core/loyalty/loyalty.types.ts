@@ -123,14 +123,36 @@ export interface MicrodealerChannel {
     microDealerStatus: string;
 }
 export interface ReferralUsers {
+    id: string;
     name: string;
+    createdAt: Date;
     phone: string;
     email: string;
-    referral?: ReferralObj[];
+    referral: ReferralObj[];
+    channel: Channels[];
+    cashback: Cash[];
+    loyaltyPrograms: LoyaltyPrograms[];
+    microDealer: MicroDealer[];
+    updatedAt: Date;
 }
 export interface ReferralObj {
     channel: string;
     referralCount: string;
     originCode: string;
     referralCode: string;
+}
+
+export interface Cash {
+    totalCoins: number;
+    totalCoinsUsed: number;
+    totalCoinsExpired: number;
+    channel: string;
+}
+
+export interface LoyaltyPrograms {
+    totalCoins: number;
+    totalCoinsUsed: number;
+    totalCoinsExpired:number;
+    membershipTier: number;
+    channel: string;
 }

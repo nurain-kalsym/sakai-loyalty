@@ -11,7 +11,7 @@ import { Message, MessageService } from 'primeng/api';
 })
 export class MicroDealerComponent implements OnInit, OnDestroy {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
-    topEarnerColumns: String[] = ['name', 'phone', 'email', 'channel', 'status', 'actions'];
+    microdealerColumns: String[] = ['name', 'phone', 'email', 'channel', 'status', 'actions'];
     allDealer: MicrodealerDetails[] = [];
     filteredMicrodealers: MicrodealerChannel[] = [];
     filterForm: FormGroup;

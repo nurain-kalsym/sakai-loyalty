@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
-import { BehaviorSubject, catchError, map, Observable, ReplaySubject, switchMap, take, throwError } from "rxjs";
-import { Aging, CoinsHistory, Earner, Members, MicroDealer, MicrodealerDetails, Pagination, ReferralTree, ReferralUsers } from "./loyalty.types";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { BehaviorSubject, catchError, map, Observable, ReplaySubject, switchMap, take, tap, throwError } from "rxjs";
+import { Aging, CoinsHistory, Earner, Members, MicrodealerDetails, Pagination, ReferralTree, ReferralUsers } from "./loyalty.types";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { AppConfig } from "src/app/config/service.config";
 import { LogService } from "../logging/log.service";
 
@@ -130,7 +130,6 @@ export class LoyaltyService {
         // Store the value
         this._referralUsersPagination.next(value);
     }
-
     get referralUsersPagination$(): Observable<Pagination> {
         return this._referralUsersPagination.asObservable();
     }
@@ -614,63 +613,44 @@ export class LoyaltyService {
                 channel: string;
                 page: number;
                 pageSize: number;
-            } = {
+              } = {
                 channel: 'ALL',
                 page: null,
                 pageSize: null,
-            }): Observable<any> {
-                let profileService = this._apiServer.settings.serviceUrl.loyaltyService;
-        
-                 // Delete empty value
-                 Object.keys(params).forEach((key) => {
-                    if (Array.isArray(params[key])) {
-                        params[key] = params[key].filter((element) => element !== null);
-                    }
-                    if (
-                        params[key] === null ||
-                        params[key] === undefined ||
-                        params[key] === '' ||
-                        (Array.isArray(params[key]) && params[key].length === 0)
-                    ) {
-                        delete params[key];
-                    }
+              }): Observable<any> {
+                let profileService = this._apiServer.settings.serviceUrl.profileService;
+              
+                // Clean parameters
+                Object.keys(params).forEach((key) => {
+                  if (Array.isArray(params[key])) {
+                    params[key] = params[key].filter((element) => element !== null);
+                  }
+                  if (
+                    params[key] === null ||
+                    params[key] === undefined ||
+                    params[key] === '' ||
+                    (Array.isArray(params[key]) && params[key].length === 0)
+                  ) {
+                    delete params[key];
+                  }
                 });
-        
+              
                 const header = {
-                    params,
+                  params,
                 };
-        
+              
+                // console.log('Request Parameters:', params);
+              
                 return this._httpClient
-                    .get<any>(
-                        profileService + '/admin-referral/get-referral-users', header,
-                    )
-                    .pipe(
-                        map((response) => {
-                            const userList = response ? response.context.records : [];
-        
-                            this._logging.debug(
-                                'Response from Loyalty Service (getReferralUsers)',
-                                response
-                            );
-        
-                            const userListPagination = {
-                                length: response.context.pagination.length,
-                                size: response.context.pagination.size,
-                                page: response.context.pagination.page,
-                                lastPage: response.context.pagination.lastPage,
-                                startIndex: response.context.pagination.startIndex,
-                                endIndex: response.context.pagination.endIndex,
-                            };
-        
-                            //  return pagination
-                            this._referralUsersPagination.next(userListPagination);
-        
-                            // return bills
-                            this._referralUsers.next(userList);
-        
-                            return userList;
-                        })
-                    );
-            }
+                .get<any>(profileService + '/admin-referral/get-referral-users', header)
+                .pipe(
+                    tap((response) => {
+                    // console.log('API Response:', response);
+                    const userList = response ? response.context.records : [];
+                    this._referralUsers.next(userList);
+                    })
+                );
 
+              }
+              
 }
