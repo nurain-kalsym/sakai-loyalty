@@ -510,7 +510,15 @@ export class LoyaltyService {
                 );
             }
 
-            setMicrodealer( params: { phone?: string; channel?: string; } = { phone: null, channel: 'ALL' }): Observable<any> {
+            setMicrodealer( 
+                params: { 
+                    phone?: string; 
+                    channel?: string; 
+                } = { 
+                    phone: null, 
+                    channel: 'ALL' 
+                }
+            ): Observable<any> {
                 let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
             
                 const header = {

@@ -43,9 +43,11 @@
                                 </ng-template>
                             </p-dropdown>
                         </div>
+
+                        <!-- Add New Button -->
                         <div class="flex align-items-end justify-content-end position-relative">
                             <button pButton type="button" label="Add New" icon="pi pi-plus" (click)="addNew()"></button>
-                        </div>                                                         
+                        </div>                                                        
                     </div>
                 </form>
             </div>
@@ -111,30 +113,47 @@
 </div>
 
 <!-- Add Popup -->
-<p-dialog [(visible)]="addNewDialog" [style]="{width: '450px'}" header="Microdealer Setup Details" [modal]="true" class="p-fluid" [formGroup]="setupForm">
+<p-dialog [(visible)]="addNewDialog" [style]="{width: '450px'}" header="Microdealer Setup Details" [modal]="true" class="p-fluid">
+    <form [formGroup]="setupForm">
         <div class="field">
-            <label>Microdealer's Phone Number</label>
-            <input type="text" pInputText autofocus formControlName="phone"/>
+            <label for="phone" class="font-semibold">Microdealer's Phone Number</label>
+            <span class="p-input-icon-left">
+                <i class="pi pi-mobile"></i>
+                <input id="phone" type="text" pInputText autofocus formControlName="phone" placeholder="Enter Phone Number" 
+                    [ngClass]="{'border-red-500': setupForm.get('phone').invalid && setupForm.get('phone').touched}"/>
+            </span>
+            <div *ngIf="setupForm.get('phone').invalid && setupForm.get('phone').touched" class="error-message text-red-500">
+                Phone number is required 
+            </div>
         </div>
+
         <div class="field">
+            <label for="channel" class="font-semibold">Channel</label>
             <p-dropdown 
+                id="channel"
                 placeholder="Select Channel" 
-                [formControl]="setupForm.get('channel')" 
+                formControlName="channel" 
                 [options]="[{label: 'E-Kedai', value: 'e-kedai'}, {label: 'Hello Sim', value: 'hello-sim'}]" 
                 optionLabel="label" 
-                optionValue="value">
+                optionValue="value"
+                [ngClass]="{'ng-dirty': setupForm.get('channel').invalid && setupForm.get('channel').touched}">
                 <ng-template pTemplate="selectedItem" let-selectedItem>
-                    <span>Channel: </span>
                     <span>{{selectedItem?.label}}</span>
                 </ng-template>
                 <ng-template pTemplate="item" let-option>
                     <span>{{option.label}}</span>
                 </ng-template>
             </p-dropdown>
-        </div>
-        <div class="flex align-items-end justify-content-end position-relative">
-            <div class="w-fit">
-                <button pButton type="button" label="Submit" (click)="submit()"></button>
+            <div *ngIf="setupForm.get('channel').invalid && setupForm.get('channel').touched" class="error-message text-red-500">
+                Channel is required
             </div>
         </div>
+
+        <div class="flex align-items-end justify-content-end position-relative">
+            <div class="w-fit">
+                <button pButton type="button" label="Submit" (click)="submit()" [disabled]="!setupForm.valid"></button>
+                <!-- <button pButton type="button" label="Submit" (click)="submit()" [disabled]="!setupForm.valid"></button> -->
+            </div>
+        </div>
+    </form>
 </p-dialog>

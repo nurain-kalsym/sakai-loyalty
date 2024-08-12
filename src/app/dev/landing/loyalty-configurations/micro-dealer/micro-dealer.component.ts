@@ -55,7 +55,7 @@ export class MicroDealerComponent implements OnInit, OnDestroy {
         this.setupForm = this._formBuilder.group({
             phone: ['', Validators.required],
             channel: ['', Validators.required]
-        });
+        });        
 
         // Update Form
         this.updateForm = this._formBuilder.group({
@@ -142,11 +142,13 @@ export class MicroDealerComponent implements OnInit, OnDestroy {
         return transformed;
     }
     
-
+    /* Add New Button */
     addNew() {
+        this.setupForm.reset();
         this.addNewDialog = true;
     }
 
+    /* Edit Button */
     updateStatus(index: number): void {
         this.editingRowIndex = index;
         const currentStatus = this.filteredMicrodealers[index].microDealerStatus || '';
@@ -161,6 +163,7 @@ export class MicroDealerComponent implements OnInit, OnDestroy {
         this.isModified = changeStatus !== this.originalChannel;
     }
 
+    /* Save button */
     saveChanges() {
         if (this.editingRowIndex !== null && this.isModified) {
             const updatedDealer = this.filteredMicrodealers[this.editingRowIndex];
@@ -179,8 +182,6 @@ export class MicroDealerComponent implements OnInit, OnDestroy {
                             summary: 'Success', 
                             detail: 'Status updated successfully' 
                         });
-                        this.editingRowIndex = null;
-                        this.isModified = false;
                     }
                 },
                 (error) => {
@@ -212,7 +213,43 @@ export class MicroDealerComponent implements OnInit, OnDestroy {
 
     /* Submit Button */
     submit() {
-        console.log(this.setupForm.getRawValue());
+        const phone = this.checkPhoneNumber(this.setupForm.get('phone').value);
+        const channel = this.setupForm.get('channel').value;
+    
+        this._loyaltyService.setMicrodealer({ phone, channel }).subscribe(
+            (response) => {
+                if (response.code === 200) {
+                    console.log('Successfully added new micro dealer:', response);
+                    this.messageService.add({ 
+                        key: 'tost', 
+                        severity: 'success', 
+                        summary: 'Success', 
+                        detail: 'Successfully added new micro dealer' 
+                    });
+                    this.addNewDialog = false;
+                    this.editingRowIndex = null;
+                    this.isModified = false;
+                    this.setupForm.reset();
+                } else {
+                    console.warn('Failed to add new micro dealer:', response);
+                    this.messageService.add({
+                        key: 'tost',
+                        severity: 'warn',
+                        summary: 'Warning',
+                        detail: response.message || 'Failed to add new micro dealer'
+                    });
+                }
+            },
+            (error) => {
+                console.error('Error adding new micro dealer:', error);
+                this.messageService.add({ 
+                    key: 'tost', 
+                    severity: 'error', 
+                    summary: 'Error', 
+                    detail: error.error.message || 'An error occurred while adding the micro dealer'
+                });
+            }
+        );
     }
 
     formatChannel(channel: string): string {
