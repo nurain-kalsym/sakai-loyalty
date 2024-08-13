@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, catchError, map, Observable, ReplaySubject, switchMap, take, tap, throwError } from "rxjs";
-import { Aging, CoinsHistory, Earner, Members, MicrodealerDetails, Pagination, ReferralTree, ReferralUsers } from "./loyalty.types";
+import { Aging, CoinsHistory, Conversion, Earner, Members, MicrodealerDetails, Pagination, ReferralTree, ReferralUsers } from "./loyalty.types";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { AppConfig } from "src/app/config/service.config";
 import { LogService } from "../logging/log.service";
@@ -25,6 +25,9 @@ export class LoyaltyService {
     private _microDealer: ReplaySubject<MicrodealerDetails[]> = new ReplaySubject<MicrodealerDetails[]>(1);
     private _referralUsers: ReplaySubject<ReferralUsers[]> = new ReplaySubject<ReferralUsers[]>(1);
     private _referralUsersPagination: BehaviorSubject<Pagination | null> = new BehaviorSubject(null);
+    private _conversion: ReplaySubject<Conversion[]> = new ReplaySubject<Conversion[]>(1);
+    private _conversionPagination: BehaviorSubject<Pagination | null> = new BehaviorSubject(null);
+
 
     // -----------------------------------------------------------------------------------------------------
     // @ Constructor
@@ -127,11 +130,26 @@ export class LoyaltyService {
     
     /** Setter and Getter for Referral Users Paginations */
     set referralUsersPagination(value: Pagination) {
-        // Store the value
         this._referralUsersPagination.next(value);
     }
     get referralUsersPagination$(): Observable<Pagination> {
         return this._referralUsersPagination.asObservable();
+    }
+
+    /** Setter and Getter for Conversions */
+    set conversion(value: Conversion[]) {
+        this._conversion.next(value);
+    }
+    get conversion$(): Observable<Conversion[]> {
+        return this._conversion.asObservable();
+    }
+
+    /** Setter and Getter for Conversions Paginations */
+    set conversionPagination(value: Pagination) {
+        this._conversionPagination.next(value);
+    }
+    get conversionPagination$(): Observable<Pagination> {
+        return this._conversionPagination.asObservable();
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -208,449 +226,517 @@ export class LoyaltyService {
             );
         }
 
-        getTopEarner(
-            params: {
-                type?: string;
-                channel?: string;
-            } = {
+    getTopEarner(
+        params: {
+            type?: string;
+            channel?: string;
+        } = {
+            type: 'ALL',
+            channel: null
+        }
+    ): Observable<any> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+
+        const header = {
+            params,
+        };
+
+        // Delete empty value
+        Object.keys(params).forEach((key) => {
+            if (Array.isArray(params[key])) {
+                params[key] = params[key].filter((element) => element !== null);
+            }
+            if (
+                params[key] === null ||
+                params[key] === undefined ||
+                params[key] === '' ||
+                (Array.isArray(params[key]) && params[key].length === 0)
+            ) {
+                delete params[key];
+            }
+        });
+
+        return this._httpClient
+            .get<any>(
+                loyaltyService + '/admin/api/get-top-earner',
+                header
+            )
+            .pipe(
+                map((response) => {
+                    const topEarnerList = response.data;
+
+                    this._logging.debug(
+                        'Response from Loyalty Service (getTopEarner)',
+                        response
+                    );
+
+                    // return data
+                    this._topEarner.next(topEarnerList);
+
+                    return topEarnerList;
+                })
+            );
+        }
+
+    getAllCoinsHistory(
+        params: {
+            page?: number;
+            pageSize?: number;
+            search?: string;
+            type?: string;
+            channel?: string;
+            startDate?: string;
+            endDate?: string;
+        } = {
+                page: 1,
+                pageSize: 20,
+                search: null,
                 type: 'ALL',
-                channel: null
+                channel: 'ALL',
+                startDate: null,
+                endDate: null,
             }
-        ): Observable<any> {
-            let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
-    
-            const header = {
-                params,
-            };
-    
-            // Delete empty value
-            Object.keys(params).forEach((key) => {
-                if (Array.isArray(params[key])) {
-                    params[key] = params[key].filter((element) => element !== null);
-                }
-                if (
-                    params[key] === null ||
-                    params[key] === undefined ||
-                    params[key] === '' ||
-                    (Array.isArray(params[key]) && params[key].length === 0)
-                ) {
-                    delete params[key];
-                }
-            });
-    
-            return this._httpClient
-                .get<any>(
-                    loyaltyService + '/admin/api/get-top-earner',
-                    header
-                )
-                .pipe(
-                    map((response) => {
-                        const topEarnerList = response.data;
-    
-                        this._logging.debug(
-                            'Response from Loyalty Service (getTopEarner)',
-                            response
-                        );
-    
-                       // return data
-                        this._topEarner.next(topEarnerList);
-    
-                        return topEarnerList;
-                    })
-                );
-        }
-        
-        getAllCoinsHistory(
-            params: {
-                page?: number;
-                pageSize?: number;
-                search?: string;
-                type?: string;
-                channel?: string;
-                startDate?: string;
-                endDate?: string;
-            } = {
-                    page: 1,
-                    pageSize: 20,
-                    search: null,
-                    type: 'ALL',
-                    channel: 'ALL',
-                    startDate: null,
-                    endDate: null,
-                }
-        ): Observable<any> {
-            let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
-    
-            const header = {
-                params,
-            };
-    
-            // Delete empty value
-            Object.keys(params).forEach((key) => {
-                if (Array.isArray(params[key])) {
-                    params[key] = params[key].filter((element) => element !== null);
-                }
-                if (
-                    params[key] === null ||
-                    params[key] === undefined ||
-                    params[key] === '' ||
-                    (Array.isArray(params[key]) && params[key].length === 0)
-                ) {
-                    delete params[key];
-                }
-            });
-    
-            return this._httpClient
-                .get<any>(
-                    loyaltyService + '/admin/api/get-coins-history',
-                    header
-                )
-                .pipe(
-                    map((response) => {
-                        const coinsHistoryList = response.data.records;
-    
-                        this._logging.debug(
-                            'Response from Loyalty Service (getAllCoinsHistory)',
-                            response
-                        );
-    
-                        const coinsHistoryPagination = {
-                            length: response.data.pagination.length,
-                            size: response.data.pagination.size,
-                            page: response.data.pagination.page,
-                            lastPage: response.data.pagination.lastPage,
-                            startIndex: response.data.pagination.startIndex,
-                            endIndex: response.data.pagination.endIndex,
-                        };
-    
-                        //  return pagination
-                        this._coinsHistoryPagination.next(coinsHistoryPagination);
-    
-                        // return data
-                        this._coinsHistory.next(coinsHistoryList);
-    
-                        return coinsHistoryList;
-                    })
-                );
-        }
+    ): Observable<any> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
 
-        getAllMembers(
-            params: {
-                page?: number;
-                pageSize?: number;
-                search?: string;
-                channel?: string;
-                status?: string;
-                type?: string;
-            } = {
-                    page: 1,
-                    pageSize: 20,
-                    search: null,
-                    channel: 'ALL',
-                    status: 'ALL',
-                    type: null,
-                }
-        ): Observable<any> {
-            let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
-    
-            const header = {
-                params,
-            };
-    
-            // Delete empty value
-            Object.keys(params).forEach((key) => {
-                if (Array.isArray(params[key])) {
-                    params[key] = params[key].filter((element) => element !== null);
-                }
-                if (
-                    params[key] === null ||
-                    params[key] === undefined ||
-                    params[key] === '' ||
-                    (Array.isArray(params[key]) && params[key].length === 0)
-                ) {
-                    delete params[key];
-                }
-            });
-    
-            return this._httpClient
-                .get<any>(
-                    loyaltyService + '/admin/api/get-members-list',
-                    header
-                )
-                .pipe(
-                    map((response) => {
-                        const membersList = response.data.records;
-    
-                        this._logging.debug(
-                            'Response from Loyalty Service (getAllMembers)',
-                            response
-                        );
-    
-                        const membersListPagination = {
-                            length: response.data.pagination.length,
-                            size: response.data.pagination.size,
-                            page: response.data.pagination.page,
-                            lastPage: response.data.pagination.lastPage,
-                            startIndex: response.data.pagination.startIndex,
-                            endIndex: response.data.pagination.endIndex,
-                        };
-    
-                        //  return pagination
-                        this._membersListPagination.next(membersListPagination);
-    
-                        // return data
-                        this._membersList.next(membersList);
-    
-                        return membersList;
-                    })
-                );
-        }
+        const header = {
+            params,
+        };
 
-        getReferralTree(
-            params: {
-                phone?: string;
-                channel?: string;
-            } = {
-                phone: null,
-                channel: null,
+        // Delete empty value
+        Object.keys(params).forEach((key) => {
+            if (Array.isArray(params[key])) {
+                params[key] = params[key].filter((element) => element !== null);
             }
-        ): Observable<any> {
-            let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
-    
-            const header = {
-                params,
-            };
-    
-            // Delete empty value
-            Object.keys(params).forEach((key) => {
-                if (Array.isArray(params[key])) {
-                    params[key] = params[key].filter((element) => element !== null);
-                }
-                if (
-                    params[key] === null ||
-                    params[key] === undefined ||
-                    params[key] === '' ||
-                    (Array.isArray(params[key]) && params[key].length === 0)
-                ) {
-                    delete params[key];
-                }
-            });
-    
-            return this._httpClient
-                .get<any>(
-                    loyaltyService + '/admin/api/get-referral-tree',
-                    header
-                )
-                .pipe(
-                    map((response) => {
-                        const referralTree = response.data;
-    
-                        this._logging.debug(
-                            'Response from Loyalty Service (getReferralTree)',
-                            response
-                        );
-    
-                        // return data
-                        this._referralTree.next(referralTree);
-    
-                        return referralTree;
-                    })
-                );
+            if (
+                params[key] === null ||
+                params[key] === undefined ||
+                params[key] === '' ||
+                (Array.isArray(params[key]) && params[key].length === 0)
+            ) {
+                delete params[key];
+            }
+        });
+
+        return this._httpClient
+            .get<any>(
+                loyaltyService + '/admin/api/get-coins-history',
+                header
+            )
+            .pipe(
+                map((response) => {
+                    const coinsHistoryList = response.data.records;
+
+                    this._logging.debug(
+                        'Response from Loyalty Service (getAllCoinsHistory)',
+                        response
+                    );
+
+                    const coinsHistoryPagination = {
+                        length: response.data.pagination.length,
+                        size: response.data.pagination.size,
+                        page: response.data.pagination.page,
+                        lastPage: response.data.pagination.lastPage,
+                        startIndex: response.data.pagination.startIndex,
+                        endIndex: response.data.pagination.endIndex,
+                    };
+
+                    //  return pagination
+                    this._coinsHistoryPagination.next(coinsHistoryPagination);
+
+                    // return data
+                    this._coinsHistory.next(coinsHistoryList);
+
+                    return coinsHistoryList;
+                })
+            );
         }
 
-        getMicroDealer(
-            params: {
-                page?: number;
-                pageSize?: number;
-                channel?: string;
-            } = {
-                    page: 1,
-                    pageSize: 100,
-                    channel: 'ALL',
-                }
-        ): Observable<any> {
-            let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
-    
-            const header = {
-                params,
-            };
-    
-            // Delete empty value
-            Object.keys(params).forEach((key) => {
-                if (Array.isArray(params[key])) {
-                    params[key] = params[key].filter((element) => element !== null);
-                }
-                if (
-                    params[key] === null ||
-                    params[key] === undefined ||
-                    params[key] === '' ||
-                    (Array.isArray(params[key]) && params[key].length === 0)
-                ) {
-                    delete params[key];
-                }
-            });
-    
-            return this._httpClient
-                .get<any>(loyaltyService + '/micro-dealer/get-users-list', header)
-                .pipe(
-                    map((response) => {
-                        const microDealerList = response.data.records;
-    
-                        this._logging.debug(
-                            'Response from Loyalty Service (getMicroDealer)',
-                            response
-                        );
-    
-                        // return data
-                        this._microDealer.next(microDealerList);
-    
-                        return microDealerList;
-                    })
-                );
+    getAllMembers(
+        params: {
+            page?: number;
+            pageSize?: number;
+            search?: string;
+            channel?: string;
+            status?: string;
+            type?: string;
+        } = {
+                page: 1,
+                pageSize: 20,
+                search: null,
+                channel: 'ALL',
+                status: 'ALL',
+                type: null,
             }
+    ): Observable<any> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
 
-            setMicrodealer( 
-                params: { 
-                    phone?: string; 
-                    channel?: string; 
-                } = { 
-                    phone: null, 
-                    channel: 'ALL' 
-                }
-            ): Observable<any> {
-                let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
-            
-                const header = {
-                    params,
-                };
-            
-                // Delete empty value
-                Object.keys(params).forEach((key) => {
-                    if (Array.isArray(params[key])) {
-                        params[key] = params[key].filter((element) => element !== null);
-                    }
-                    if (
-                        params[key] === null ||
-                        params[key] === undefined ||
-                        params[key] === '' ||
-                        (Array.isArray(params[key]) && params[key].length === 0)
-                    ) {
-                        delete params[key];
-                    }
-                });
-            
-                return this._httpClient
-                    .post<any>(loyaltyService + '/micro-dealer/setup-dealers', null, header)
+        const header = {
+            params,
+        };
+
+        // Delete empty value
+        Object.keys(params).forEach((key) => {
+            if (Array.isArray(params[key])) {
+                params[key] = params[key].filter((element) => element !== null);
+            }
+            if (
+                params[key] === null ||
+                params[key] === undefined ||
+                params[key] === '' ||
+                (Array.isArray(params[key]) && params[key].length === 0)
+            ) {
+                delete params[key];
+            }
+        });
+
+        return this._httpClient
+            .get<any>(
+                loyaltyService + '/admin/api/get-members-list',
+                header
+            )
+            .pipe(
+                map((response) => {
+                    const membersList = response.data.records;
+
+                    this._logging.debug(
+                        'Response from Loyalty Service (getAllMembers)',
+                        response
+                    );
+
+                    const membersListPagination = {
+                        length: response.data.pagination.length,
+                        size: response.data.pagination.size,
+                        page: response.data.pagination.page,
+                        lastPage: response.data.pagination.lastPage,
+                        startIndex: response.data.pagination.startIndex,
+                        endIndex: response.data.pagination.endIndex,
+                    };
+
+                    //  return pagination
+                    this._membersListPagination.next(membersListPagination);
+
+                    // return data
+                    this._membersList.next(membersList);
+
+                    return membersList;
+                })
+            );
+        }
+
+    getReferralTree(
+        params: {
+            phone?: string;
+            channel?: string;
+        } = {
+            phone: null,
+            channel: null,
+        }
+    ): Observable<any> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+
+        const header = {
+            params,
+        };
+
+        // Delete empty value
+        Object.keys(params).forEach((key) => {
+            if (Array.isArray(params[key])) {
+                params[key] = params[key].filter((element) => element !== null);
+            }
+            if (
+                params[key] === null ||
+                params[key] === undefined ||
+                params[key] === '' ||
+                (Array.isArray(params[key]) && params[key].length === 0)
+            ) {
+                delete params[key];
+            }
+        });
+
+        return this._httpClient
+            .get<any>(
+                loyaltyService + '/admin/api/get-referral-tree',
+                header
+            )
+            .pipe(
+                map((response) => {
+                    const referralTree = response.data;
+
+                    this._logging.debug(
+                        'Response from Loyalty Service (getReferralTree)',
+                        response
+                    );
+
+                    // return data
+                    this._referralTree.next(referralTree);
+
+                    return referralTree;
+                })
+            );
+        }
+
+    getMicroDealer(
+        params: {
+            page?: number;
+            pageSize?: number;
+            channel?: string;
+        } = {
+                page: 1,
+                pageSize: 100,
+                channel: 'ALL',
+            }
+    ): Observable<any> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+
+        const header = {
+            params,
+        };
+
+        // Delete empty value
+        Object.keys(params).forEach((key) => {
+            if (Array.isArray(params[key])) {
+                params[key] = params[key].filter((element) => element !== null);
+            }
+            if (
+                params[key] === null ||
+                params[key] === undefined ||
+                params[key] === '' ||
+                (Array.isArray(params[key]) && params[key].length === 0)
+            ) {
+                delete params[key];
+            }
+        });
+
+        return this._httpClient
+            .get<any>(loyaltyService + '/micro-dealer/get-users-list', header)
+            .pipe(
+                map((response) => {
+                    const microDealerList = response.data.records;
+
+                    this._logging.debug(
+                        'Response from Loyalty Service (getMicroDealer)',
+                        response
+                    );
+
+                    // return data
+                    this._microDealer.next(microDealerList);
+
+                    return microDealerList;
+                })
+            );
+        }
+
+    setMicrodealer( 
+        params: { 
+            phone?: string; 
+            channel?: string; 
+        } = { 
+            phone: null, 
+            channel: 'ALL' 
+        }
+    ): Observable<any> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+    
+        const header = {
+            params,
+        };
+    
+        // Delete empty value
+        Object.keys(params).forEach((key) => {
+            if (Array.isArray(params[key])) {
+                params[key] = params[key].filter((element) => element !== null);
+            }
+            if (
+                params[key] === null ||
+                params[key] === undefined ||
+                params[key] === '' ||
+                (Array.isArray(params[key]) && params[key].length === 0)
+            ) {
+                delete params[key];
+            }
+        });
+    
+        return this._httpClient
+            .post<any>(loyaltyService + '/micro-dealer/setup-dealers', null, header)
+            .pipe(
+                catchError((error) => {
+                    this._logging.error('Error add new Microdealer:', error);
+                    return throwError(error);
+                }),
+                map((response) => {
+                    this._logging.debug('Response from Loyalty Service (setMicrodealer)', response);
+                    return response;
+                })
+            );
+        }
+
+    updateDealerStatus(
+        params: {
+            phone?: string;
+            channel?: string;
+            status?: string;
+        } = {
+            phone: null,
+            channel: null,
+            status: null,
+        }
+    ): Observable<any> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+        const header = {
+            params,
+        };
+
+        // Delete empty value
+        Object.keys(params).forEach((key) => {
+            if (Array.isArray(params[key])) {
+                params[key] = params[key].filter((element) => element !== null);
+            }
+            if (
+                params[key] === null ||
+                params[key] === undefined ||
+                params[key] === '' ||
+                (Array.isArray(params[key]) && params[key].length === 0)
+            ) {
+                delete params[key];
+            }
+        });
+
+        return this.microDealers$.pipe(
+            take(1),
+            switchMap((microDealers) =>
+                this._httpClient
+                    .put<any>(loyaltyService + '/micro-dealer/update-status/' + params.phone, null, header)
                     .pipe(
                         catchError((error) => {
-                            this._logging.error('Error add new Microdealer:', error);
+                            this._logging.error(
+                                'Error updating microdealer',
+                                error
+                            );
                             return throwError(error);
                         }),
                         map((response) => {
-                            this._logging.debug('Response from Loyalty Service (setMicrodealer)', response);
+                            this._logging.debug(
+                                'Response from Loyalty Service (updateDealerStatus)',
+                                response
+                            );
                             return response;
                         })
-                    );
-            }
-
-            updateDealerStatus(
-                params: {
-                    phone?: string;
-                    channel?: string;
-                    status?: string;
-                } = {
-                    phone: null,
-                    channel: null,
-                    status: null,
-                }
-            ): Observable<any> {
-                let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
-                const header = {
-                    params,
-                };
-        
-                // Delete empty value
-                Object.keys(params).forEach((key) => {
-                    if (Array.isArray(params[key])) {
-                        params[key] = params[key].filter((element) => element !== null);
-                    }
-                    if (
-                        params[key] === null ||
-                        params[key] === undefined ||
-                        params[key] === '' ||
-                        (Array.isArray(params[key]) && params[key].length === 0)
-                    ) {
-                        delete params[key];
-                    }
-                });
-        
-                return this.microDealers$.pipe(
-                    take(1),
-                    switchMap((microDealers) =>
-                        this._httpClient
-                            .put<any>(loyaltyService + '/micro-dealer/update-status/' + params.phone, null, header)
-                            .pipe(
-                                catchError((error) => {
-                                    this._logging.error(
-                                        'Error updating microdealer',
-                                        error
-                                    );
-                                    return throwError(error);
-                                }),
-                                map((response) => {
-                                    this._logging.debug(
-                                        'Response from Loyalty Service (updateDealerStatus)',
-                                        response
-                                    );
-                                    return response;
-                                })
-                            )
                     )
-                );
-            }
+                )
+            );
+        }
 
-            getReferralUsers(params: {
-                channel: string;
-                page: number;
-                pageSize: number;
-              } = {
-                channel: 'ALL',
-                page: null,
-                pageSize: null,
-              }): Observable<any> {
-                let profileService = this._apiServer.settings.serviceUrl.profileService;
-              
-                // Clean parameters
-                Object.keys(params).forEach((key) => {
-                  if (Array.isArray(params[key])) {
+    getReferralUsers(params: {
+            channel: string;
+            page: number;
+            pageSize: number;
+        } = {
+            channel: 'ALL',
+            page: null,
+            pageSize: null,
+        }
+    ): Observable<any> {
+        let profileService = this._apiServer.settings.serviceUrl.profileService;
+        
+        // Clean parameters
+        Object.keys(params).forEach((key) => {
+                if (Array.isArray(params[key])) {
                     params[key] = params[key].filter((element) => element !== null);
-                  }
-                  if (
+                }
+                if (
                     params[key] === null ||
                     params[key] === undefined ||
                     params[key] === '' ||
                     (Array.isArray(params[key]) && params[key].length === 0)
-                  ) {
+                )   
+                {
                     delete params[key];
-                  }
-                });
-              
-                const header = {
-                  params,
-                };
-              
-                // console.log('Request Parameters:', params);
-              
-                return this._httpClient
-                .get<any>(profileService + '/admin-referral/get-referral-users', header)
-                .pipe(
-                    tap((response) => {
-                    // console.log('API Response:', response);
-                    const userList = response ? response.context.records : [];
-                    this._referralUsers.next(userList);
-                    })
-                );
+                }
+        });
+        
+        const header = {
+            params,
+        };
+        
+        // console.log('Request Parameters:', params);
+        
+        return this._httpClient
+        .get<any>(profileService + '/admin-referral/get-referral-users', header)
+        .pipe(
+            tap((response) => {
+            // console.log('API Response:', response);
+            const userList = response ? response.context.records : [];
+            this._referralUsers.next(userList);
+            })
+        );
 
-              }
-              
+    }
+        
+    getAllConversions(
+        params: {
+            page?: number;
+            pageSize?: number;
+            searchKey?: string;
+            sortBy?: string;
+            sortOrder?: string;
+        } = {
+                page: null,
+                pageSize: null,
+                searchKey: null,
+                sortBy: null,
+                sortOrder: null,
+            }
+    ): Observable<any> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+
+        const header = {
+            params,
+        };
+
+        // Delete empty value
+        Object.keys(params).forEach((key) => {
+            if (Array.isArray(params[key])) {
+                params[key] = params[key].filter((element) => element !== null);
+            }
+            if (
+                params[key] === null ||
+                params[key] === undefined ||
+                params[key] === '' ||
+                (Array.isArray(params[key]) && params[key].length === 0)
+            ) {
+                delete params[key];
+            }
+        });
+
+        return this._httpClient
+            .get<any>(loyaltyService + '/conversion-setup/get-conversions', header)
+            .pipe(
+                map((response) => {
+                    const conversionList = response.data.data;
+
+                    this._logging.debug(
+                        'Response from Loyalty Service (getAllConversions)',
+                        response
+                    );
+
+                    const conversionPagination = {
+                        length: response.data.pagination.length,
+                        size: response.data.pagination.size,
+                        page: response.data.pagination.page,
+                        lastPage: response.data.pagination.lastPage,
+                        startIndex: response.data.pagination.startIndex,
+                        endIndex: response.data.pagination.endIndex,
+                    };
+
+                    //  return pagination
+                    this._conversionPagination.next(conversionPagination);
+
+                    // return data
+                    this._conversion.next(conversionList);
+
+                    return conversionList;
+                })
+            );
+        }
 }

@@ -156,3 +156,32 @@ export interface LoyaltyPrograms {
     membershipTier: number;
     channel: string;
 }
+export interface Conversion {
+    id: string;
+    channel: string;
+    expiryDuration: number;
+    serviceConversions: ServiceConversions[];
+    createdAt: Date;
+    updatedAt: Date;
+    cashCoinsRate: number;
+}
+export interface ServiceConversions {
+    serviceId: string;
+    serviceName: string;
+    microDealer: Discount;
+    referralTiers: Tier;
+    loyaltyTiers: LoyaltyTier;
+}
+export interface Discount {
+    discountRate: number;
+}
+export interface Tier {
+    orderSequence: number;
+    percentage: number;
+    voucherCode: string;
+}
+export interface LoyaltyTier {
+    tier: number;
+    rate: number;
+    voucherCode: string;
+}
