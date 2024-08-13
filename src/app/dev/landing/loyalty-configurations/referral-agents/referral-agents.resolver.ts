@@ -1,15 +1,16 @@
 import { inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { LoyaltyService } from 'src/app/core/loyalty/loyalty.service';
 
 export const referralPeopleResolver = (route: ActivatedRoute) => {
-    const profileService = inject(LoyaltyService);
+    const loyaltyService = inject(LoyaltyService);
 
-    return profileService.getReferralUsers(
-        {
+    return forkJoin([
+        loyaltyService.getReferralUsers({ 
             channel: 'ALL',
             page: 1,
-            pageSize: 20
-        }
-    );
+            pageSize: 100
+        })
+    ]);
 };

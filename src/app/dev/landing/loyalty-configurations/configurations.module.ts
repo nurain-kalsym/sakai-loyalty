@@ -22,6 +22,8 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { MessagesModule } from 'primeng/messages';
 import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+
 @NgModule({
     imports: [
         CommonModule,
@@ -42,7 +44,8 @@ import { ToastModule } from 'primeng/toast';
         RadioButtonModule,
         InputNumberModule,
         MessagesModule,
-        ToastModule
+        ToastModule,
+        ConfirmDialogModule
     ],
     declarations: [
         LoyaltySettingsComponent,

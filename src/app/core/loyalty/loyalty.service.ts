@@ -628,18 +628,17 @@ export class LoyaltyService {
         }
 
     getReferralUsers(params: {
-            channel: string;
-            page: number;
-            pageSize: number;
-        } = {
-            channel: 'ALL',
-            page: null,
-            pageSize: null,
-        }
-    ): Observable<any> {
+        channel: string;
+        page: number;
+        pageSize: number;
+    } = {
+        channel: 'ALL',
+        page: null,
+        pageSize: null,
+    }): Observable<any> {
         let profileService = this._apiServer.settings.serviceUrl.profileService;
         
-        // Clean parameters
+        // Delete empty value
         Object.keys(params).forEach((key) => {
                 if (Array.isArray(params[key])) {
                     params[key] = params[key].filter((element) => element !== null);
@@ -667,10 +666,73 @@ export class LoyaltyService {
             tap((response) => {
             // console.log('API Response:', response);
             const userList = response ? response.context.records : [];
+
+            const userListPagination = {
+                length: response.context.pagination.length,
+                size: response.context.pagination.size,
+                page: response.context.pagination.page,
+                lastPage: response.context.pagination.lastPage,
+                startIndex: response.context.pagination.startIndex,
+                endIndex: response.context.pagination.endIndex,
+            };
+
+            //  return pagination
+            this._referralUsersPagination.next(userListPagination);
             this._referralUsers.next(userList);
             })
         );
+    }
 
+    setReferralUser(phone: string, refCode: string, params: { channel: string } = { channel: null }): Observable<any> {
+        let profileService = this._apiServer.settings.serviceUrl.profileService;
+
+        const header = {
+            params,
+        };
+
+        return this._httpClient.post<any>(profileService + '/admin-referral/add/' + phone + '/' + refCode, null, header).pipe(
+            catchError((error) => {
+                this._logging.error(
+                    'Error setting referral code to user:',
+                    error
+                );
+                return throwError(error);
+            }),
+            map((response) => {
+                this._logging.debug(
+                    'Response from Bill Service (setReferralUser)',
+                    response
+                );
+
+                return response;
+            })
+        );
+    }
+
+    removeAgentUser(phone: string, params: { channel: string } = { channel: null }): Observable<Conversion> {
+        let profileService = this._apiServer.settings.serviceUrl.profileService;
+
+        const header = {
+            params
+        };
+
+        return this._httpClient.put<any>(profileService + '/admin-referral/remove-referral-code/' + phone, null, header).pipe(
+            catchError((error) => {
+                this._logging.error(
+                    'Error remove referral code from agent user:',
+                    error
+                );
+                return throwError(error);
+            }),
+            map((response) => {
+                this._logging.debug(
+                    'Response from Loyalty Service (removeAgentUser)',
+                    response
+                );
+
+                return response;
+            })
+        );
     }
         
     getAllConversions(

@@ -20,6 +20,7 @@ export class AppointReferralAgentComponent implements OnInit, OnDestroy {
     addNewDialog: boolean = false;
     isModified: boolean = false;
     deleteUserDialog: boolean = false;
+    userToDelete: any = null;
     filterForm: FormGroup;
     setupForm: FormGroup;
     pagination: Pagination;
@@ -27,44 +28,30 @@ export class AppointReferralAgentComponent implements OnInit, OnDestroy {
     channels: { label: string, value: string }[] = [
         { label: 'All', value: 'ALL' },
         { label: 'E-Kedai', value: 'e-kedai' },
-        { label: 'Hello Sim', value: 'hello-sim' }
+        { label: 'HelloSim', value: 'hello-sim' }
     ];
-    
 
     constructor(
         private _loyaltyService: LoyaltyService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _formBuilder: FormBuilder,
-        private messageService: MessageService
+        private messageService: MessageService,
     ) {}
 
     ngOnInit(): void {
-
         // Create the form
         this.filterForm = this._formBuilder.group({channel: ['ALL']});
-
+    
         // Setup Form
         this.setupForm = this._formBuilder.group({
-            phone: ['', Validators.required],
+            phone: [null, Validators.required],
             referralCode: ['', Validators.required],
             channel: ['', Validators.required]
         }); 
-
+    
         this.isLoading = true;
-        this._loyaltyService.getReferralUsers({ channel: 'ALL', page: 1, pageSize: 10 }).subscribe(
-          (response) => {
-            // console.log('API Response:', response);
-            this.referralUsers = response.context.records || [];
-            this.transformedUsers = this.referralChannel(this.referralUsers);
-            // console.log('Transformed Users:', this.transformedUsers);
-            this.isLoading = false;
-          },
-          (error) => {
-            console.error('Error fetching Referral User list:', error);
-            this.isLoading = false;
-          }
-        );
-
+        this.loadUsers({ first: 0, rows: 10 });
+    
         // Get Pagination
         this._loyaltyService.referralUsersPagination$
             .pipe(takeUntil(this._unsubscribeAll))
@@ -74,50 +61,132 @@ export class AppointReferralAgentComponent implements OnInit, OnDestroy {
                 }
                 this._changeDetectorRef.markForCheck();
             });
-
-        this.filterForm.get('channel').valueChanges.subscribe(
-            (value) => {
-                if (value) {
-                    this.selectedChannel = value;
-                    this.loadUsers({ first: 0, rows: this.pagination.size });
-                }
+    
+        // Channel filter
+        this.filterForm.get('channel').valueChanges.subscribe(value => {
+            if (value) {
+                this.selectedChannel = value;
+                this.loadUsers({ first: 0, rows: this.pagination?.size });
             }
-        );
+        });
     }
-
+    
     loadUsers(event: any) {
         const page = event.first / event.rows + 1;
         const pageSize = event.rows;
-
+    
         let params = {
             page: page,
             pageSize: pageSize,
-            channel: 'ALL'
+            channel: this.selectedChannel
         };
-
-        this._loyaltyService.getReferralUsers(params).subscribe();
-    }
+    
+        this._loyaltyService.getReferralUsers(params).subscribe(response => {
+            this.referralUsers = response.context.records || [];
+            this.transformedUsers = this.referralChannel(this.referralUsers);
+            this.isLoading = false;
+        }, error => {
+            console.error('Error fetching Referral User list:', error);
+            this.isLoading = false;
+        });
+    }    
 
     referralChannel(users: ReferralUsers[]): any[] {
         let transformed = users.flatMap(user => {
             if (!user.referral || !Array.isArray(user.referral)) {
-            console.warn('Referral data missing or invalid for user:', user);
-            return [];
+                console.warn('Referral data missing or invalid for user:', user);
+                return [];
             }
-            return user.referral.map(referral => ({
-            name: user.name,
-            phone: user.phone,
-            email: user.email,
-            channel: referral.channel,
-            referralCode: referral.referralCode,
-            referralCount: referral.referralCount,
-            }));
+
+            return user.referral
+                .filter(referral => this.selectedChannel === 'ALL' || referral.channel === this.selectedChannel)
+                .map(referral => ({
+                    name: user.name,
+                    phone: user.phone,
+                    email: user.email,
+                    channel: referral.channel,
+                    referralCode: referral.referralCode,
+                    referralCount: referral.referralCount,
+                }));
         });
         
         console.log('Transformed Data:', transformed);
         transformed = transformed.filter(user => user.referralCode !== '');
         console.log('Filtered Transformed Data:', transformed);
         return transformed;
+    }
+
+    addNew() {
+        this.setupForm.reset();
+        this.addNewDialog = true;
+    }
+
+    submit() {
+        if (this.setupForm.valid) {
+            const phone = this.checkPhoneNumber(this.setupForm.get('phone').value);
+            const referralCode = this.setupForm.get('referralCode').value;
+            const channel = this.setupForm.get('channel').value;
+    
+            this._loyaltyService.setReferralUser(phone, referralCode, { channel }).subscribe(
+                response => {
+                    if (response.code === 200) {
+                        console.log('Successfully added new referral agent:', response);
+                        this.messageService.add({ 
+                            key: 'tost', 
+                            severity: 'success', 
+                            summary: 'Success', 
+                            detail: 'Successfully added new referral agent' 
+                        });
+                        this.addNewDialog = false;
+                        this.isModified = false;
+                        this.setupForm.reset();
+                        this.loadUsers({ first: 0, rows: this.pagination?.size });
+                    } else {
+                        console.warn('Failed to add new referral agent:', response);
+                        this.messageService.add({
+                            key: 'tost',
+                            severity: 'warn',
+                            summary: 'Warning',
+                            detail: response.message || 'Failed to add new referral agent'
+                        });
+                    }
+                },
+                error => {
+                    console.error('Error adding new referral agent:', error);
+                    this.messageService.add({ 
+                        key: 'tost', 
+                        severity: 'error', 
+                        summary: 'Error', 
+                        detail: error.error.message || 'An error occurred while adding the referral agent'
+                    });
+                }
+            );
+        }
+    }
+        
+
+    deleteBtn(user: any) {
+        this.userToDelete = user;
+        this.deleteUserDialog = true;
+    } 
+    
+    confirmDelete() {
+    if (this.userToDelete) {
+            const { phone, channel } = this.userToDelete;
+            this._loyaltyService.removeAgentUser(phone, { channel })
+            .subscribe(
+                response => {
+                    // Handle success
+                    this.messageService.add({ key: 'tost', severity: 'success', summary: 'Success', detail: 'User deleted successfully' });
+                    this.deleteUserDialog = false;
+                    this.loadUsers({ first: 0, rows: this.pagination?.size || 10 });
+                },
+                error => {
+                    // Handle error
+                    this.messageService.add({ key: 'tost', severity: 'error', summary: 'Error', detail: 'Error deleting user' });
+                }
+            );
+        }
     }
     
     formatChannel(channel: string): string {
@@ -133,65 +202,11 @@ export class AppointReferralAgentComponent implements OnInit, OnDestroy {
         }
     }
 
-    addNew() {
-        // this.setupForm.reset();
-        this.addNewDialog = true;
-    }
-
     checkPhoneNumber(phone: string): string {
         if (!phone.startsWith('6')) {
             phone = '6' + phone;
         }
         return phone;
-    }
-
-    submit() {
-        const phone = this.checkPhoneNumber(this.setupForm.get('phone').value);
-        const referralCode = this.setupForm.get('referralCode').value;
-        const channel = this.setupForm.get('channel').value;
-    
-        this._loyaltyService.setMicrodealer({ phone, channel }).subscribe(
-            (response) => {
-                if (response.code === 200) {
-                    console.log('Successfully added new micro dealer:', response);
-                    this.messageService.add({ 
-                        key: 'tost', 
-                        severity: 'success', 
-                        summary: 'Success', 
-                        detail: 'Successfully added new micro dealer' 
-                    });
-                    this.addNewDialog = false;
-                    this.isModified = false;
-                    this.setupForm.reset();
-                } else {
-                    console.warn('Failed to add new micro dealer:', response);
-                    this.messageService.add({
-                        key: 'tost',
-                        severity: 'warn',
-                        summary: 'Warning',
-                        detail: response.message || 'Failed to add new micro dealer'
-                    });
-                }
-            },
-            (error) => {
-                console.error('Error adding new micro dealer:', error);
-                this.messageService.add({ 
-                    key: 'tost', 
-                    severity: 'error', 
-                    summary: 'Error', 
-                    detail: error.error.message || 'An error occurred while adding the micro dealer'
-                });
-            }
-        );
-    }
-
-    deleteBtn(phoneNumber: string, channelName: string) {
-        console.log('Phone Number', phoneNumber);
-        console.log('Channel Name', channelName);
-    }
-
-    showSuccessViaToast() {
-        this.messageService.add({ key: 'tost', severity: 'success', summary: 'Success', detail: 'Message sent' });
     }
     
     ngOnDestroy(): void {
