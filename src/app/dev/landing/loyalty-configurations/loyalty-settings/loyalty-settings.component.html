@@ -1,8 +1,159 @@
 <div class="grid">
+    <p-toast key="tost" position="top-right"></p-toast>
     <div class="col-12">
         <div class="card">
-            <h4>Loyalty Tiers Settings</h4>
-            <p>This is where to setup the tiers target and timeframe.</p>
+            <div class="text-2xl font-bold tracking-tight truncate sm:text-3xl">Loyalty Tier Configuration</div>
+            <div class="text-s font-medium font-italic s:text-base text-secondary">This section allows the admin to setup the tier target and duration and assign it to a specific channel.</div>
+            <div class="mt-3">
+                <!-- Add New Button -->
+                <div class="flex align-items-end justify-content-end position-relative">
+                    <button pButton type="button" label="Add New" icon="pi pi-plus" (click)="addNew()"></button>
+                </div>
+            </div>
+            <!-- Table -->
+            <div class="mt-3">
+                <p-table [value]="loyaltyConfigs" [loading]="isLoading">
+                    <ng-template pTemplate="header">
+                      <tr>
+                        <th class="border-top-left text-center font-bold text-gray-800">No</th>
+                        <th class="border-top text-center font-bold text-gray-800">Channels</th>
+                        <th class="border-top text-center font-bold text-gray-800">Type</th>
+                        <th class="border-top-right text-center font-bold text-gray-800">Actions</th>
+                      </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-loyaltyConfig let-i="rowIndex">
+                        <tr>
+                            <td class="border-left text-center">{{ i + 1 }}</td>
+                            <td class="text-center">
+                                <div class="col-span-1 text-start pl-5 py-3">
+                                    <ul class="list-disc pl-3 centered-list">
+                                        <li *ngFor="let channel of loyaltyConfig.channels">
+                                            {{ formatChannel(channel) }}
+                                        </li>
+                                    </ul>
+                                    <ul class="list-disc pl-3 centered-list" *ngIf="loyaltyConfig.channels.length === 0">
+                                        <li>
+                                            Not Applied
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                {{ loyaltyConfig.loyaltySetup[0]?.type | titlecase}}
+                            </td>
+                            <td class="border-right text-center">
+                                <button (click)="toggleOpen(i)" type="button" pButton pRipple class="p-button-text p-button-rounded p-button-plain" [icon]="openIndex === i ?  'pi pi-chevron-up' : 'pi pi-chevron-down'"></button>
+                            </td>
+                        </tr>
+                        <tr *ngIf="openIndex === i" [@expandCollapse]>
+                            <td colspan="7" class="p-0">
+                                <div class="p-accordion">
+                                    <div class="p-accordion-content">
+                                        <div [value]="loyaltyConfigs" [loading]="isLoading">
+                                            <div class="text-sm font-semibold tracking-tight truncate sm:text-xl pb-1">Loyalty Tiers Details</div>
+                                            <table class="w-full">
+                                                <thead>
+                                                    <tr class="bg-primary text-white">
+                                                        <th class="px-4 py-2 text-center">Tiers</th>
+                                                        <th class="px-4 py-2 text-center">Target Coins</th>
+                                                        <th class="px-4 py-2 text-center">Time Frame (days)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr *ngFor="let setup of loyaltyConfig.loyaltySetup">
+                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ setup.tier }}</td>
+                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ setup.target | number:'1.0-0' }}</td>
+                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ setup.timeFrame }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <div class="mt-3">
+                                                <div class="flex align-items-end justify-content-end position-relative">
+                                                    <button pButton type="button" label="Edit" icon="pi pi-pencil" (click)="edit(loyaltyConfig)"></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>                        
+                    </ng-template>                    
+                </p-table>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Add Popup -->
+<p-dialog [(visible)]="addNewDialog" modal="true" [style]="{width: '750px'}" [closable]="true">
+    <ng-template pTemplate="header">
+        <h2>Loyalty Setup</h2>
+    </ng-template>
+
+    <ng-template pTemplate="content">
+        <form [formGroup]="setupForm" >
+            <!-- Dynamic Form Fields for Loyalty Tiers -->
+            <div formArrayName="loyaltySetup">
+                <div *ngFor="let tierForm of setupForm.get('loyaltySetup')['controls']; let i = index" [formGroupName]="i" class="mb-4">
+                    <div class="flex gap-4 items-center"> 
+                        
+                        <!-- Tier Field -->
+                        <div class="flex-1">
+                            <div class="field">
+                                <label for="tier-{{i}}" class="font-semibold">Tier</label>
+                                <input id="tier-{{i}}" type="number" pInputText formControlName="tier" placeholder="Enter Tier Number" 
+                                    [ngStyle]="{'background-color': tierForm.get('tier').disabled ? '#f5f5f5' : 'white',
+                                    'color': tierForm.get('tier').disabled ? 'rgba(0, 0, 0, 0.38)' : 'black',
+                                    'cursor': tierForm.get('tier').disabled ? 'not-allowed' : 'auto'}">
+                            </div>
+                        </div>
+
+                        <!-- Target Field -->
+                        <div class="flex-1">
+                            <div class="field">
+                                <label for="target-{{i}}" class="font-semibold">Target</label>
+                                <input id="target-{{i}}" type="number" pInputText formControlName="target" placeholder="Enter Target Coins" 
+                                    [ngStyle]="{'background-color': tierForm.get('target').disabled ? '#f5f5f5' : 'white',
+                                        'color': tierForm.get('target').disabled ? 'rgba(0, 0, 0, 0.38)' : 'black',
+                                        'cursor': tierForm.get('target').disabled ? 'not-allowed' : 'auto'}"
+                                    [ngClass]="{'border-red-500': tierForm.get('target').invalid && tierForm.get('target').touched}">
+                            </div>
+                        </div>
+
+                        <!-- Time Frame Field -->
+                        <div class="flex-1">
+                            <div class="field">
+                                <label for="timeFrame-{{i}}" class="font-semibold">Time Frame (days)</label>
+                                <input id="timeFrame-{{i}}" type="number" pInputText formControlName="timeFrame" placeholder="Enter Time Frame" 
+                                    [ngStyle]="{'background-color': tierForm.get('timeFrame').disabled ? '#f5f5f5' : 'white',
+                                        'color': tierForm.get('timeFrame').disabled ? 'rgba(0, 0, 0, 0.38)' : 'black',
+                                        'cursor': tierForm.get('timeFrame').disabled ? 'not-allowed' : 'auto'}"
+                                    [ngClass]="{'border-red-500': tierForm.get('timeFrame').invalid && tierForm.get('timeFrame').touched}">
+                            </div>
+                        </div>
+
+                    </div> 
+                </div>
+            </div>
+
+            <!-- Checkbox -->
+            <div class="field mt-4">
+                <label class="font-semibold">Channels</label>
+                <div class="flex gap-4">
+                    <div>
+                        <p-checkbox [(ngModel)]="eKedai" binary="true" formControlName="eKedai"></p-checkbox>
+                        <label for="eKedai"> e-Kedai</label>
+                    </div>
+                    <div>
+                        <p-checkbox [(ngModel)]="helloSim" binary="true" formControlName="helloSim"></p-checkbox>
+                        <label for="helloSim"> HelloSim</label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Save" icon="pi pi-save" [disabled]="setupForm.invalid" (click)="save()"></button>
+    </ng-template>
+</p-dialog>

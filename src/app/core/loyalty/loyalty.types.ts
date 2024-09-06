@@ -74,7 +74,7 @@ export interface TreeObj {
 }
 
 export interface MicrodealerDetails {
-    id: string;
+    _id: string;
     name: string;
     createdAt: Date;
     email: string;
@@ -111,7 +111,7 @@ export interface MicroDealer {
     updatedDate: Date;
 }
 export interface MicrodealerChannel {
-    id: string;
+    _id: string;
     name: string;
     createdAt: Date;
     email: string;
@@ -123,7 +123,7 @@ export interface MicrodealerChannel {
     microDealerStatus: string;
 }
 export interface ReferralUsers {
-    id: string;
+    _id: string;
     name: string;
     createdAt: Date;
     phone: string;
@@ -157,31 +157,47 @@ export interface LoyaltyPrograms {
     channel: string;
 }
 export interface Conversion {
-    id: string;
+    _id: string;
     channel: string;
     expiryDuration: number;
     serviceConversions: ServiceConversions[];
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
     cashCoinsRate: number;
 }
 export interface ServiceConversions {
     serviceId: string;
     serviceName: string;
-    microDealer: Discount;
-    referralTiers: Tier;
-    loyaltyTiers: LoyaltyTier;
+    microDealer?: Discount;
+    referralTiers: Tier[];
+    loyaltyTiers: LoyaltyTier[];
+    mergedRow?: boolean;
 }
 export interface Discount {
     discountRate: number;
 }
 export interface Tier {
     orderSequence: number;
-    percentage: number;
-    voucherCode: string;
+    percentage?: number;
+    voucherCode?: string;
 }
 export interface LoyaltyTier {
     tier: number;
     rate: number;
     voucherCode: string;
+}
+
+export interface LoyaltyConfig {
+    _id?: string;
+    channels: string[];
+    loyaltySetup: Config[];
+    createdAt: Date;
+    updateAt: Date;
+}
+
+export interface Config {
+    tier: number;
+    target: number;
+    timeFrame: number; 
+    type: string;
 }

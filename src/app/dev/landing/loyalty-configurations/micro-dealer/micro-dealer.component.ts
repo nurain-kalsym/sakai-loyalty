@@ -126,7 +126,7 @@ export class MicroDealerComponent implements OnInit, OnDestroy {
                 (this.selectedStatus === 'ALL' || micro.status === this.selectedStatus)
             )
             .map(micro => ({
-                id: dealer.id,
+                _id: dealer._id,
                 name: dealer.name,
                 createdAt: dealer.createdAt,
                 email: dealer.email,

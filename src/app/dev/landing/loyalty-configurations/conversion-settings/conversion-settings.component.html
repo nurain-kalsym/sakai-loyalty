@@ -1,32 +1,435 @@
 <div class="grid">
-    <div class="col-12">
-        <div class="card">
-            <div class="text-2xl font-bold tracking-tight truncate sm:text-3xl">Coins Conversion Settings</div>
-            <div class="text-s font-medium font-italic s:text-base text-secondary">This section allows the admin to manage the channel and setup a new service and the programs that it includes.</div>
-            <div class="mt-3">
-                <p-table [value]="allConversion" [loading]="isLoading">
-                    <ng-template pTemplate="header">
-                      <tr>
-                        <th class="border-top-left text-center font-bold text-gray-800">Channel</th>
-                        <th class="border-top text-center font-bold text-gray-800">Expiration Duration (months)</th>
-                        <th class="border-top-right text-center font-bold text-gray-800">Operation</th>
-                      </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-conversion>
-                      <tr>
-                        <td class="border-left-right text-center">{{ formatChannel(conversion.channel) }}</td>
-                        <td class="border-right text-center">{{ conversion.expiryDuration }}</td>
-                        <td class="border-right text-center">
-                            <button pButton pRipple 
-                                icon="pi pi-cog"
-                                label="Manage Service" 
-                                class="border-transparent p-button-raised bg-orange-300 mr-2">
-                            </button>
-                        </td>
-                      </tr>
-                    </ng-template>
-                  </p-table>
+  <p-toast key="tost" position="top-right"></p-toast>
+  <div class="col-12">
+      <div class="card">
+          <div class="text-2xl font-bold tracking-tight truncate sm:text-3xl">Coins Conversion Settings</div>
+          <div class="text-s font-medium font-italic s:text-base text-secondary">This section allows the admin to manage the channel and setup a new service and the programs that it includes.</div>
+          <div class="mt-3">
+              <p-table [value]="allConversion" [loading]="isLoading">
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th class="border-top-left text-center font-bold text-gray-800">Channel</th>
+                      <th class="border-top text-center font-bold text-gray-800">Expiration Duration (months)</th>
+                      <th class="border-top-right text-center font-bold text-gray-800">Operation</th>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="body" let-conversion>
+                    <tr>
+                      <td class="border-left-right text-center">{{ formatChannel(conversion.channel) }}</td>
+                      <td class="border-right text-center">{{ conversion.expiryDuration }}</td>
+                      <td class="border-right text-center">
+                          <button pButton pRipple 
+                              icon="pi pi-cog"
+                              label="Manage Service" 
+                              class="border-transparent p-button-raised bg-orange-300 mr-2"
+                              (click)="manageService(conversion)">
+                          </button>
+                      </td>
+                    </tr>
+                  </ng-template>
+              </p-table>
+          </div>
+      </div>
+  </div>
+</div>
+
+<!-- Manage Conversion -->
+<p-dialog [(visible)]="manageServiceDialog" [style]="{width: '850px'}" header="Manage Conversion Settings" [modal]="true" class="p-fluid">
+  <form [formGroup]="manageConversionForm">
+    <div class="p-grid p-fluid" style="display: flex; gap: 10px;">
+      <div class="field" style="flex: 1;">
+        <label class="font-semibold">Channel</label>
+        <span class="p-input-icon-right">
+          <i class="pi pi-mobile"></i>
+          <input type="text" pInputText formControlName="channel"
+            [attr.readonly]="true"
+            class="text-300"
+            style="pointer-events: none;"/>
+        </span>
+      </div>
+
+      <div class="field" style="flex: 1;">
+        <label for="expired" class="font-semibold">Expiration Duration (Months)</label>
+        <span class="p-input-icon-right">
+            <i class="pi pi-clock"></i>
+            <input id="expired" type="text" pInputText autofocus formControlName="expired" placeholder="Enter Months" 
+                [ngClass]="{'border-red-500': manageConversionForm.get('expired').invalid && manageConversionForm.get('expired').touched}"/>
+        </span>
+        <div *ngIf="manageConversionForm.get('expired').touched">
+            <div *ngIf="manageConversionForm.get('expired').hasError('required')" class="error-message text-red-500">
+                Field cannot be empty
+            </div>
+            <div *ngIf="manageConversionForm.get('expired').hasError('invalidNumber')" class="error-message text-red-500">
+                Field only accepts numbers (0-9)
             </div>
         </div>
+      </div>
     </div>
-</div>
+
+    <div class="flex align-items-between justify-content-between position-relative mt-3">
+      <span class="ext-start text-base font-semibold mt-4">List of Services</span>
+      <div class="w-fit">
+        <button pButton icon="pi pi-plus" type="button" label="Add Service" (click)="onAddNewRow()" [disabled]="isServiceBeingAdded"></button>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <p-table [value]="allConversionService">
+        <ng-template pTemplate="header">
+          <tr>
+            <th class="border-top-left text-center font-bold text-gray-800">Service Name</th>
+            <th class="border-top text-center font-bold text-gray-800">Service ID</th>
+            <th class="border-top text-center font-bold text-gray-800">Loyalty</th>
+            <th class="border-top text-center font-bold text-gray-800">Referral</th>
+            <th class="border-top text-center font-bold text-gray-800">Microdealer</th>
+            <th class="border-top-right text-center font-bold text-gray-800">Action</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-service>
+          <tr *ngIf="!service.mergedRow" (click)="viewDetails(service.serviceId)" pTooltip="View Details" tooltipPosition="bottom">
+            <td class="border-left text-center">{{ service.serviceName }}</td>
+            <td class="text-center">{{ service.serviceId }}</td>
+            <td class="text-center">
+              <span
+                class="p-badge p-component p-rounded p-text-sm uppercase"
+                [ngStyle]="{
+                  'background-color': service.loyaltyTiers && service.loyaltyTiers.length > 0 && service.loyaltyTiers[0]?.tier !== undefined ? '#d4edda' : '#f8d7da',
+                  'color': service.loyaltyTiers && service.loyaltyTiers.length > 0 && service.loyaltyTiers[0]?.tier !== undefined ? '#155724' : '#721c24',
+                  'white-space': 'nowrap',
+                  'display': 'inline-block',
+                  'min-width': '100px'
+                }">
+                {{ service.loyaltyTiers && service.loyaltyTiers.length > 0 && service.loyaltyTiers[0]?.tier !== undefined ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span
+                  class="p-badge p-component p-rounded p-text-sm uppercase"
+                  [ngStyle]="{
+                    'background-color': service.referralTiers?.length > 0 ? '#d4edda' : '#f8d7da',
+                    'color': service.referralTiers?.length > 0 ? '#155724' : '#721c24',
+                    'white-space': 'nowrap',
+                    'display': 'inline-block',
+                    'min-width': '100px'
+                  }">
+                  {{ service.referralTiers?.length > 0 ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span
+                  class="p-badge p-component p-rounded p-text-sm uppercase"
+                  [ngStyle]="{
+                    'background-color': service.microDealer ? '#d4edda' : '#f8d7da',
+                    'color': service.microDealer ? '#155724' : '#721c24',
+                    'white-space': 'nowrap',
+                    'display': 'inline-block',
+                    'min-width': '100px'
+                  }">
+                  {{ service.microDealer ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="border-right text-center">
+              <button pButton pRipple type="button" icon="pi pi-trash" class="p-button p-button-icon-only" 
+                  style="background: transparent; border: none; box-shadow: none; text-align: center; padding-right: 10px;" 
+                  (click)="deleteBtn(service)">
+                  <i class="pi pi-trash" style="font-size: 18px; color: red;"></i>
+              </button>
+            </td>
+          </tr>
+
+          <!-- Expended Row -->
+          <tr *ngIf="expandedServiceId === service.serviceId" [@expandCollapse]>
+            <td [attr.colspan]="6" class="border-left-right">
+                <div class="mt-3">
+                <!-- Referral Details -->
+                <div *ngIf="service.referralTiers?.length > 0">
+                  <div class="text-sm font-semibold tracking-tight truncate sm:text-xl pb-1 pt-4">Referral Details</div>
+                  <table class="w-full">
+                    <thead>
+                        <tr class="bg-primary text-white">
+                            <th class="px-4 py-2 text-center">Tiers</th>
+                            <th class="px-4 py-2 text-center">Percentage (%)</th>
+                            <th class="px-4 py-2 text-center">Voucher Code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let summary of service.referralTiers">
+                            <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ summary.orderSequence }}</td>
+                            <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">
+                                {{ summary.percentage !== null && summary.percentage !== undefined && summary.percentage !== 0 ? ( getPercentage(summary.percentage) | number:'1.2-2') : 'Not Applied' }}
+                            </td>
+                            <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">
+                                {{ summary.voucherCode !== null && summary.voucherCode !== undefined && summary.voucherCode !== '' ? summary.voucherCode : 'Not Applied' }}
+                            </td>
+                        </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Loyalty Details -->
+                <div *ngIf="service.loyaltyTiers && service.loyaltyTiers?.length > 0 && service.loyaltyTiers[0]?.tier !== undefined">
+                  <div class="text-sm font-semibold tracking-tight truncate sm:text-xl pb-1 pt-4">Loyalty Details</div>
+                  <table class="w-full">
+                    <thead>
+                        <tr class="bg-primary text-white">
+                            <th class="px-4 py-2 text-center">Tiers</th>
+                            <th class="px-4 py-2 text-center">Rate (%)</th>
+                            <th class="px-4 py-2 text-center">Voucher Code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let summary of service.loyaltyTiers">
+                            <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ summary.tier }}</td>
+                            <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">
+                                {{ summary.rate !== null && summary.rate !== undefined && summary.rate !== 0 && summary.rate !== '' ? ( summary.rate | number:'1.2-2') : 'Not Applied' }}
+                            </td>
+                            <td class="px-4 py-2 border border-gray-200 text-center border-round-sm bg-blue-100">
+                                {{ summary.voucherCode !== null && summary.voucherCode !== undefined && summary.voucherCode !== '' ? summary.voucherCode : 'Not Applied' }}
+                            </td>
+                        </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Micro Dealer Details -->
+                <div *ngIf="service.microDealer">
+                  <div class="text-sm font-semibold tracking-tight truncate sm:text-xl pb-1 pt-4">Micro Dealer Details</div>
+                  <table class="w-full">
+                    <thead>
+                        <tr class="bg-primary text-white">
+                            <th class="px-4 py-2 text-center">Micro Dealer</th>
+                            <th class="px-4 py-2 text-center">Rate (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">Discount</td>
+                            <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">
+                                {{ service.microDealer.discountRate | number:'1.2-2' }}
+                            </td>
+                        </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="service.mergedRow"> 
+            <td [attr.colspan]="6" class="border-left-right">
+              <div class="mt-3">
+                <div class="flex items-center justify-between font-bold text-2xl pb-2">
+                  <span>Add New Service</span>
+                  <button pButton pRipple type="button" icon="pi pi-times" class="p-button p-button-icon-only ml-auto"
+                    pTooltip="Close Service Form"
+                    tooltipPosition="left"
+                    style="background: transparent; border: none; box-shadow: none;"
+                    (click)="closeForm()">
+                    <i class="pi pi-times" style="font-size: 15px; color: darkgrey;"></i>
+                  </button>
+                </div>                                
+                <form [formGroup]="conversionServiceForm">
+                  <div class="p-grid p-fluid" style="display: flex; gap: 10px;">
+                    <!-- Service Name -->
+                    <div class="field" style="flex: 1;">
+                      <label for="serviceName" class="font-semibold">Service Name</label>
+                      <span class="p-input-icon-right">
+                          <i class="pi pi-cart-plus"></i>
+                          <input id="serviceName" type="text" pInputText autofocus formControlName="serviceName" placeholder="Enter service name" 
+                              [ngClass]="{'border-red-500': conversionServiceForm.get('serviceName').invalid && conversionServiceForm.get('serviceName').touched}"/>
+                      </span>
+                      <div *ngIf="conversionServiceForm.get('serviceName').touched">
+                        <div *ngIf="conversionServiceForm.get('serviceName').hasError('required')" class="error-message text-red-500">
+                          Field cannot be empty
+                        </div>
+                        <div *ngIf="conversionServiceForm.get('serviceName').hasError('invalidServiceName') && conversionServiceForm.get('serviceName').touched" class="error-message text-red-500">
+                          Field only accept space and alphabets (A-Z).
+                        </div>
+                      </div>                
+                    </div>
+                
+                    <!-- Service ID -->
+                    <div class="field" style="flex: 1;">
+                      <label for="serviceId" class="font-semibold">Service ID</label>
+                      <span class="p-input-icon-right">
+                          <i class="pi pi-dollar"></i>
+                          <input id="serviceId" type="text" pInputText autofocus formControlName="serviceId" placeholder="Auto Generated ID" 
+                              [attr.disabled]="manageConversionForm.get('channel')?.disabled ? true : null"
+                              [ngClass]="{'border-red-500': conversionServiceForm.get('serviceId').invalid && conversionServiceForm.get('serviceId').touched}" readonly/>
+                      </span>
+                      <div *ngIf="conversionServiceForm.get('serviceId').hasError('required') && conversionServiceForm.get('serviceId').touched" class="error-message text-red-500">
+                          Field cannot be empty
+                      </div>
+                    </div>
+                  </div>
+                
+                  <!-- Check Box -->
+                  <div class="pb-4">
+                    <form [formGroup]="conversionServiceForm" style="display: flex; gap: 1rem;">
+                      <div style="display: flex; align-items: center; gap: 1rem;">
+                        <p-checkbox formControlName="referralProgram" binary="true" label="Include referral program?" (change)="referralCheckbox($event)"></p-checkbox>
+                        <p-checkbox formControlName="loyaltyProgram" binary="true" label="Include loyalty program?" (change)="loyaltyCheckbox($event)"></p-checkbox>
+                        <p-checkbox formControlName="microdealerProgram" binary="true" label="Include micro dealer program?" (change)="microdealerCheckbox($event)"></p-checkbox>
+                      </div>
+                    </form>
+                  </div>
+                
+                  <!-- Display referral service form -->
+                  <div *ngIf="referralProgram" [@expandCollapse]>
+                    <form [formGroup]="referralServiceForm">
+                      <div class="flex justify-between w-full mb-4">
+                        <h2 class="text-xl font-bold leading-6 tracking-tight">
+                          Referral Tiers Settings
+                        </h2>
+                      </div>
+                      
+                      <!-- Form Array: Referral Tiers -->
+                      <div formArrayName="referralTiers">
+                        <div *ngFor="let tier of referralTiers.controls; let i = index" [formGroupName]="i" class="flex flex-wrap gap-4 mb-4">
+                  
+                          <!-- Tier Input -->
+                          <div class="flex-1">
+                            <label for="orderSequence-{{i}}" class="font-semibold">Tier</label>
+                            <span class="p-input-icon-left w-full">
+                              <i class="pi pi-users"></i>
+                              <input id="orderSequence-{{i}}" type="number" pInputText formControlName="orderSequence" placeholder="Enter Tier" readonly/>
+                            </span>
+                          </div>
+                  
+                          <!-- Percentage Input -->
+                          <div class="flex-1">
+                            <label for="percentage-{{i}}" class="font-semibold">Percentage (%)</label>
+                            <span class="p-input-icon-left w-full">
+                              <i class="pi pi-percentage"></i>
+                              <input id="percentage-{{i}}" type="number" pInputText formControlName="percentage" placeholder="Enter Percentage"/>
+                            </span>
+                          </div>
+                  
+                          <!-- Voucher Code Input -->
+                          <div class="flex-1">
+                            <label for="voucherCode-{{i}}" class="font-semibold">Voucher Code</label>
+                            <span class="p-input-icon-left w-full">
+                              <i class="pi pi-tag"></i>
+                              <input id="voucherCode-{{i}}" type="text" pInputText formControlName="voucherCode" placeholder="Enter Voucher Code"/>
+                            </span>
+                          </div>
+                  
+                          <!-- Action Buttons -->
+                          <div class="flex items-center gap-2 mt-4">
+                            <!-- Remove Button -->
+                            <span *ngIf="referralTiers.length > 1 && referralTiers.length <= maxTiers">
+                              <button pButton pRipple type="button" icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="removeReferralTier(i)"></button>
+                            </span>
+                  
+                            <!-- Add Button -->
+                            <span *ngIf="referralTiers.length < maxTiers">
+                              <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="addReferralTier()"></button>
+                            </span>
+                          </div>
+                  
+                        </div>
+                      </div>
+                    </form>
+
+                    <p-message *ngIf="!isTotalPercentageValid" severity="error" text="Total percentage must not exceed 100%"></p-message>
+
+                  </div>
+                
+                  <!-- Display loyalty service form -->
+                  <div *ngIf="loyaltyProgram" [@expandCollapse]>
+                    <form [formGroup]="loyaltyServiceForm">
+                        <div class="flex flex-row justify-between w-full h-full mb-4">
+                            <h2 class="text-xl font-bold leading-6 tracking-tight">
+                                Loyalty Tiers Settings
+                            </h2>
+                        </div>
+                
+                        <div formArrayName="loyaltyTiers">
+                            <div *ngFor="let tier of loyaltyTiers.controls; let i = index" [formGroupName]="i" class="p-grid p-fluid" style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px;">
+                                
+                                <!-- Tier -->
+                                <div class="field" style="flex: 1;">
+                                    <label for="tier" class="font-semibold">Tier</label>
+                                    <span class="p-input-icon-left">
+                                        <i class="pi pi-users"></i>
+                                        <input id="tier" type="number" pInputText formControlName="tier" placeholder="Enter Tier" readonly/>
+                                    </span>
+                                </div>
+                
+                                <!-- Rate -->
+                                <div class="field" style="flex: 1;">
+                                    <label for="rate" class="font-semibold">Rate (%)</label>
+                                    <span class="p-input-icon-right">
+                                        <i class="pi pi-percentage"></i>
+                                        <input id="rate" type="number" pInputText formControlName="rate" placeholder="Enter Rate"/>
+                                    </span>
+                                </div>
+                
+                                <!-- Voucher Code -->
+                                <div class="field" style="flex: 1;">
+                                    <label for="voucherCode" class="font-semibold">Voucher Code</label>
+                                    <span class="p-input-icon-right">
+                                        <i class="pi pi-cart-tag"></i>
+                                        <input id="voucherCode" type="text" pInputText formControlName="voucherCode" placeholder="Enter Voucher Code"/>
+                                    </span>
+                                </div>
+                
+                                <!-- Action Buttons (Add/Delete) -->
+                                <div class="flex flex-row mt-4">
+                                    <!-- Delete Button -->
+                                    <span *ngIf="loyaltyTiers.length > 1 && loyaltyTiers.length <= maxTiers" class="pr-2">
+                                        <button pButton pRipple type="button" icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="removeLoyaltyTier(i)"></button>
+                                    </span>
+                
+                                    <!-- Add Button -->
+                                    <span *ngIf="loyaltyTiers.length < maxTiers">
+                                        <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="addLoyaltyTier()"></button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                  </div>        
+                
+                  <!-- Micro Dealer Setting -->
+                  <div *ngIf="microdealerProgram" [@expandCollapse]>
+                      <form [formGroup]="microdealerServiceForm">
+                        <div class="flex flex-row justify-between w-full h-full">
+                          <h2 class="text-xl font-bold leading-6 tracking-tight">
+                              Micro Dealer Settings
+                          </h2>
+                        </div>
+                        <div class="p-grid p-fluid" style="display: flex; gap: 10px;">
+                          <!-- Rate -->
+                          <div class="field" style="flex: 1;">
+                            <label for="discountRate" class="font-semibold">Discount Rate (%)</label>
+                            <span class="p-input-icon-left">
+                                <i class="pi pi-percentage"></i>
+                                <input id="discountRate" type="number" pInputText autofocus formControlName="discountRate" placeholder="Enter discount rate"/>
+                            </span>
+                          </div>
+                        </div>
+                      </form>
+                  </div>
+                
+                  <div class="flex align-items-end justify-content-end position-relative">
+                    <div class="w-fit">
+                        <button pButton type="button" label="Submit" (click)="submitBtn()" [disabled]="!conversionServiceForm.valid"></button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </td>
+          </tr>
+
+        </ng-template>
+      </p-table>
+    </div>
+
+    <div class="flex align-items-end justify-content-end position-relative mt-3">
+      <div class="w-fit">
+        <button pButton icon="pi pi-save" type="button" label="Save" (click)="save()" [disabled]="!manageConversionForm.valid"></button>
+      </div>
+    </div>
+  </form>
+</p-dialog>

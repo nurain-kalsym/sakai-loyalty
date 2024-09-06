@@ -7,7 +7,6 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { StyleClassModule } from 'primeng/styleclass';
 import { PanelMenuModule } from 'primeng/panelmenu';
-import { LoyaltySettingsComponent } from './loyalty-settings/loyalty-settings.component';
 import { ConfigurationsRoutingModule } from './configurations.routes';
 import { ConversionSettingsComponent } from './conversion-settings/conversion-settings.component';
 import { AppointReferralAgentComponent } from './referral-agents/referral-agents.component';
@@ -18,11 +17,12 @@ import { DialogModule } from 'primeng/dialog';
 import { ReactiveFormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
-import { RadioButtonModule } from 'primeng/radiobutton';
+import { CheckboxModule } from 'primeng/checkbox';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { MessagesModule } from 'primeng/messages';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { LoyaltySettingsComponent } from './loyalty-settings/loyalty-settings.component';
 
 @NgModule({
     imports: [
@@ -41,7 +41,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
         ReactiveFormsModule,
         InputTextModule,
         InputTextareaModule,
-        RadioButtonModule,
+        CheckboxModule,
         InputNumberModule,
         MessagesModule,
         ToastModule,
