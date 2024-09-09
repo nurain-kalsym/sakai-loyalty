@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { TreeNode } from 'primeng/api';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { LoyaltyService } from 'src/app/core/loyalty/loyalty.service';
-import { CoinsData, Members, Pagination } from 'src/app/core/loyalty/loyalty.types';
+import { CoinsData, Members, Pagination, MembershipInfo } from 'src/app/core/loyalty/loyalty.types';
 
 @Component({
     templateUrl: './member-listing.component.html',
@@ -40,7 +40,8 @@ import { CoinsData, Members, Pagination } from 'src/app/core/loyalty/loyalty.typ
 })
 export class MemberListingComponent implements OnInit, OnDestroy {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
-    membersListingColumn: string[] = ['phoneNumber', 'name', 'email', 'referral', 'loyalty', 'microdealer', 'action'];
+    membersListingColumn: string[] = ['phoneNumber', 'name', 'tier', 'action'];
+    // membersListingColumn: string[] = ['phoneNumber', 'name', 'email', 'referral', 'loyalty', 'microdealer', 'action'];
     allMembers: Members[] = [];
     isLoading = false;
     filterForm: FormGroup;
@@ -48,15 +49,17 @@ export class MemberListingComponent implements OnInit, OnDestroy {
     summary: CoinsData[] = [];
     referralTree: TreeNode[] = [];
     summaryEkedai: any;
-    summaryHelloSim: any;
+    summaryHelloSim: any
     displayMessage = false;
     openIndex: number | null = null;
     showTree = false;
     pagination: Pagination;
+    selectedUser: MembershipInfo = null;
     selectedChannel: string = 'ALL';
     selectedType: string = 'ALL';
     selectedStatus: string = 'ALL';
     selectedChannelTree: string = 'ALL';
+    geneologyToolTip: string = null;
     channels: { label: string, value: string }[] = [
         { label: 'All', value: 'ALL' },
         { label: 'E-Kedai', value: 'e-kedai' },
@@ -90,12 +93,12 @@ export class MemberListingComponent implements OnInit, OnDestroy {
         this.filterForm = this._formBuilder.group({
             channel: ['ALL'],
             status: ['ALL'],
-            type: ['ALL'],
             search: [null],
         });
 
         // create channel form 
-        this.channelFilter = this._formChannel.group({channelTree: []});
+        this.channelFilter = this._formChannel.group({channelTree: ['ALL']});
+        this.channelFilter.get('channelTree').disable();
         
         // Subscribe to data
         this._loyaltyService.membersList$
@@ -103,7 +106,7 @@ export class MemberListingComponent implements OnInit, OnDestroy {
             .subscribe(
                 (list: Members[]) => {
                     this.allMembers = list;
-                    this.populateSummary();
+                    // this.populateSummary();
                 },
                 (error) => {
                     console.error('Error fetching members list:', error);
@@ -131,14 +134,14 @@ export class MemberListingComponent implements OnInit, OnDestroy {
         );
 
         // Filter type
-        this.filterForm.get('type').valueChanges.subscribe(
+        /* this.filterForm.get('type').valueChanges.subscribe(
             (value) => {
                 if (value) {
                     this.selectedType = value;
                     this.loadMembers({ first: 0, rows: this.pagination.size });
                 }
             }
-        );
+        ); */
 
         // Filter status
         this.filterForm.get('status').valueChanges.subscribe(
@@ -168,7 +171,7 @@ export class MemberListingComponent implements OnInit, OnDestroy {
           });
     }
 
-    populateSummary() {
+    /* populateSummary() {
         this.allMembers.forEach(member => {
             member.summary = [];
 
@@ -191,7 +194,7 @@ export class MemberListingComponent implements OnInit, OnDestroy {
             );
         });
         console.log('e-Kedai', this.summaryEkedai, 'hello-sim', this.summaryHelloSim);
-    }
+    } */
 
     loadMembers(event: any) {
         const page = event.first / event.rows + 1;
@@ -270,8 +273,34 @@ export class MemberListingComponent implements OnInit, OnDestroy {
         this.filterForm.get('search').setValue(null);
     }
 
-    toggleOpen(index: number): void {
+    /* toggleOpen(index: number): void {
         this.openIndex = this.openIndex === index ? null : index;
+    } */
+
+    toggleOpen(index: number, userPhone: string) {
+        if (this.openIndex === index) {
+            this.openIndex = -1;
+        } else {
+            this._loyaltyService.getMembershipInfo({ phone: userPhone }).subscribe((response) => {
+                this.selectedUser = response;
+                if (this.selectedUser.referral.referralCount > 0) {
+                this.geneologyToolTip = 'View Geneology'
+                this.channelFilter.get('channelTree').enable();
+                } 
+                this.openIndex = index;
+            });
+        }
+    
+        this.clearChannelSelection();
+        this.showTree = false;
+    }
+
+    clearChannelSelection() {
+        if (this.channelFilter) {
+            this.channelFilter.get('channelTree').setValue(null);
+        }
+        this.showTree = false;
+        this.displayMessage = false;
     }
 
     formatChannel(channel: string): string {

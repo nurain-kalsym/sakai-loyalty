@@ -24,7 +24,7 @@
                     </div>
 
                     <!-- Type Filter -->
-                    <div class="flex align-items-center justify-content-center position-relative">
+                    <!-- <div class="flex align-items-center justify-content-center position-relative">
                         <p-dropdown 
                             placeholder="Select Type" 
                             [formControl]="filterForm.get('type')" 
@@ -39,7 +39,7 @@
                                 <span>{{option.label}}</span>
                             </ng-template>
                         </p-dropdown>
-                    </div>
+                    </div> -->
 
                     <!-- Status Filter -->
                     <div class="flex align-items-center justify-content-center position-relative">
@@ -79,10 +79,11 @@
                         <tr>
                             <th class="border-top-left text-center font-bold text-gray-800">Phone Number</th>
                             <th class="border-top text-center font-bold text-gray-800">Name</th>
-                            <th class="border-top text-center font-bold text-gray-800">Email</th>
-                            <th class="border-top text-center font-bold text-gray-800">Referral</th>
-                            <th class="border-top text-center font-bold text-gray-800">Loyalty</th>
-                            <th class="border-top text-center font-bold text-gray-800">Microdealer</th>
+                            <th class="border-top text-center font-bold text-gray-800">Tier</th>
+                            <!-- <th class="border-top text-center font-bold text-gray-800">Email</th> -->
+                            <!-- <th class="border-top text-center font-bold text-gray-800">Referral</th>
+                            <th class="border-top text-center font-bold text-gray-800">Loyalty</th> -->
+                            <!-- <th class="border-top text-center font-bold text-gray-800">Microdealer</th> -->
                             <th class="border-top-right text-center font-bold text-gray-800">Action</th>
                         </tr>
                     </ng-template>
@@ -90,8 +91,16 @@
                         <tr>
                             <td class="border-left text-center">{{ member.phone }}</td>
                             <td class="text-center">{{ member.name | uppercase }}</td>
-                            <td class="text-center">{{ member.email }}</td>
                             <td class="text-center">
+                                <div class="col-span-1 text-center">
+                                    <span *ngIf="member.idDoc.status === 'REJECTED' || member.tier === null" class="items-center font-bold px-2 py-1 uppercase bg-red-300 text-red-600 p-badge p-component p-rounded p-text-sm"> NOT ACTIVE </span>
+                                    <span *ngIf="member.idDoc.status !== 'REJECTED' && member.tier === 3" class="items-center font-bold px-2 py-1 uppercase bg-stone-300 text-stone-500 p-badge p-component p-rounded p-text-sm">SILVER </span>
+                                    <span *ngIf="member.idDoc.status !== 'REJECTED' && member.tier === 2" class="items-center font-bold px-2 py-1 uppercase bg-yellow-300 text-yellow-600 p-badge p-component p-rounded p-text-sm"> GOLD </span>
+                                    <span *ngIf="member.idDoc.status !== 'REJECTED' && member.tier === 1" class="items-center font-bold px-2 py-1 uppercase bg-slate-300 text-slate-600 p-badge p-component p-rounded p-text-sm"> PLATINUM </span>
+                                </div>
+                            </td>
+                            <!-- <td class="text-center">{{ member.email }}</td> -->
+                            <!-- <td class="text-center">
                                 <div *ngFor="let referral of member.referral" class="py-1">
                                   <span
                                     class="p-badge p-component p-rounded p-text-sm"
@@ -105,8 +114,8 @@
                                     {{ formatChannel(referral.channel) }}
                                   </span>
                                 </div>
-                            </td>                              
-                            <td class="text-center">
+                            </td>  -->                             
+                            <!-- <td class="text-center">
                                 <div *ngFor="let loyalty of member.loyalty" class="py-1">
                                     <span
                                         class="p-badge p-component p-rounded p-text-sm"
@@ -120,8 +129,8 @@
                                         {{ formatChannel(loyalty.channel) }}
                                     </span>
                                 </div>
-                            </td>
-                            <td class="text-center">
+                            </td> -->
+                            <!-- <td class="text-center">
                                 <div *ngFor="let microdealer of member.microDealer" class="py-1">
                                     <span
                                         class="p-badge p-component p-rounded p-text-sm"
@@ -135,12 +144,113 @@
                                         {{ formatChannel(microdealer.channel) }}
                                     </span>
                                 </div>
-                            </td>
+                            </td> -->
                             <td class="border-right text-center">
-                                <button (click)="toggleOpen(i)" pButton type="button" [icon]="openIndex === i ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></button>
+                                <button (click)="toggleOpen(i, member.phone)" pButton type="button" [icon]="openIndex === i ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></button>
                             </td>
                         </tr>
-                        <tr *ngIf="openIndex === i">
+                        <div *ngIf="openIndex === i" class="p-grid ml-4 mt-2 pt-2 pb-5 pr-10 pl-6 overflow-hidden">
+                            <div class="p-col-6">     
+                                <div class="text-2xl font-bold text-primary"> 
+                                    {{ selectedUser.name | titlecase }} 
+                                    <sup>
+                                        <span *ngIf="selectedUser.membershipTier.status !== 'ACTIVE' || selectedUser.membershipTier.tier === null" class="font-bold text-xs px-2 py-1 rounded-full uppercase bg-red-300 text-red-600"> NOT ACTIVE </span>
+                                        <span *ngIf="selectedUser.membershipTier.status === 'ACTIVE' && selectedUser.membershipTier.tier === 3" class="font-bold text-xs px-2 py-1 rounded-full uppercase bg-stone-300 text-stone-500"> SILVER </span>
+                                        <span *ngIf="selectedUser.membershipTier.status === 'ACTIVE' && selectedUser.membershipTier.tier === 2" class="font-bold text-xs px-2 py-1 rounded-full uppercase bg-yellow-300 text-yellow-600"> GOLD </span>
+                                        <span *ngIf="selectedUser.membershipTier.status === 'ACTIVE' && selectedUser.membershipTier.tier === 1" class="font-bold text-xs px-2 py-1 rounded-full uppercase bg-slate-300 text-slate-600"> PLATINUM </span>
+                                    </sup>
+                                </div>
+                                <div><span class="font-bold">Email:</span> {{ selectedUser.email }}</div>
+                                <div><span class="font-bold">Member since:</span> 
+                                    <span *ngIf="selectedUser.idDoc && selectedUser.idDoc.status !== 'REJECTED'">{{ selectedUser.membershipTier.startDate | date: 'dd MMMM YYYY' }}</span>
+                                    <span *ngIf="selectedUser.idDoc && selectedUser.idDoc.status === 'REJECTED'">Not Applied</span>
+                                </div>
+                                <div><span class="font-bold">Phone Number:</span> {{ selectedUser.phone }}</div> 
+                                <div><span class="font-bold">Referral Code:</span> {{ selectedUser.referral.referralCode ?? 'Not Applied' }}</div> 
+                            </div>
+                        
+                            <div class="p-col-6">
+                                <div class="p-grid">
+                                    <div class="p-col-4 p-3 bg-primary text-white text-center rounded-md">
+                                        <i class="pi pi-id-card"></i>
+                                        <div class="text-md">Member For</div>
+                                        <div class="text-2xl font-bold">{{ selectedUser.membershipTier.duration ?? 0 }}</div>
+                                        <div class="text-md">days</div>
+                                    </div>
+                                    <div class="p-col-4 p-3 bg-primary text-white text-center rounded-md">
+                                        <i class="pi pi-dollar"></i>
+                                        <div class="text-md">Available Coins</div>
+                                        <div class="text-2xl font-bold">{{ selectedUser.coins.availableCoins }}</div>
+                                    </div>
+                                    <div class="p-col-4 p-3 bg-primary text-white text-center rounded-md">
+                                        <i class="pi pi-users"></i>
+                                        <div class="text-md">Referral Count</div>
+                                        <div class="text-2xl font-bold">{{ selectedUser.referral.referralCount }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-col-12">
+                                <div class="text-primary font-bold text-xl">Coins Summary</div>
+                                <p-table [value]="selectedUser.coins">
+                                    <ng-template pTemplate="header">
+                                        <tr class="bg-primary-700 text-white">
+                                            <th>Type</th>
+                                            <th>Total Earned</th>
+                                            <th>Total Used</th>
+                                            <th>Total Expired</th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body">
+                                        <tr>
+                                            <td>Loyalty</td>
+                                            <td>{{ selectedUser.coins.loyaltyCoins.earned }}</td>
+                                            <td>{{ selectedUser.coins.loyaltyCoins.used }}</td>
+                                            <td>{{ selectedUser.coins.loyaltyCoins.expired }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Referral</td>
+                                            <td>{{ selectedUser.coins.referralCoins.earned }}</td>
+                                            <td>{{ selectedUser.coins.referralCoins.used }}</td>
+                                            <td>{{ selectedUser.coins.referralCoins.expired }}</td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </div>
+                            
+                            <!-- Tree Channel Filter -->
+                            <div class="p-col-12 text-start flex items-center pt-2" [formGroup]="channelFilter">
+                                <p-dropdown [options]="treeChannel" formControlName="channelTree" placeholder="Select Channel" class="w-44 pr-4" appendTo="body"></p-dropdown>
+                                <button pButton pRipple label="Geneology" class="py-3.5 px-4 flex items-center text-sm text-white rounded-md bg-primary-700"
+                                    (click)="refTree(selectedUser.phone, channelFilter.get('channelTree').value)" pTooltip="View Geneology">
+                                    <i class="pi pi-eye text-white pr-1"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Referral Tree -->
+                            <div class="p-col-12 relative mb-4 pt-5 overflow-hidden">
+                                <div *ngIf="showTree">
+                                    <div class="flex justify-end pr-4 cursor-pointer" (click)="closeTree()">
+                                        <i class="pi pi-times text-gray-700"></i>
+                                        <span class="pl-1">Close</span>
+                                    </div>
+                                    <div class="w-full" style="overflow-x: auto;">
+                                        <p-organizationChart [value]="referralTree" [collapsible]="false">
+                                            <ng-template pTemplate="default" let-node>
+                                                <div class="text-md font-semibold">{{ node.data.name | titlecase }}</div>
+                                                <div *ngIf="node.data.name !== 'SYSTEM'" class="text-sm italic">{{ node.data.phone }}</div>
+                                                <div *ngIf="node.data.name !== 'SYSTEM'" class="text-sm">{{ node.data.refCode }}</div>
+                                            </ng-template>
+                                        </p-organizationChart>
+                                    </div>
+                                </div>
+                                
+                                <div *ngIf="displayMessage" class="text-center mt-4">
+                                    <p>No Referral Tree Found</p>
+                                </div>
+                            </div>
+                        </div>                        
+                        <!-- <tr *ngIf="openIndex === i">
                             <td colspan="7" class="p-0">
                                 <div class="p-accordion">
                                     <div class="p-accordion-content">
@@ -206,7 +316,7 @@
                                             </table>
                                         </div>                                         
 
-                                        <!-- Tree Channel Filter -->
+                                        Tree Channel Filter
                                         <div class="text-start flex items-center pt-2" [formGroup]="channelFilter">
                                             <p-dropdown
                                                 [options]="treeChannel"
@@ -224,7 +334,7 @@
                                             </button>
                                         </div>
                                         
-                                        <!-- Tree -->
+                                        Tree
                                         <div class="relative mb-4 pt-5 overflow-hidden">
                                             <div *ngIf="showTree" @expandCollapse>
                                                 <div class="flex justify-end pr-4 cursor-pointer" (click)="closeTree()">
@@ -245,7 +355,7 @@
                                                     </p-organizationChart>
                                                 </div>
                                             </div>
-                                            <!-- No tree Message -->
+                                            No tree Message
                                             <div *ngIf="displayMessage" class="text-center mt-4">
                                                 <p>No Referral Tree Found</p>
                                             </div>
@@ -254,7 +364,7 @@
                                     </div>
                                 </div>
                             </td>
-                        </tr>
+                        </tr> -->
                     </ng-template>
                     <ng-template pTemplate="emptymessage">
                         <tr>

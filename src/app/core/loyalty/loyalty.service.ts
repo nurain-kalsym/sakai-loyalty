@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, catchError, map, Observable, ReplaySubject, switchMap, take, tap, throwError } from "rxjs";
-import { Aging, CoinsHistory, Conversion, Earner, LoyaltyConfig, Members, MicrodealerDetails, Pagination, ReferralTree, ReferralUsers } from "./loyalty.types";
+import { Aging, CoinsHistory, Conversion, Earner, LoyaltyConfig, Members, MembershipInfo, MicrodealerDetails, Pagination, ReferralTree, ReferralUsers } from "./loyalty.types";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { AppConfig } from "src/app/config/service.config";
 import { LogService } from "../logging/log.service";
@@ -29,6 +29,7 @@ export class LoyaltyService {
     private _conversionPagination: BehaviorSubject<Pagination | null> = new BehaviorSubject(null);
     private _loyaltyConfig: ReplaySubject<LoyaltyConfig[]> = new ReplaySubject<LoyaltyConfig[]>(1);
     private _loyaltyConfigPagination: BehaviorSubject<Pagination | null> = new BehaviorSubject(null);
+    private _membershipInfo: ReplaySubject<MembershipInfo> = new ReplaySubject<MembershipInfo>(1);
 
 
     // -----------------------------------------------------------------------------------------------------
@@ -170,6 +171,14 @@ export class LoyaltyService {
 
     get loyaltyConfigPagination$(): Observable<Pagination> {
         return this._loyaltyConfigPagination.asObservable();
+    }
+
+    /* Setter and Getter for Referral Tree */
+    set membershipInfo(value: MembershipInfo) {
+        this._membershipInfo.next(value);
+    }
+    get membershipInfo$(): Observable<MembershipInfo> {
+        return this._membershipInfo.asObservable();
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -443,6 +452,56 @@ export class LoyaltyService {
                 })
             );
         }
+
+    getMembershipInfo(
+        params: {
+            phone?: string;
+        } = {
+            phone: null,
+        }
+    ): Observable<any> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+
+        const header = {
+            params,
+        };
+
+        // Delete empty value
+        Object.keys(params).forEach((key) => {
+            if (Array.isArray(params[key])) {
+                params[key] = params[key].filter((element) => element !== null);
+            }
+            if (
+                params[key] === null ||
+                params[key] === undefined ||
+                params[key] === '' ||
+                (Array.isArray(params[key]) && params[key].length === 0)
+            ) {
+                delete params[key];
+            }
+        });
+
+        return this._httpClient
+            .get<any>(
+                loyaltyService + '/admin/api/get-membership-info',
+                header
+            )
+            .pipe(
+                map((response) => {
+                    const membershipInfo = response.data;
+
+                    this._logging.debug(
+                        'Response from Bill Service (getMembershipInfo)',
+                        response
+                    );
+
+                    // return data
+                    this._membershipInfo.next(membershipInfo);
+
+                    return membershipInfo;
+                })
+            );
+    }
 
     getReferralTree(
         params: {

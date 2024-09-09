@@ -46,12 +46,12 @@ export interface Members {
     phone: string;
     name: string;
     email: string;
-    channels: Channels[];
-    totalCoins: number;
-    loyalty: CoinsData[];
-    referral: CoinsData[];
-    microDealer: CoinsData[]; 
-    summary?: CoinsData[];
+    tier: number;
+    idDoc: {
+        status: string;
+        createdDate: Date;
+        updatedDate: Date;
+    }
 }
 
 export interface Channels {
@@ -71,6 +71,40 @@ export interface TreeObj {
     phone: string;
     refCode: string;
     layer: number;
+}
+
+export interface MembershipInfo {
+    phone: string;
+    name: string;
+    email: string;
+    membershipTier: {
+        status: string;
+        startDate: string;
+        duration: number;
+        tier: number;
+    },
+    coins: {
+        availableCoins: number;
+        loyaltyCoins: {
+            earned: number;
+            used: number;
+            expired: number;
+        },
+        referralCoins: {
+            earned: number;
+            used: number;
+            expired: number;
+        }
+    },
+    referral: {
+        referralCode: string;
+        referralCount: number;
+    },
+    idDoc: {
+        status: string;
+        createdDate: Date;
+        updatedDate: Date;
+    }
 }
 
 export interface MicrodealerDetails {
