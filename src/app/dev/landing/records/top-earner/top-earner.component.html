@@ -2,7 +2,7 @@
     <div class="col-12">
       <div class="card">
         <div class="text-2xl font-bold tracking-tight truncate sm:text-3xl">List of Top 20 Earners</div>
-        <div class="text-s font-medium font-italic s:text-base text-secondary">This section displays the top 20 users that earned the most coins based on type of programs and channel.</div>
+        <div class="text-s font-italic s:text-base text-secondary">This section displays the top 20 users that earned the most coins based on type of programs and channel.</div>
         <div class="mt-3">
           <div class="mb-2 flex justify-content-end flex-wrap gap-2" [formGroup]="filterForm">
             <!-- Program Type Filter -->
@@ -14,7 +14,7 @@
                 optionLabel="label" 
                 optionValue="value">
                 <ng-template pTemplate="selectedItem" let-selectedItem>
-                  <span>Type: </span>
+                  <span style="color: rgb(173, 172, 172);">Type: </span>
                   <span>{{selectedItem?.label || 'All'}}</span>
                 </ng-template>
                 <ng-template pTemplate="item" let-option>
@@ -31,7 +31,7 @@
                 optionLabel="label" 
                 optionValue="value">
                 <ng-template pTemplate="selectedItem" let-selectedItem>
-                  <span>Channel: </span>
+                  <span style="color: rgb(173, 172, 172);">Channel: </span>
                   <span>{{selectedItem?.label || 'All'}}</span>
                 </ng-template>
                 <ng-template pTemplate="item" let-option>
@@ -54,7 +54,19 @@
             </ng-template>
             <ng-template pTemplate="body" let-top>
               <tr>
-                <td class="border-left-right text-center">{{ top.rank }}</td>
+                <td class="border-left-right text-center">
+                  <ng-container *ngIf="top.rank < 4; else rankDisplay">
+                    <div style="position: relative; display: inline-block;">
+                      <img src="assets/layout/images/medal.svg" alt="medal" width="20" height="20" />
+                      <span style="position: absolute; top: 20%; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 600; color: black;">
+                        {{ top.rank }}
+                      </span>
+                    </div>
+                  </ng-container>
+                  <ng-template #rankDisplay>
+                    {{ top.rank }}
+                  </ng-template>
+                </td>
                 <td class="border-right text-center">{{ top.name | titlecase }}</td>
                 <td class="border-right text-center">{{ top.phone }}</td>
                 <td class="border-right text-center">{{ top.totalCoins | number:'1.0-0' }}</td>

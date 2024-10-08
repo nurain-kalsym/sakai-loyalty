@@ -66,29 +66,44 @@
       </div>
     </div>
 
-    <div class="flex align-items-between justify-content-between position-relative mt-3">
-      <span class="ext-start text-base font-semibold mt-4">List of Services</span>
-      <div class="w-fit">
+    <div class="flex align-items-center justify-content-between position-relative mt-3">
+      <span class="text-start text-base font-semibold mb-2 mt-2">List of Services</span>
+      
+      <!-- Search and Add Button Section -->  <!-- TODO  -->
+      <div class="flex align-items-center gap-2">
+        <!-- Search Bar -->
+        <span class="p-input-icon-right p-input-icon-left" formControlName="filterForm">
+          <i class="pi pi-search"></i>
+          <i class="pi pi-times" pTooltip="Clear Search" tooltipPosition="top"></i>
+          <input pInputText type="text" formControlName="search" placeholder="Search" class="w-full" (click)="clearSearch()" pTooltip="Search by Service Name or Service ID" tooltipPosition="top"/>
+        </span>
+    
+        <!-- Add Service Button -->
         <button pButton icon="pi pi-plus" type="button" label="Add Service" (click)="onAddNewRow()" [disabled]="isServiceBeingAdded"></button>
       </div>
-    </div>
+    </div>    
 
     <div class="mt-3">
-      <p-table [value]="allConversionService">
+      <p-table [value]="allServiceConversion">
         <ng-template pTemplate="header">
           <tr>
             <th class="border-top-left text-center font-bold text-gray-800">Service Name</th>
             <th class="border-top text-center font-bold text-gray-800">Service ID</th>
             <th class="border-top text-center font-bold text-gray-800">Loyalty</th>
             <th class="border-top text-center font-bold text-gray-800">Referral</th>
-            <th class="border-top text-center font-bold text-gray-800">Microdealer</th>
             <th class="border-top-right text-center font-bold text-gray-800">Action</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-service>
-          <tr *ngIf="!service.mergedRow" (click)="viewDetails(service.serviceId)" pTooltip="View Details" tooltipPosition="bottom">
+          <tr *ngIf="!service.mergedRow">
             <td class="border-left text-center">{{ service.serviceName }}</td>
-            <td class="text-center">{{ service.serviceId }}</td>
+            <td class="text-center">
+              {{ service.serviceId }}
+              <button pButton icon="pi pi-clone" class="p-button p-button-icon-only" aria-label="Copy" 
+              style="background: transparent; border: none; box-shadow: none; text-align: center; padding: 4px; color: black;" 
+              (click)="copyToClipboard(service.serviceId)">
+            </button>
+            </td>
             <td class="text-center">
               <span
                 class="p-badge p-component p-rounded p-text-sm uppercase"
@@ -115,25 +130,38 @@
                   {{ service.referralTiers?.length > 0 ? 'Active' : 'Inactive' }}
               </span>
             </td>
-            <td class="text-center">
-              <span
-                  class="p-badge p-component p-rounded p-text-sm uppercase"
-                  [ngStyle]="{
-                    'background-color': service.microDealer ? '#d4edda' : '#f8d7da',
-                    'color': service.microDealer ? '#155724' : '#721c24',
-                    'white-space': 'nowrap',
-                    'display': 'inline-block',
-                    'min-width': '100px'
-                  }">
-                  {{ service.microDealer ? 'Active' : 'Inactive' }}
-              </span>
-            </td>
             <td class="border-right text-center">
-              <button pButton pRipple type="button" icon="pi pi-trash" class="p-button p-button-icon-only" 
-                  style="background: transparent; border: none; box-shadow: none; text-align: center; padding-right: 10px;" 
-                  (click)="deleteBtn(service)">
-                  <i class="pi pi-trash" style="font-size: 18px; color: red;"></i>
-              </button>
+              <div style="display: flex; justify-content: center; gap: 8px;">
+                  <!-- Info Button -->
+                  <button pButton pRipple type="button" icon="pi pi-info-circle" class="p-button p-button-icon-only"
+                      style="background: transparent; border: none; box-shadow: none; text-align: center; padding: 4px;"
+                      (click)="toggleExpand(service.serviceId)" pTooltip="View Details" tooltipPosition="bottom"
+                      (mouseenter)="hoveredIcons[service.serviceId] = 'info'" (mouseleave)="hoveredIcons[service.serviceId] = ''">
+                      <i class="pi pi-info-circle"
+                          [ngStyle]="{ color: (hoveredIcons[service.serviceId] === 'info' || expandedServiceId === service.serviceId) ? '#4f46e5' : '#64748b' }"
+                          style="font-size: 14px;"></i>
+                  </button>
+          
+                  <!-- Edit Button -->
+                  <button pButton pRipple type="button" icon="pi pi-pencil" class="p-button p-button-icon-only"
+                      style="background: transparent; border: none; box-shadow: none; text-align: center; padding: 4px;"
+                      pTooltip="Edit" tooltipPosition="bottom"
+                      (mouseenter)="hoveredIcons[service.serviceId] = 'pencil'" (mouseleave)="hoveredIcons[service.serviceId] = ''">
+                      <i class="pi pi-pencil"
+                          [ngStyle]="{ color: hoveredIcons[service.serviceId] === 'pencil' ? '#4f46e5' : '#64748b' }"
+                          style="font-size: 14px;"></i>
+                  </button>
+          
+                  <!-- Delete Button -->
+                  <button pButton pRipple type="button" icon="pi pi-trash" class="p-button p-button-icon-only"
+                      style="background: transparent; border: none; box-shadow: none; text-align: center; padding: 4px;"
+                      (click)="deleteBtn(service)" pTooltip="Delete" tooltipPosition="bottom"
+                      (mouseenter)="hoveredIcons[service.serviceId] = 'trash'" (mouseleave)="hoveredIcons[service.serviceId] = ''">
+                      <i class="pi pi-trash"
+                          [ngStyle]="{ color: hoveredIcons[service.serviceId] === 'trash' ? '#4f46e5' : '#64748b' }"
+                          style="font-size: 14px;"></i>
+                  </button>
+              </div>
             </td>
           </tr>
 
@@ -141,8 +169,48 @@
           <tr *ngIf="expandedServiceId === service.serviceId" [@expandCollapse]>
             <td [attr.colspan]="6" class="border-left-right">
                 <div class="mt-3">
+                <!-- Loyaty & Referral Details -->
+                <div *ngIf="service.referralTiers?.length > 0 || service.loyaltyTiers?.length > 0">
+                  <div class="text-md font-semibold tracking-tight truncate pb-1">Loyalty & Referral Details</div>
+                  <div class="overflow-hidden rounded-lg border border-gray-200 mt-2 mb-5">
+                      <table class="table-auto w-full pb-2">
+                          <thead>
+                              <tr class="bg-primary text-white text-center">
+                                  <th class="px-4 py-2">Tiers</th>
+                                  <th class="px-4 py-2">Label</th>
+                                  <th class="px-4 py-2">Loyalty Rate (%)</th>
+                                  <th class="px-4 py-2">Referral Rate (%)</th>
+                              </tr>
+                          </thead>
+                          <tbody style="background-color: #d0e1fd;">
+                              <tr *ngFor="let summary of service.loyaltyTiers">
+                                  <td class="px-4 py-2 text-center">{{ summary.tier }}</td>
+                                  <td class="px-4 py-2 text-center">
+                                      <span *ngIf="summary.tier === 1">
+                                          Platinum
+                                      </span>
+                                      <span *ngIf="summary.tier === 2">
+                                          Gold
+                                      </span>
+                                      <span *ngIf="summary.tier === 3">
+                                          Silver
+                                      </span>
+                                  </td>
+                                  <td class="px-4 py-2 border border-gray-200 text-center">
+                                      {{ summary.loyaltyRate !== null && summary.loyaltyRate !== undefined && summary.loyaltyRate !== 0 && summary.loyaltyRate !== '' ? ( summary.loyaltyRate | number:'1.2-2') : 'Not Applied' }}
+                                  </td>
+                                  <td class="px-4 py-2 border border-gray-200 text-center">
+                                      {{ summary.referralRate !== null && summary.referralRate !== undefined && summary.referralRate !== 0 && summary.referralRate !== '' ? ( summary.referralRate | number:'1.2-2') : 'Not Applied' }}
+                                  </td>
+                                  
+                              </tr>
+                          </tbody>
+                      </table>
+                  </div>
+                </div>
+
                 <!-- Referral Details -->
-                <div *ngIf="service.referralTiers?.length > 0">
+                <!-- <div *ngIf="service.referralTiers?.length > 0">
                   <div class="text-sm font-semibold tracking-tight truncate sm:text-xl pb-1 pt-4">Referral Details</div>
                   <table class="w-full">
                     <thead>
@@ -164,10 +232,10 @@
                         </tr>
                     </tbody>
                   </table>
-                </div>
+                </div> -->
 
                 <!-- Loyalty Details -->
-                <div *ngIf="service.loyaltyTiers && service.loyaltyTiers?.length > 0 && service.loyaltyTiers[0]?.tier !== undefined">
+                <!-- <div *ngIf="service.loyaltyTiers && service.loyaltyTiers?.length > 0 && service.loyaltyTiers[0]?.tier !== undefined">
                   <div class="text-sm font-semibold tracking-tight truncate sm:text-xl pb-1 pt-4">Loyalty Details</div>
                   <table class="w-full">
                     <thead>
@@ -189,10 +257,10 @@
                         </tr>
                     </tbody>
                   </table>
-                </div>
+                </div> -->
 
                 <!-- Micro Dealer Details -->
-                <div *ngIf="service.microDealer">
+                <!-- <div *ngIf="service.microDealer">
                   <div class="text-sm font-semibold tracking-tight truncate sm:text-xl pb-1 pt-4">Micro Dealer Details</div>
                   <table class="w-full">
                     <thead>
@@ -210,11 +278,13 @@
                         </tr>
                     </tbody>
                   </table>
-                </div>
+                </div> -->
+
               </div>
             </td>
           </tr>
 
+          <!-- add service setting -->
           <tr *ngIf="service.mergedRow"> 
             <td [attr.colspan]="6" class="border-left-right">
               <div class="mt-3">
@@ -230,6 +300,7 @@
                 </div>                                
                 <form [formGroup]="conversionServiceForm">
                   <div class="p-grid p-fluid" style="display: flex; gap: 10px;">
+
                     <!-- Service Name -->
                     <div class="field" style="flex: 1;">
                       <label for="serviceName" class="font-semibold">Service Name</label>
@@ -267,72 +338,9 @@
                   <div class="pb-4">
                     <form [formGroup]="conversionServiceForm" style="display: flex; gap: 1rem;">
                       <div style="display: flex; align-items: center; gap: 1rem;">
-                        <p-checkbox formControlName="referralProgram" binary="true" label="Include referral program?" (change)="referralCheckbox($event)"></p-checkbox>
-                        <p-checkbox formControlName="loyaltyProgram" binary="true" label="Include loyalty program?" (change)="loyaltyCheckbox($event)"></p-checkbox>
-                        <p-checkbox formControlName="microdealerProgram" binary="true" label="Include micro dealer program?" (change)="microdealerCheckbox($event)"></p-checkbox>
+                        <p-checkbox formControlName="loyaltyProgram" binary="true" label="Include loyalty & referral program?" (change)="loyaltyCheckbox($event)"></p-checkbox>
                       </div>
                     </form>
-                  </div>
-                
-                  <!-- Display referral service form -->
-                  <div *ngIf="referralProgram" [@expandCollapse]>
-                    <form [formGroup]="referralServiceForm">
-                      <div class="flex justify-between w-full mb-4">
-                        <h2 class="text-xl font-bold leading-6 tracking-tight">
-                          Referral Tiers Settings
-                        </h2>
-                      </div>
-                      
-                      <!-- Form Array: Referral Tiers -->
-                      <div formArrayName="referralTiers">
-                        <div *ngFor="let tier of referralTiers.controls; let i = index" [formGroupName]="i" class="flex flex-wrap gap-4 mb-4">
-                  
-                          <!-- Tier Input -->
-                          <div class="flex-1">
-                            <label for="orderSequence-{{i}}" class="font-semibold">Tier</label>
-                            <span class="p-input-icon-left w-full">
-                              <i class="pi pi-users"></i>
-                              <input id="orderSequence-{{i}}" type="number" pInputText formControlName="orderSequence" placeholder="Enter Tier" readonly/>
-                            </span>
-                          </div>
-                  
-                          <!-- Percentage Input -->
-                          <div class="flex-1">
-                            <label for="percentage-{{i}}" class="font-semibold">Percentage (%)</label>
-                            <span class="p-input-icon-left w-full">
-                              <i class="pi pi-percentage"></i>
-                              <input id="percentage-{{i}}" type="number" pInputText formControlName="percentage" placeholder="Enter Percentage"/>
-                            </span>
-                          </div>
-                  
-                          <!-- Voucher Code Input -->
-                          <div class="flex-1">
-                            <label for="voucherCode-{{i}}" class="font-semibold">Voucher Code</label>
-                            <span class="p-input-icon-left w-full">
-                              <i class="pi pi-tag"></i>
-                              <input id="voucherCode-{{i}}" type="text" pInputText formControlName="voucherCode" placeholder="Enter Voucher Code"/>
-                            </span>
-                          </div>
-                  
-                          <!-- Action Buttons -->
-                          <div class="flex items-center gap-2 mt-4">
-                            <!-- Remove Button -->
-                            <span *ngIf="referralTiers.length > 1 && referralTiers.length <= maxTiers">
-                              <button pButton pRipple type="button" icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="removeReferralTier(i)"></button>
-                            </span>
-                  
-                            <!-- Add Button -->
-                            <span *ngIf="referralTiers.length < maxTiers">
-                              <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="addReferralTier()"></button>
-                            </span>
-                          </div>
-                  
-                        </div>
-                      </div>
-                    </form>
-
-                    <p-message *ngIf="!isTotalPercentageValid" severity="error" text="Total percentage must not exceed 100%"></p-message>
-
                   </div>
                 
                   <!-- Display loyalty service form -->
@@ -349,11 +357,11 @@
                                 
                                 <!-- Tier -->
                                 <div class="field" style="flex: 1;">
-                                    <label for="tier" class="font-semibold">Tier</label>
-                                    <span class="p-input-icon-left">
-                                        <i class="pi pi-users"></i>
-                                        <input id="tier" type="number" pInputText formControlName="tier" placeholder="Enter Tier" readonly/>
-                                    </span>
+                                  <label for="tier" class="font-semibold">Tier</label>
+                                  <span class="p-input-icon-left">
+                                    <i class="pi pi-users"></i>
+                                    <input id="tier" type="number" pInputText formControlName="tier" placeholder="Enter Tier" readonly/>
+                                  </span>
                                 </div>
                 
                                 <!-- Rate -->
@@ -389,27 +397,6 @@
                             </div>
                         </div>
                     </form>
-                  </div>        
-                
-                  <!-- Micro Dealer Setting -->
-                  <div *ngIf="microdealerProgram" [@expandCollapse]>
-                      <form [formGroup]="microdealerServiceForm">
-                        <div class="flex flex-row justify-between w-full h-full">
-                          <h2 class="text-xl font-bold leading-6 tracking-tight">
-                              Micro Dealer Settings
-                          </h2>
-                        </div>
-                        <div class="p-grid p-fluid" style="display: flex; gap: 10px;">
-                          <!-- Rate -->
-                          <div class="field" style="flex: 1;">
-                            <label for="discountRate" class="font-semibold">Discount Rate (%)</label>
-                            <span class="p-input-icon-left">
-                                <i class="pi pi-percentage"></i>
-                                <input id="discountRate" type="number" pInputText autofocus formControlName="discountRate" placeholder="Enter discount rate"/>
-                            </span>
-                          </div>
-                        </div>
-                      </form>
                   </div>
                 
                   <div class="flex align-items-end justify-content-end position-relative">

@@ -1,0 +1,16 @@
+<svg id="medal" width="24" height="27" viewBox="0 0 24 27" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 4C4 1.79086 5.79086 0 8 0H15C17.2091 0 19 1.79086 19 4V6H4V4Z" fill="#FF0078"/>
+    <path d="M11.756 27C18.2479 27 23.5106 21.7373 23.5106 15.2454C23.5106 8.75345 18.2479 3.49072 11.756 3.49072C5.2641 3.49072 0.00137329 8.75345 0.00137329 15.2454C0.00137329 21.7373 5.2641 27 11.756 27Z" fill="#C66538"/>
+    <path d="M11.7546 26.5663C18.2465 26.5663 23.5093 21.3036 23.5093 14.8117C23.5093 8.3198 18.2465 3.05707 11.7546 3.05707C5.26273 3.05707 0 8.3198 0 14.8117C0 21.3036 5.26273 26.5663 11.7546 26.5663Z" fill="url(#paint0_linear_56_2479)"/>
+    <path d="M11.7546 23.6277C16.6236 23.6277 20.5706 19.6806 20.5706 14.8117C20.5706 9.94277 16.6236 5.99573 11.7546 5.99573C6.88571 5.99573 2.93866 9.94277 2.93866 14.8117C2.93866 19.6806 6.88571 23.6277 11.7546 23.6277Z" fill="url(#paint1_linear_56_2479)"/>
+    <defs>
+        <linearGradient id="paint0_linear_56_2479" x1="16.5145" y1="3.32007" x2="7.49331" y2="25.099" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FFEB2E"/>
+            <stop offset="1" stop-color="#FEC22A"/>
+            </linearGradient>
+            <linearGradient id="paint1_linear_56_2479" x1="11.7546" y1="5.79422" x2="11.7546" y2="23.4232" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FFC127"/>
+            <stop offset="1" stop-color="#FEF043"/>
+        </linearGradient>
+    </defs>
+</svg>

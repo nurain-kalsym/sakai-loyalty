@@ -10,6 +10,7 @@ export const membersListResolver = (route: ActivatedRoute) => {
             page: 1,
             pageSize: 20,
             search: null,
+            sortBy: 'A-Z',
             channel: 'ALL',
             status: 'ALL',
             type: null,

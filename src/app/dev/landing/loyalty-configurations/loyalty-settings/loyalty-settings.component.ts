@@ -106,6 +106,19 @@ export class LoyaltySettingsComponent implements OnInit, OnDestroy {
         });
     }
     
+    getTierTooltip(tier: number): string {
+        switch (tier) {
+          case 1:
+            return 'Tier 1 (Platinum)';
+          case 2:
+            return 'Tier 2 (Gold)';
+          case 3:
+            return 'Tier 3 (Silver)';
+        }
+      
+        throw new Error('Unexpected tier value: ' + tier);
+    }      
+    
     formatChannel(channel: string): string {
         if (channel === 'hello-sim') {
             return channel

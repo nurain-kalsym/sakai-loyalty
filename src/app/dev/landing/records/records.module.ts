@@ -19,6 +19,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MemberListingComponent } from './member-listing/member-listing.component';
 import { AccordionModule } from 'primeng/accordion';
 import { OrganizationChartModule } from 'primeng/organizationchart';
+import { TooltipModule } from 'primeng/tooltip';
+import { DialogModule } from 'primeng/dialog';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 @NgModule({
     imports: [
         CommonModule,
@@ -36,7 +39,10 @@ import { OrganizationChartModule } from 'primeng/organizationchart';
         CalendarModule,
         InputTextModule,
         AccordionModule,
-        OrganizationChartModule
+        OrganizationChartModule,
+        TooltipModule,
+        DialogModule,
+        ConfirmDialogModule
     ],
     declarations: [
         AgingDataComponent,

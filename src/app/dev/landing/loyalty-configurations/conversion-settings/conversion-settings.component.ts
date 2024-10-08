@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, Input } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Message, MessageService } from 'primeng/api';
-import { Subject, takeUntil } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, switchMap, takeUntil } from 'rxjs';
 import { LoyaltyService } from 'src/app/core/loyalty/loyalty.service';
 import { Conversion, LoyaltyTier, Pagination, ServiceConversions, Tier } from 'src/app/core/loyalty/loyalty.types';
 import { ValidationService } from 'src/app/core/validation/validation.service';
@@ -29,7 +29,7 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
     allConversion: Conversion[];
     addReferralValue: Tier[];
     addLoyaltyValue: LoyaltyTier[];
-    allConversionService: ServiceConversions[];
+    allServiceConversion: ServiceConversions[] = [];
     existServiceConversion: ServiceConversions[] = [];
     newServiceConversion: ServiceConversions[] = [];
     displayExistServices: ServiceConversions[] = [];
@@ -38,15 +38,14 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
     updatedReferralValue: Tier[] = [];
     updatedLoyaltyValue: LoyaltyTier[] = [];
     manageServiceDialog: boolean = false;
-    referralProgram: boolean = false;
     loyaltyProgram: boolean = false;
-    microdealerProgram: boolean = false;
     showAddServiceForm: boolean = false;
     sumPercentage: boolean = true;
     manageConversionForm: FormGroup;
     conversionServiceForm: FormGroup;
     referralServiceForm: FormGroup;
     loyaltyServiceForm: FormGroup;
+    filterForm: FormGroup;
     microdealerServiceForm: FormGroup;
     pagination: Pagination;
     isLoading = false;
@@ -57,6 +56,12 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
     expandedServiceId: number | null = null;
     _id: string;
     isServiceBeingAdded = false;
+    hoveredIcons: { [key: string]: string } = {};
+    filteredServiceConversion: ServiceConversions[] = [];
+    notFound: boolean = false;
+    openIndex: number = -1;
+    referralTiers: Tier[] = [];
+    editMode: boolean = false;
 
     constructor(
         private _loyaltyService: LoyaltyService,
@@ -64,100 +69,115 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
         private messageService: MessageService,
         private _changeDetectorRef: ChangeDetectorRef,
     ) {}
-
+    
     ngOnInit(): void {
         // Initialize forms
         this.initializeForms();
         this.loadConversions();
 
-        // Subscribe to checkbox changes
-        this.conversionServiceForm.get('referralProgram').valueChanges.subscribe(value => this.referralProgram = value);
-        this.conversionServiceForm.get('loyaltyProgram').valueChanges.subscribe(value => this.loyaltyProgram = value);
-        this.conversionServiceForm.get('microdealerProgram').valueChanges.subscribe(value => this.microdealerProgram = value);
+        // Subscribe to checkbox changes for loyalty programs
+        this.conversionServiceForm.get('loyaltyProgram').valueChanges
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(value => this.loyaltyProgram = value);
 
         // Update service ID when service name changes
-        this.conversionServiceForm.get('serviceName').valueChanges.subscribe((input) => {
-            this.conversionServiceForm.markAllAsTouched();
-            this.conversionServiceForm.markAsDirty();
-            if (input) {
-                this.conversionServiceForm.get('serviceId').patchValue(this.generateServiceId(input));
-            } else {
-                this.conversionServiceForm.get('serviceId').patchValue('');
-            }
-        });        
+        this.conversionServiceForm.get('serviceName').valueChanges
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((input) => {
+                this.conversionServiceForm.markAllAsTouched();
+                this.conversionServiceForm.markAsDirty();
+
+                if (input) {
+                    this.conversionServiceForm.get('serviceId').patchValue(this.generateServiceId(input));
+                } else {
+                    this.conversionServiceForm.get('serviceId').patchValue('');
+                }
+            });
+
+        // Subscribe to search form value changes and filter service conversions
+        this.filterForm.get('search').valueChanges
+            .pipe(
+                takeUntil(this._unsubscribeAll),
+                debounceTime(300),
+                distinctUntilChanged(),
+                switchMap((value) => {
+                    this.openIndex = -1;
+                    let searchText = value ? value.toLowerCase() : '';
+
+                    // Filter the service conversions
+                    this.filteredServiceConversion = this.allServiceConversion.filter(service => 
+                        service.serviceName.toLowerCase().includes(searchText) ||
+                        service.serviceId.toString().toLowerCase().includes(searchText)
+                    );
+
+                    this.notFound = this.filteredServiceConversion.length === 0;
+
+                    // Mark for check
+                    this._changeDetectorRef.markForCheck();
+                    return [this.filteredServiceConversion];
+                })
+            )
+            .subscribe();
+
     }
 
     initializeForms(): void {
-
         // Manage Conversion Form
         this.manageConversionForm = this._formBuilder.group({
             channel: [''],
             expired: ['', [Validators.required, ValidationService.numberOnlyValidator]],
         });
 
+        // Prepare existing and new service conversions
         this.existServiceConversion = this.data?.serviceConversions || [];
-        this.allConversionService = [
+        this.allServiceConversion = [
             ...this.existServiceConversion,
             ...this.newServiceConversion,
         ];
 
+        // Process new and existing service tiers
         if (this.newServiceConversion.length > 0) {
-            this.newDisplayServices = this.newServiceConversion.map(service => {
-                return {
-                    ...service,
-                    referralTiers: this.reverseTiers(service.referralTiers)
-                };
-            });
+            this.newDisplayServices = this.newServiceConversion.map(service => ({
+                ...service,
+                referralTiers: service.referralTiers // No longer reversed
+            }));
         }
 
         if (this.existServiceConversion.length > 0) {
-             this.displayExistServices = this.existServiceConversion.map(service => {
-                return {
-                    ...service,
-                    referralTiers: this.reverseTiers(service.referralTiers)
-                };
-            });
+            this.displayExistServices = this.existServiceConversion.map(service => ({
+                ...service,
+                referralTiers: service.referralTiers // No longer reversed
+            }));
         }
 
         this.displayServices = [
             ...this.displayExistServices,
             ...this.newDisplayServices
-        ]
+        ];
 
+        // Get ID from data
         this._id = this.data?._id;
 
         // Conversion Service Form
         this.conversionServiceForm = this._formBuilder.group({
             serviceId: [{ value: '', disabled: true }],
             serviceName: ['', [Validators.required, ValidationService.serviceNameValidator]],
-            referralProgram: [false],
             loyaltyProgram: [false],
-            microdealerProgram: [false],
-        });
-
-        // Microdealer Service Form
-        this.microdealerServiceForm = this._formBuilder.group({
-            discountRate: [null]
-        });
-
-        // Referral Service Form
-        this.referralServiceForm = this._formBuilder.group({
-            referralTiers: this._formBuilder.array([this.createServiceFormGroup(1)]),
-        });
+        });        
 
         // Loyalty Service Form
-        this.loyaltyServiceForm = this._formBuilder.group({ 
+        this.loyaltyServiceForm = this._formBuilder.group({
             loyaltyTiers: this._formBuilder.array([this.createLoyaltyFormGroup(1)]),
         });
-    }
 
-    get referralTiers(): FormArray {
-        return this.referralServiceForm.get('referralTiers') as FormArray;
+        this.filterForm = this._formBuilder.group({
+            search: [ null ]
+        });
     }
-
+    
     get loyaltyTiers(): FormArray {
         return this.loyaltyServiceForm.get('loyaltyTiers') as FormArray;
-    }
+    }     
 
     updateChannelValue(newValue: string): void {
         this.manageConversionForm.get('channel')?.setValue(newValue);
@@ -171,45 +191,32 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
                 Validators.required,
             ],
             percentage: [
-                null, 
+                null,
                 [Validators.required, ValidationService.numberOnlyValidator]
             ],
             voucherCode: [
-                null, 
+                null,
                 [Validators.required]
             ]
         });
 
         this.setupValueChangeSubscriptions(formGroup, 'referral');
-    
+
         return formGroup;
     }
 
     // Method to create a form group for a loyalty tier
     createLoyaltyFormGroup(tier: number): FormGroup {
-        const formGroup = this._formBuilder.group({
-            tier: [
-                { value: tier, disabled: true },
-                Validators.required,
-            ],
-            rate: [
-                null, 
-                [Validators.required, ValidationService.numberOnlyValidator]
-            ],
-            voucherCode: [
-                null, 
-                [Validators.required]
-            ]
+        return this._formBuilder.group({
+          tier: [{ value: tier, disabled: true }, Validators.required],
+          rate: [null, [Validators.required, ValidationService.numberOnlyValidator]],
+          voucherCode: [null, [Validators.required]],
         });
-
-        this.setupValueChangeSubscriptions(formGroup, 'loyalty');
-    
-        return formGroup;
     }
 
     setupValueChangeSubscriptions(formGroup: FormGroup, type: string): void {
         let isProcessing = false;
-    
+
         if (type === 'loyalty') {
             formGroup.get('rate').valueChanges.subscribe(value => {
                 if (isProcessing) return;
@@ -222,7 +229,7 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
                 }
                 isProcessing = false;
             });
-    
+
             formGroup.get('voucherCode').valueChanges.subscribe(value => {
                 if (isProcessing) return;
                 isProcessing = true;
@@ -246,7 +253,7 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
                 }
                 isProcessing = false;
             });
-    
+
             formGroup.get('voucherCode').valueChanges.subscribe(value => {
                 if (isProcessing) return;
                 isProcessing = true;
@@ -260,7 +267,7 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
             });
         }
     }    
-    
+
     loadConversions(): void {
         this._loyaltyService.getAllConversions({})
             .pipe(takeUntil(this._unsubscribeAll))
@@ -273,69 +280,48 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
                 }
             );
     }
-
+    
     manageService(conversion: Conversion) {
         this.data = conversion;
         this.manageConversionForm.get('channel').setValue(conversion.channel); // Set the channel value in the form control
         this.isChannelReadOnly = true;
-        this.allConversionService = [...conversion.serviceConversions];
+        this.allServiceConversion = [...conversion.serviceConversions];
         this.manageServiceDialog = true;
         this.manageConversionForm.patchValue({
             expired: conversion.expiryDuration
         });
     }
 
-    /* addService() {
-        this.showAddServiceForm = !this.showAddServiceForm;
-        this.isExpanded = !this.isExpanded;
-    } */
-
     onAddNewRow() {
         if (!this.isServiceBeingAdded) {
             this.isServiceBeingAdded = true; // to disable the button
-    
-            this.allConversionService.push({
-            serviceId: '',
-            serviceName: '',
-            microDealer: { discountRate: null },
-            referralTiers: [
-                {
-                orderSequence: null,
-                percentage: null,
-                voucherCode: null,
-                }
-            ],
-            loyaltyTiers: [{
-                tier: null,
-                rate: null,
-                voucherCode: null,
-            }],
-            mergedRow: true
+
+            this.allServiceConversion.push({
+                serviceId: '',
+                serviceName: '',
+                microDealer: { discountRate: null },
+                referralTiers: [
+                    {
+                        orderSequence: null,
+                        percentage: null,
+                        voucherCode: null,
+                    }
+                ],
+                loyaltyTiers: [{
+                    tier: null,
+                    loyaltyRate: null,
+                    voucherCode: null,
+                }],
+                mergedRow: true
             });
         }
-    }     
+    }  
 
     trackByServiceId(index: number, service: any): string {
         return service.serviceId;
     }
-
-    referralCheckbox(event: any): void {
-        this.referralProgram = event.checked;
-
-        if (this.referralProgram) {
-            for (let i = 0; i < this.maxTiers; i++) {
-                this.addReferralTier();
-            }
-        } else {
-            for (let i = 0; i < this.maxTiers; i++) {
-                this.removeReferralTier(i);
-            }
-            
-            this.removeAllValidatorsAndMarkAsValid(this.referralServiceForm);
-        } 
-    }
-
-    loyaltyCheckbox(event: any): void {
+    
+    loyaltyCheckbox(event: any) {
         this.loyaltyProgram = event.checked;
 
         if (this.loyaltyProgram) {
@@ -348,32 +334,10 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
             }
             
             this.removeAllValidatorsAndMarkAsValid(this.loyaltyServiceForm);
-        }
-    }
+        }        
+    }                          
 
-    microdealerCheckbox(event: any): void {
-        this.microdealerProgram = event.checked;
-
-        if (this.microdealerProgram) {
-            this.microdealerServiceForm.markAsDirty();
-            this.microdealerServiceForm.get('discountRate').setValidators([Validators.required, ValidationService.numberOnlyValidator]);
-        } else {
-            this.microdealerServiceForm.patchValue({
-                discountRate: null
-            });
-            this.microdealerServiceForm.get('discountRate').clearValidators();
-            this.microdealerServiceForm.get('discountRate').setErrors(null);
-        }
-    }
-
-    addReferralTier(): void {
-        if (this.referralTiers.length < this.maxTiers) {
-            this.referralTiers.push(
-                this.createServiceFormGroup(this.referralTiers.length + 1)
-            );
-        }
-    }
-
+    // Method to add a new loyalty tier
     addLoyaltyTier(): void {
         if (this.loyaltyTiers.length < this.maxTiers) {
             this.loyaltyTiers.push(
@@ -382,52 +346,29 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
         }
     }
 
-    removeReferralTier(index: number): void {
-        this.referralTiers.removeAt(index);
-        this.updateOrderSequences();
-    }
-
+    // Method to remove an existing loyalty tier
     removeLoyaltyTier(index: number): void {
         this.loyaltyTiers.removeAt(index);
         this.updateTierSequences();
     }
 
-    updateOrderSequences(): void {
-        this.referralTiers.controls.forEach((group, index) => {
-            group.get('orderSequence').setValue(index + 1);
-        });
-    }
-
+    // Method to update the sequence numbers of loyalty tiers
     updateTierSequences(): void {
         this.loyaltyTiers.controls.forEach((group, index) => {
             group.get('tier').setValue(index + 1);
         });
     }
-
+    
     removeAllValidatorsAndMarkAsValid(formGroup: FormGroup) {
-
-        function clearValidatorsAndSetValue(control: AbstractControl) {
-            if (control instanceof FormGroup || control instanceof FormArray) {
-                Object.keys(control.controls).forEach(key => {
-                    clearValidatorsAndSetValue(control.controls[key]);
-                });
+        Object.keys(formGroup.controls).forEach(controlName => {
+            const control = formGroup.get(controlName);
+            if (control instanceof FormGroup) {
+                this.removeAllValidatorsAndMarkAsValid(control);
             } else {
                 control.clearValidators();
-                control.clearAsyncValidators();
-                control.setValue(null, { emitEvent: false });
                 control.updateValueAndValidity();
             }
-        }
-    
-        Object.keys(formGroup.controls).forEach(key => {
-            const control = formGroup.controls[key];
-            
-            clearValidatorsAndSetValue(control);
         });
-    
-        // Mark the entire form as valid
-        formGroup.updateValueAndValidity();
-
     }
 
     // Method to get the values of a form group including disabled controls
@@ -450,64 +391,67 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
         );
     }
 
-    // Method to check if the sum of percentages is within the limit
-    getPercentage(value: number) {
-        return Math.round((value / 30) * 100);
-    }
+    getPercentage() {
+        const formValues = this.getFormValuesWithDisabledControls(
+            this.loyaltyServiceForm
+        );
 
-    reverseTiers(tiers: any) {
-        if (tiers  && tiers.length > 0) {
-            // Extract the percentage and voucherCode values
-            const percentages = tiers.map(tier => tier.percentage);
-            const voucherCodes = tiers.map(tier => tier.voucherCode);
-        
-            // Reverse the arrays
-            const reversedPercentages = percentages.reverse();
-            const reversedVoucherCodes = voucherCodes.reverse();
-        
-            // Assign the reversed values back to the tiers
-            return tiers.map((tier, index) => ({
-                ...tier,
-                percentage: reversedPercentages[index],
-                voucherCode: reversedVoucherCodes[index]
-            }));
+        // Extract percentages and accumulate the total with checks
+        const percentages = formValues.loyaltyTiers.map((item) => {
+            const percentage = parseFloat(item.referralRate);
+            return isNaN(percentage) ? 0 : percentage; // Ensure that invalid numbers are treated as 0
+        });
+
+        const sum = percentages.reduce((accumulator, currentValue) => {
+            return accumulator + currentValue;
+        }, 0);
+
+        // Validate if the sum of percentages exceeds 100%
+        if (sum > 100) {
+            this.sumPercentage = false;
         } else {
-            return [];
+            this.sumPercentage = true;
         }
+
+        this._changeDetectorRef.markForCheck();
     }
 
-    // Method to update the percentage values
-    updatePercentage() {
-        const formValues = this.getFormValuesWithDisabledControls(this.referralServiceForm);
-        let filteredForm: Tier[] = formValues.referralTiers.map((service: Tier) => {
-            service.percentage = (service.percentage / 100) * 30;
-            return service;
-        }).filter(item => item.percentage !== 0 || item.voucherCode !== '')
-          .filter(item => item.orderSequence !== null);
-    
-        this.updatedReferralValue = this.reverseTiers(filteredForm);
-    }
-    
-    updateRate() {
-        const formValues = this.getFormValuesWithDisabledControls(this.loyaltyServiceForm);
-        let filteredForm: LoyaltyTier[] = formValues.loyaltyTiers.map((item: LoyaltyTier) => {
-            if (item.voucherCode !== '') {
-                item.rate = 0;
+    updateLoyaltyRate() {
+        let loyaltyTiers = this.loyaltyServiceForm.get('loyaltyTiers').value;
+
+        loyaltyTiers.forEach((tier, index) => {
+            // Set the tier property to index + 1
+            tier.tier = index + 1;
+          
+            // Set default values if properties are not present
+            if (tier.loyaltyRate === undefined || tier.loyaltyRate === null) {
+              tier.loyaltyRate = 0;
             }
-            return item;
-        }).filter(item => item.rate !== 0 || item.voucherCode !== '')
-          .filter(item => item.tier !== null);
-    
-        this.updatedLoyaltyValue = filteredForm;
-    }    
+          
+            if (tier.voucherCode === undefined || tier.voucherCode === null) {
+              tier.voucherCode = "";
+            }
+          
+            if (tier.referralRate === undefined || tier.referralRate === null) {
+              tier.referralRate = 0;
+            }
+          });
+
+        // set referralTier if any
+        const tierLengths = loyaltyTiers.filter(item => item.referralRate !== 0).length;
+        const sequences = tierLengths === 3 ? [1, 2, 3] : tierLengths === 2 ? [1, 2] : tierLengths === 1 ? [1] : [];
+        this.referralTiers.push(...sequences.map(orderSequence => ({ orderSequence })));
+
+        return loyaltyTiers;
+    }     
 
     save() {
         const body = {
             _id: this.data._id,
             channel: this.data.channel,
             expiryDuration: parseInt(this.manageConversionForm.value.expired),
-            serviceConversions: this.allConversionService.length ? this.allConversionService : [],
-            cashCoinsRate: this.data.cashCoinsRate,
+            serviceConversions: this.allServiceConversion.length ? this.allServiceConversion : [],
+            // cashCoinsRate: this.data.cashCoinsRate,
         };
 
         console.log('ori',this.data);
@@ -519,6 +463,7 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
             next: () => {
                 // Show success toast notification
                 this.messageService.add({
+                    key: 'toast',
                     severity: 'success',
                     summary: 'Channel\'s Conversion Setting Success',
                     detail: 'Conversion settings have been successfully updated.',
@@ -529,6 +474,7 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
                 // Log error and show error toast notification
                 console.error('Error updating conversion settings:', error);
                 this.messageService.add({
+                    key: 'toast',
                     severity: 'error',
                     summary: 'Error Updating Conversion Settings',
                     detail: error.error?.message || 'An unexpected error occurred.',
@@ -539,95 +485,108 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
     }        
 
     submitBtn(): void {
-        if (this.conversionServiceForm.valid) {
-            const activeService = this.allConversionService.find(service => service.mergedRow);
-    
-            if (activeService) {
-                // Get the form values
-                const formValue = this.conversionServiceForm.value;
-                formValue.serviceId = this.generateServiceId(formValue.serviceName);
-
-                let body: any = {
-                    serviceId: this.conversionServiceForm.get('serviceId').value,
-                    serviceName: this.conversionServiceForm.get('serviceName').value,
-                }
-
-                console.log('referral: ',this.referralServiceForm.getRawValue())
-
-                // Conditionally add fields if they have valid values
-                const referral = this.referralServiceForm.getRawValue();
-                const loyalty = this.loyaltyServiceForm.getRawValue();
-                const microdealer = this.microdealerServiceForm.get('discountRate')?.value;
-
-                console.log('referralTiers: ',referral.referralTiers.length)
-
-                if (referral && referral.referralTiers.length > 0 && (referral.referralTiers.filter(tier => tier.percentage !== null).length > 0)) {
-                    body.referralTiers = referral.referralTiers;
-                }
-
-                if (loyalty && loyalty.loyaltyTiers.length > 0 && (loyalty.loyaltyTiers.filter(tier => tier.rate !== null).length > 0)) {
-                    body.loyaltyTiers = loyalty.loyaltyTiers;
-                }
-
-                if (microdealer && microdealer.length > 0) {
-                    body.microDealer = microdealer;
-                }
-                
-                // Remove empty or null entries from the existing services
-                this.allConversionService = this.allConversionService.filter(service => 
-                    service.serviceId !== '' || service.serviceId !== null
-                );
-
-                // Add or replace the active service
-                const existingIndex = this.allConversionService.findIndex(service => service.mergedRow);
-                if (existingIndex > -1) {
-                    this.allConversionService[existingIndex] = body;
-                } else {
-                    this.allConversionService.push(body);
-                }
-    
-                Object.assign(activeService, formValue);
-
-                activeService.mergedRow = false;
+            if (this.editMode) {
+                this.referralTiers = [];
+            } 
+            const loyalty = this.updateLoyaltyRate();
+            const referral = this.referralTiers;
+            const microdealer = {
+                discountRate: this.microdealerServiceForm.get('discountRate').value
             }
-
-            this.conversionServiceForm.reset();
-            this.isServiceBeingAdded = false; // Re-enable the button
-        } else {
-            console.error('Form is invalid');
-        }  
-
-        console.log('Final: ', this.allConversionService);
-        
+    
+            const service = {
+                serviceName: this.conversionServiceForm.value.serviceName,
+                serviceId: this.conversionServiceForm.value.serviceId
+            };
+    
+            const combineData = {
+                service,
+                referral,
+                loyalty,
+                microdealer
+            };
+            
+            this.loyaltyServiceForm.reset();
+            this._changeDetectorRef.markForCheck();
     }
 
+    edit(): void {}
+
+    copyToClipboard(value: string) {
+        const textArea = document.createElement('textarea');
+        textArea.value = value;
+        document.body.appendChild(textArea);
+        textArea.select();
+
+        try {
+            document.execCommand('copy');
+            this.messageService.add({ 
+                key: 'tost', 
+                severity: 'success', 
+                summary: 'success', 
+                detail: 'Successfully copy text' 
+            });
+        } catch (err) {
+            this.messageService.add({
+                key: 'toast', 
+                severity: 'error', 
+                summary: 'Error', 
+                detail: 'Failed to copy text!'
+            });
+        }
+
+        document.body.removeChild(textArea);
+        this._changeDetectorRef.detectChanges();
+    }    
+
     deleteBtn(serviceToDelete: any): void {
-        console.log("Before deletion:", this.existServiceConversion, this.newServiceConversion, this.allConversionService, this.displayServices, this.newDisplayServices);
+        console.log("Before deletion:", this.existServiceConversion, this.newServiceConversion, this.allServiceConversion, this.displayServices, this.newDisplayServices);
         
         this.existServiceConversion = this.existServiceConversion.filter(service => service !== serviceToDelete);
         this.newServiceConversion = this.newServiceConversion.filter(service => service !== serviceToDelete);
-        this.allConversionService = this.allConversionService.filter(service => service !== serviceToDelete);
+        this.allServiceConversion = this.allServiceConversion.filter(service => service !== serviceToDelete);
         this.displayServices = this.displayServices.filter(service => service !== serviceToDelete);
         this.newDisplayServices = this.newDisplayServices.filter(service => service !== serviceToDelete);
         
-        console.log("After deletion:", this.existServiceConversion, this.newServiceConversion, this.allConversionService, this.displayServices, this.newDisplayServices);
+        console.log("After deletion:", this.existServiceConversion, this.newServiceConversion, this.allServiceConversion, this.displayServices, this.newDisplayServices);
     
         this.serviceChanges = true;
         this._changeDetectorRef.markForCheck();
-    }  
+        // this._changeDetectorRef.detectChanges();
+    
+        this.messageService.add({
+            key: 'toast',
+            severity: 'success',
+            summary: 'Delete Success',
+            detail: `Successfully deleted service: ${serviceToDelete}`
+        });
+    } 
+    
+    getTierTooltip(tier: number): string {
+        switch (tier) {
+          case 1:
+            return 'Tier 1 (Platinum)';
+          case 2:
+            return 'Tier 2 (Gold)';
+          case 3:
+            return 'Tier 3 (Silver)';
+        }
+      
+        throw new Error('Unexpected tier value: ' + tier);
+    }
 
-    viewDetails(serviceId: number): void {
+    toggleExpand(serviceId: number): void {
         if (this.expandedServiceId === serviceId) {
           this.expandedServiceId = null;
         } else {
           this.expandedServiceId = serviceId;
         }
-    }   
+    }
     
     closeForm() {
         this.isServiceBeingAdded = false; // Hide the form
-        if (this.allConversionService.length > 0) {
-          this.allConversionService.pop(); // Remove the last row
+        if (this.allServiceConversion.length > 0) {
+          this.allServiceConversion.pop(); // Remove the last row
         }
     }
 
@@ -646,6 +605,10 @@ export class ConversionSettingsComponent implements OnInit, OnDestroy {
         } else {
             return channel;
         }
+    }
+
+    clearSearch(): void {
+        this.filterForm.get('search').setValue(null);
     }
 
     ngOnDestroy(): void {

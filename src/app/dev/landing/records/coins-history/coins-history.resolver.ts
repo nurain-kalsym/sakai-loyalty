@@ -10,6 +10,7 @@ export const coinsHistoryResolver = (route: ActivatedRoute) => {
             page: 1,
             pageSize: 20,
             search: null,
+            sortBy: 'DESC-EARNED',
             type: 'ALL',
             channel: 'ALL',
             startDate: null,

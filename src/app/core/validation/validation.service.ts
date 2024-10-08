@@ -41,7 +41,7 @@ export class ValidationService {
     
     
 
-    static serviceNameValidator(control: AbstractControl): ValidationErrors | null {
+    static serviceNameValidator(control) {
         const value = control.value;
     
         if (value === null || value === '') {
@@ -49,7 +49,7 @@ export class ValidationService {
         }
     
         // Check if the input value consists of only alphabets and spaces
-        const regex = /^[a-zA-Z\s]+$/;
+        const regex = /^[a-zA-Z0-9\s]+$/;
         if (regex.test(value)) {
           return null;  // Valid input (only alphabets and spaces)
         } else {
@@ -67,6 +67,25 @@ export class ValidationService {
             return null;  // Valid input (only numbers)
         } else {
             return { invalidRate: true };  // Invalid input (contains non-numeric characters)
+        }
+    }
+
+    static numbersDecimalValidator(control) {
+        if (control.value === null || control.value === '') {
+            return null;  // No validation error if the value is null or an empty string
+        }
+        
+        // Convert the value to a string and trim any leading or trailing whitespace
+        const valueStr = control.value.toString().trim();
+        
+        // Regular expression to match integers or decimal numbers
+        const numberPattern = /^-?\d*(\.\d+)?$/;
+        
+        // Check if the input value matches the pattern
+        if (numberPattern.test(valueStr)) {
+            return null;  // Valid input (numbers including decimals)
+        } else {
+            return { invalidType: true };  // Invalid input (contains non-numeric characters)
         }
     }
 }

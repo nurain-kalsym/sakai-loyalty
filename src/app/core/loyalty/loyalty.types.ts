@@ -41,7 +41,6 @@ export interface CoinsHistory {
     status: string;
     date: Date;
 }
-
 export interface Members {
     phone: string;
     name: string;
@@ -53,14 +52,14 @@ export interface Members {
         updatedDate: Date;
     }
 }
-
 export interface Channels {
     channelName: string;
     registrationDate: Date;
     status: string;
 }
+
 export interface ReferralTree {
-    expanded: boolean;
+    expended: Boolean;
     styleClass: string;
     data: TreeObj;
     children: ReferralTree[];
@@ -72,16 +71,22 @@ export interface TreeObj {
     refCode: string;
     layer: number;
 }
-
 export interface MembershipInfo {
     phone: string;
     name: string;
     email: string;
+    activeChannels: string[],
     membershipTier: {
         status: string;
         startDate: string;
         duration: number;
         tier: number;
+    },
+    spending: {
+      totalSpending: number;
+      currentTierTarget: number;
+      nextTierTarget: number;
+      memberStatus: string;
     },
     coins: {
         availableCoins: number;
@@ -106,7 +111,6 @@ export interface MembershipInfo {
         updatedDate: Date;
     }
 }
-
 export interface MicrodealerDetails {
     _id: string;
     name: string;
@@ -195,16 +199,14 @@ export interface Conversion {
     channel: string;
     expiryDuration: number;
     serviceConversions: ServiceConversions[];
-    createdAt?: Date;
-    updatedAt?: Date;
-    cashCoinsRate: number;
 }
+
 export interface ServiceConversions {
     serviceId: string;
     serviceName: string;
-    microDealer?: Discount;
     referralTiers: Tier[];
     loyaltyTiers: LoyaltyTier[];
+    microDealer: Discount;
     mergedRow?: boolean;
 }
 export interface Discount {
@@ -217,10 +219,11 @@ export interface Tier {
 }
 export interface LoyaltyTier {
     tier: number;
-    rate: number;
+    loyaltyRate: number;
+    referralRate?: number;
     voucherCode: string;
+    rate?: number;
 }
-
 export interface LoyaltyConfig {
     _id?: string;
     channels: string[];

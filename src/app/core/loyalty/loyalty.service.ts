@@ -312,6 +312,7 @@ export class LoyaltyService {
             page?: number;
             pageSize?: number;
             search?: string;
+            sortBy?: string;
             type?: string;
             channel?: string;
             startDate?: string;
@@ -320,6 +321,7 @@ export class LoyaltyService {
                 page: 1,
                 pageSize: 20,
                 search: null,
+                sortBy: 'DESC-EARNED',
                 type: 'ALL',
                 channel: 'ALL',
                 startDate: null,
@@ -386,6 +388,7 @@ export class LoyaltyService {
             page?: number;
             pageSize?: number;
             search?: string;
+            sortBy?: string;
             channel?: string;
             status?: string;
             type?: string;
@@ -393,6 +396,7 @@ export class LoyaltyService {
                 page: 1,
                 pageSize: 20,
                 search: null,
+                sortBy: 'A-Z',
                 channel: 'ALL',
                 status: 'ALL',
                 type: null,
@@ -451,13 +455,15 @@ export class LoyaltyService {
                     return membersList;
                 })
             );
-        }
+    }
 
     getMembershipInfo(
         params: {
-            phone?: string;
+                phone?: string;
+                channel?: string;
         } = {
-            phone: null,
+                phone: null,
+                channel: 'e-kedai'
         }
     ): Observable<any> {
         let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
@@ -491,7 +497,7 @@ export class LoyaltyService {
                     const membershipInfo = response.data;
 
                     this._logging.debug(
-                        'Response from Bill Service (getMembershipInfo)',
+                        'Response from Loyalty Service (getMembershipInfo)',
                         response
                     );
 
@@ -499,6 +505,57 @@ export class LoyaltyService {
                     this._membershipInfo.next(membershipInfo);
 
                     return membershipInfo;
+                })
+            );
+    }
+
+    editMemberTier (
+        params: {
+            phone?: string;
+            channel?: string;
+            tier?: number;
+            status?: string;
+        } = {
+            phone: null,
+            channel: 'e-kedai',
+            tier: null,
+            status: null
+        }
+    ): Observable<any> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+
+        // Delete empty value
+        Object.keys(params).forEach((key) => {
+            if (Array.isArray(params[key])) {
+                params[key] = params[key].filter((element) => element !== null);
+            }
+            if (
+                params[key] === null ||
+                params[key] === undefined ||
+                params[key] === '' ||
+                (Array.isArray(params[key]) && params[key].length === 0)
+            ) {
+                delete params[key];
+            }
+        });
+        
+        const header = {
+            params,
+        };
+
+        return this._httpClient
+            .put<any>(
+                loyaltyService + '/admin/api/update-membership-tier', null,
+                header
+            )
+            .pipe(
+                map((response) => {
+                    this._logging.debug(
+                        'Response from Loyalty Service (editMemberTier)',
+                        response
+                    )
+
+                    return response;
                 })
             );
     }
@@ -881,66 +938,10 @@ export class LoyaltyService {
             );
         }
         
-        updateConversions(id: string, body: Conversion): Observable<any> {
-            let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
-    
-            if (body.serviceConversions.length > 0) {
-                Object.keys(body).forEach((key) => {
-                    if (Array.isArray(body[key])) {
-                        body[key] = body[key].filter((element) => element !== null);
-                    }
-                    if (
-                        body[key] === null ||
-                        body[key] === undefined ||
-                        body[key] === '' ||
-                        (Array.isArray(body[key]) && body[key].length === 0)
-                    ) {
-                        delete body[key];
-                    }
-                });
-            }
-    
-            return this.conversion$.pipe(
-                take(1),
-                switchMap((conversion) =>
-                    this._httpClient
-                        .put<any>(loyaltyService + '/conversion-setup/update/' + id, body)
-                        .pipe(
-                            map((response) => {
-                                this._logging.debug(
-                                    'Response from Loyalty Service (updateConversions)',
-                                    response
-                                );
-    
-                                const index = conversion.findIndex(
-                                    (item) => item._id === body._id
-                                );
-                                // debugger;
-                                if (response.status === 200) {
-                                    if (index >= 0) {
-                                        conversion[index].channel = body.channel;
-                                        conversion[index].expiryDuration =
-                                            body.expiryDuration;
-                                        conversion[index].serviceConversions =
-                                            body.serviceConversions;
-                                    }
-                                    // Update Conversions
-                                    this._conversion.next(conversion);
-    
-                                    return conversion[index];
-                                }
-    
-                                return conversion[index];
-                            })
-                        )
-                )
-            );
-        }
+    updateConversions(id: string, body: Conversion): Observable<any> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
 
-        createConversion(body: Conversion): Observable<any> {
-            let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
-    
-            // Delete empty value body
+        if (body.serviceConversions.length > 0) {
             Object.keys(body).forEach((key) => {
                 if (Array.isArray(body[key])) {
                     body[key] = body[key].filter((element) => element !== null);
@@ -954,165 +955,221 @@ export class LoyaltyService {
                     delete body[key];
                 }
             });
-    
-            // Log the body before making the service call
-            this._logging.debug('Request body before service call', body);
-    
-            return this.conversion$.pipe(
-                take(1),
-                switchMap((conversion) =>
-                    this._httpClient
-                        .post<any>(loyaltyService + '/conversion-setup/store', body)
-                        .pipe(
-                            catchError((error) => {
-                                this._logging.error(
-                                    'Error creating conversion:',
-                                    error
-                                );
-                                return throwError(error);
-                            }),
-                            map((response) => {
-                                this._logging.debug(
-                                    'Response from Loyalty Service (createConversion)',
-                                    response
-                                );
-                                const newConversion = response.data;
-                                conversion.unshift(newConversion);
-                                // Update the conversions
+        }
+
+        return this.conversion$.pipe(
+            take(1),
+            switchMap((conversion) =>
+                this._httpClient
+                    .put<any>(loyaltyService + '/conversion-setup/update/' + id, body)
+                    .pipe(
+                        map((response) => {
+                            this._logging.debug(
+                                'Response from Loyalty Service (updateConversions)',
+                                response
+                            );
+
+                            const index = conversion.findIndex(
+                                (item) => item._id === body._id
+                            );
+                            // debugger;
+                            if (response.status === 200) {
+                                if (index >= 0) {
+                                    conversion[index].channel = body.channel;
+                                    conversion[index].expiryDuration =
+                                        body.expiryDuration;
+                                    conversion[index].serviceConversions =
+                                        body.serviceConversions;
+                                }
+                                // Update Conversions
                                 this._conversion.next(conversion);
-                                return newConversion;
-                            })
-                        )
-                )
-            );
-        }
 
-        getLoyaltyConfig(
-            params: { page: number, pageSize: number } = { page: null, pageSize: null }): Observable<any> {
-                let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
-    
-            // Delete empty value
-            Object.keys(params).forEach((key) => {
-                if (Array.isArray(params[key])) {
-                    params[key] = params[key].filter((element) => element !== null);
-                }
-                if (
-                    params[key] === null ||
-                    params[key] === undefined ||
-                    params[key] === '' ||
-                    (Array.isArray(params[key]) && params[key].length === 0)
-                ) {
-                    delete params[key];
-                }
-            });
-            
-            const header = {
-                params,
-            };
-    
-            return this._httpClient
-                .get<any>(
-                    loyaltyService + '/loyalty-config/get-list',
-                    header
-                )
-                .pipe(
-                    map((response) => {
-                        const loyaltyConfig = response.data.records;
-    
-                        this._logging.debug(
-                            'Response from Loyalty Service (getLoyaltyConfig)',
-                            response
-                        );
-    
-                        // return data
-                        this._loyaltyConfig.next(loyaltyConfig);
-    
-                        return loyaltyConfig;
-                    })
-                );
-        }
+                                return conversion[index];
+                            }
 
-        setLoyaltyConfig(body: any): Observable<any> {
+                            return conversion[index];
+                        })
+                    )
+            )
+        );
+    }
+
+    createConversion(body: Conversion): Observable<any> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+
+        // Delete empty value body
+        Object.keys(body).forEach((key) => {
+            if (Array.isArray(body[key])) {
+                body[key] = body[key].filter((element) => element !== null);
+            }
+            if (
+                body[key] === null ||
+                body[key] === undefined ||
+                body[key] === '' ||
+                (Array.isArray(body[key]) && body[key].length === 0)
+            ) {
+                delete body[key];
+            }
+        });
+
+        // Log the body before making the service call
+        this._logging.debug('Request body before service call', body);
+
+        return this.conversion$.pipe(
+            take(1),
+            switchMap((conversion) =>
+                this._httpClient
+                    .post<any>(loyaltyService + '/conversion-setup/store', body)
+                    .pipe(
+                        catchError((error) => {
+                            this._logging.error(
+                                'Error creating conversion:',
+                                error
+                            );
+                            return throwError(error);
+                        }),
+                        map((response) => {
+                            this._logging.debug(
+                                'Response from Loyalty Service (createConversion)',
+                                response
+                            );
+                            const newConversion = response.data;
+                            conversion.unshift(newConversion);
+                            // Update the conversions
+                            this._conversion.next(conversion);
+                            return newConversion;
+                        })
+                    )
+            )
+        );
+    }
+
+    getLoyaltyConfig(
+        params: { page: number, pageSize: number } = { page: null, pageSize: null }): Observable<any> {
             let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+
+        // Delete empty value
+        Object.keys(params).forEach((key) => {
+            if (Array.isArray(params[key])) {
+                params[key] = params[key].filter((element) => element !== null);
+            }
+            if (
+                params[key] === null ||
+                params[key] === undefined ||
+                params[key] === '' ||
+                (Array.isArray(params[key]) && params[key].length === 0)
+            ) {
+                delete params[key];
+            }
+        });
         
-            return this._httpClient.post<any>(loyaltyService + '/loyalty-config/store', body)
-                .pipe(
-                    map((response) => {
-                        if (response.code === 200) {
-                            this._logging.debug('Loyalty config created successfully', response);
-                            return response.data;
-                        } else {
-                            throw new Error(response.message);
-                        }
-                    }),
-                    catchError((error) => {
-                        this._logging.error('Error creating loyalty config', error);
-                        return throwError(error);
-                    })
-                );
-        }
-        
-        /* setLoyaltyConfig(body: any): Observable<any> {
-            let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
-    
-            return this._httpClient.post<any>(loyaltyService + '/loyalty-config/store', body).pipe(
-                catchError((error) => {
-                    this._logging.error(
-                        'Error setting setting up loyalty config:',
-                        error
-                    );
-                    return throwError(error);
-                }),
+        const header = {
+            params,
+        };
+
+        return this._httpClient
+            .get<any>(
+                loyaltyService + '/loyalty-config/get-list',
+                header
+            )
+            .pipe(
                 map((response) => {
+                    const loyaltyConfig = response.data.records;
+
                     this._logging.debug(
-                        'Response from Loyalty Service (setLoyaltyConfig)',
+                        'Response from Loyalty Service (getLoyaltyConfig)',
                         response
                     );
-    
-                    return response;
+
+                    // return data
+                    this._loyaltyConfig.next(loyaltyConfig);
+
+                    return loyaltyConfig;
                 })
             );
-        } */
+    }
 
-        /* editLoyaltyConfig(id: string, body: any): Observable<Conversion> {
-            let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+    setLoyaltyConfig(body: any): Observable<any> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
     
-            return this._httpClient.put<any>(loyaltyService + '/loyalty-config/update/' + id, body).pipe(
-                catchError((error) => {
-                    this._logging.error(
-                        'Error updating loyalty config',
-                        error
-                    );
-                    return throwError(error);
-                }),
+        return this._httpClient.post<any>(loyaltyService + '/loyalty-config/store', body)
+            .pipe(
                 map((response) => {
-                    this._logging.debug(
-                        'Response from Loyalty Service (editLoyaltyConfig)',
-                        response
-                    );
-    
-                    return response;
+                    if (response.code === 200) {
+                        this._logging.debug('Loyalty config created successfully', response);
+                        return response.data;
+                    } else {
+                        throw new Error(response.message);
+                    }
+                }),
+                catchError((error) => {
+                    this._logging.error('Error creating loyalty config', error);
+                    return throwError(error);
                 })
             );
-        } */
-
-        editLoyaltyConfig(id: string, body: any): Observable<any> {
-            let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+    }
         
-            return this._httpClient.put<any>(loyaltyService + '/loyalty-config/update/' + id, body)
-                .pipe(
-                    map((response) => {
-                        if (response.code === 200) {
-                            this._logging.debug('Loyalty config updated successfully', response);
-                            return response.data;
-                        } else {
-                            throw new Error(response.message);
-                        }
-                    }),
-                    catchError((error) => {
-                        this._logging.error('Error updating loyalty config', error);
-                        return throwError(error);
-                    })
+    /* setLoyaltyConfig(body: any): Observable<any> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+
+        return this._httpClient.post<any>(loyaltyService + '/loyalty-config/store', body).pipe(
+            catchError((error) => {
+                this._logging.error(
+                    'Error setting setting up loyalty config:',
+                    error
                 );
-        }            
+                return throwError(error);
+            }),
+            map((response) => {
+                this._logging.debug(
+                    'Response from Loyalty Service (setLoyaltyConfig)',
+                    response
+                );
+
+                return response;
+            })
+        );
+    } */
+
+    /* editLoyaltyConfig(id: string, body: any): Observable<Conversion> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+
+        return this._httpClient.put<any>(loyaltyService + '/loyalty-config/update/' + id, body).pipe(
+            catchError((error) => {
+                this._logging.error(
+                    'Error updating loyalty config',
+                    error
+                );
+                return throwError(error);
+            }),
+            map((response) => {
+                this._logging.debug(
+                    'Response from Loyalty Service (editLoyaltyConfig)',
+                    response
+                );
+
+                return response;
+            })
+        );
+    } */
+
+    editLoyaltyConfig(id: string, body: any): Observable<any> {
+        let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
+    
+        return this._httpClient.put<any>(loyaltyService + '/loyalty-config/update/' + id, body)
+            .pipe(
+                map((response) => {
+                    if (response.code === 200) {
+                        this._logging.debug('Loyalty config updated successfully', response);
+                        return response.data;
+                    } else {
+                        throw new Error(response.message);
+                    }
+                }),
+                catchError((error) => {
+                    this._logging.error('Error updating loyalty config', error);
+                    return throwError(error);
+                })
+            );
+    }            
 }

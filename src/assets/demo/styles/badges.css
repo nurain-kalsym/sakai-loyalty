@@ -1,28 +1,37 @@
-.customer-badge,
-.product-badge,
-.order-badge {
+/* .customer-badge, */
+
+/* .order-badge {
   border-radius: var(--border-radius);
   padding: 0.25em 0.5rem;
   text-transform: uppercase;
   font-weight: 700;
   font-size: 12px;
   letter-spacing: 0.3px;
+} */
+.tier-badge {
+  padding: 0.5rem;
+  border-radius: 5px;
+  display: inline-block;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
-.product-badge.status-instock {
-  background: #C8E6C9;
-  color: #256029;
-}
-.product-badge.status-outofstock {
-  background: #FFCDD2;
-  color: #C63737;
-}
-.product-badge.status-lowstock {
-  background: #FEEDAF;
-  color: #8A5340;
+.tier-badge.tier-silver {
+  background: #d6d3d1 !important;
+  color: #78716c !important;
 }
 
-.customer-badge.status-qualified {
+.tier-badge.tier-gold {
+  background: #f2d066 !important;
+  color: #c79807 !important;
+}
+
+.tier-badge.tier-platinum {
+  background: #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+/* .customer-badge.status-qualified {
   background: #C8E6C9;
   color: #256029;
 }
@@ -45,9 +54,9 @@
 .customer-badge.status-proposal {
   background: #FFD8B2;
   color: #805B36;
-}
+} */
 
-.order-badge.order-delivered {
+/* .order-badge.order-delivered {
   background: #C8E6C9;
   color: #256029;
 }
@@ -62,4 +71,4 @@
 .order-badge.order-returned {
   background: #ECCFFF;
   color: #694382;
-}
+} */

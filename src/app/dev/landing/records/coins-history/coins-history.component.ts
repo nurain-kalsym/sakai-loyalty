@@ -14,6 +14,7 @@ export class CoinsHistoryComponent implements OnInit, OnDestroy {
     filterForm: FormGroup;
     selectedChannel: string = 'ALL';
     selectedType: string = 'ALL';
+    selectedSortBy: string = 'DESC-EARNED';
     isLoading = false;
     pagination: Pagination;
     rangeDates: Date[] | undefined;
@@ -27,6 +28,10 @@ export class CoinsHistoryComponent implements OnInit, OnDestroy {
         { label: 'Referral', value: 'REFERRAL' },
         { label: 'Loyalty', value: 'LOYALTY' }
     ];
+    sortBy: {label: string, value: string}[] = [
+        { label: 'Date (Descending)', value: 'DESC-EARNED' },
+        { label: 'Date (Ascending)', value: 'ASC-EARNED' },
+    ];
 
     constructor(
         private _loyaltyService: LoyaltyService,
@@ -39,6 +44,7 @@ export class CoinsHistoryComponent implements OnInit, OnDestroy {
         this.filterForm = this._formBuilder.group({
             type: ['ALL'],
             channel: ['ALL'],
+            sortBy: ['DESC-EARNED'],
             rangeDates: [[]],
             search: [null],
         });
@@ -87,6 +93,16 @@ export class CoinsHistoryComponent implements OnInit, OnDestroy {
             }
         );
 
+        // Filter Sort By
+        this.filterForm.get('sortBy').valueChanges.subscribe(
+            (value) => {
+                if (value) {
+                    this.selectedSortBy = value;
+                    this.loadCoinsHistory({ first: 0, rows: this.pagination.size });
+                }
+            }
+        )
+
         // Filter date range
         this.filterForm.get('rangeDates').valueChanges.subscribe(
             (dates: Date[]) => {
@@ -114,6 +130,7 @@ export class CoinsHistoryComponent implements OnInit, OnDestroy {
             page: page,
             pageSize: pageSize,
             search: this.filterForm.get('search').value || null,
+            sortBy: this.selectedSortBy,
             type: this.selectedType,
             channel: this.selectedChannel,
             startDate: fromDate,

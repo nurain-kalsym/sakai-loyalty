@@ -3,7 +3,7 @@
     <div class="col-12">
         <div class="card">
             <div class="text-2xl font-bold tracking-tight truncate sm:text-3xl">Loyalty Tier Configuration</div>
-            <div class="text-s font-medium font-italic s:text-base text-secondary">This section allows the admin to setup the tier target and duration and assign it to a specific channel.</div>
+            <div class="text-s font-italic s:text-base text-secondary">This section allows the admin to setup the tier target and duration and assign it to a specific channel.</div>
             <div class="mt-3">
                 <!-- Add New Button -->
                 <div class="flex align-items-end justify-content-end position-relative">
@@ -49,21 +49,27 @@
                             <td colspan="7" class="p-0">
                                 <div class="p-accordion">
                                     <div class="p-accordion-content">
-                                        <div [value]="loyaltyConfigs" [loading]="isLoading">
+                                        <div *ngIf="loyaltyConfig" [value]="loyaltyConfig" [loading]="isLoading">
                                             <div class="text-sm font-semibold tracking-tight truncate sm:text-xl pb-1">Loyalty Tiers Details</div>
                                             <table class="w-full">
                                                 <thead>
                                                     <tr class="bg-primary text-white">
                                                         <th class="px-4 py-2 text-center">Tiers</th>
-                                                        <th class="px-4 py-2 text-center">Target Coins</th>
+                                                        <th class="px-4 py-2 text-center">Label</th>
+                                                        <th class="px-4 py-2 text-center">Target (RM)</th>
                                                         <th class="px-4 py-2 text-center">Time Frame (days)</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr *ngFor="let setup of loyaltyConfig.loyaltySetup">
-                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ setup.tier }}</td>
-                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ setup.target | number:'1.0-0' }}</td>
-                                                        <td class="px-4 py-2 text-center text-center border-round-sm bg-blue-100">{{ setup.timeFrame }}</td>
+                                                    <tr *ngFor="let setup of loyaltyConfig?.loyaltySetup">
+                                                        <td class="px-4 py-2 text-center border-round-sm bg-blue-100">{{ setup.tier }}</td>
+                                                        <td class="px-4 py-2 text-center border-round-sm bg-blue-100">
+                                                            <span *ngIf="setup.tier === 1">Platinum</span>
+                                                            <span *ngIf="setup.tier === 2">Gold</span>
+                                                            <span *ngIf="setup.tier === 3">Silver</span>
+                                                        </td>
+                                                        <td class="px-4 py-2 text-center border-round-sm bg-blue-100">{{ setup.target | number:'1.0-0' }}</td>
+                                                        <td class="px-4 py-2 text-center border-round-sm bg-blue-100">{{ setup.timeFrame }}</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -76,7 +82,7 @@
                                     </div>
                                 </div>
                             </td>
-                        </tr>                        
+                        </tr>                                                
                     </ng-template>                    
                 </p-table>
             </div>
@@ -100,7 +106,10 @@
                         <!-- Tier Field -->
                         <div class="flex-1">
                             <div class="field">
-                                <label for="tier-{{i}}" class="font-semibold">Tier</label>
+                                <label for="tier-{{i}}" class="font-semibold">
+                                    Tier <span class="required-asterisk">*</span>
+                                    <i class="pi pi-question-circle ml-2" [pTooltip]="getTierTooltip(tierForm.get('tier').value)" tooltipPosition="right"></i>
+                                </label>
                                 <input id="tier-{{i}}" type="number" pInputText formControlName="tier" placeholder="Enter Tier Number" 
                                     [ngStyle]="{'background-color': tierForm.get('tier').disabled ? '#f5f5f5' : 'white',
                                     'color': tierForm.get('tier').disabled ? 'rgba(0, 0, 0, 0.38)' : 'black',
@@ -111,8 +120,8 @@
                         <!-- Target Field -->
                         <div class="flex-1">
                             <div class="field">
-                                <label for="target-{{i}}" class="font-semibold">Target</label>
-                                <input id="target-{{i}}" type="number" pInputText formControlName="target" placeholder="Enter Target Coins" 
+                                <label for="target-{{i}}" class="font-semibold">Target (RM) <span class="required-asterisk">*</span></label>
+                                <input id="target-{{i}}" type="number" pInputText formControlName="target" placeholder="Enter Target (RM)" 
                                     [ngStyle]="{'background-color': tierForm.get('target').disabled ? '#f5f5f5' : 'white',
                                         'color': tierForm.get('target').disabled ? 'rgba(0, 0, 0, 0.38)' : 'black',
                                         'cursor': tierForm.get('target').disabled ? 'not-allowed' : 'auto'}"
@@ -123,7 +132,7 @@
                         <!-- Time Frame Field -->
                         <div class="flex-1">
                             <div class="field">
-                                <label for="timeFrame-{{i}}" class="font-semibold">Time Frame (days)</label>
+                                <label for="timeFrame-{{i}}" class="font-semibold">Time Frame (days) <span class="required-asterisk">*</span></label>
                                 <input id="timeFrame-{{i}}" type="number" pInputText formControlName="timeFrame" placeholder="Enter Time Frame" 
                                     [ngStyle]="{'background-color': tierForm.get('timeFrame').disabled ? '#f5f5f5' : 'white',
                                         'color': tierForm.get('timeFrame').disabled ? 'rgba(0, 0, 0, 0.38)' : 'black',
@@ -154,6 +163,6 @@
     </ng-template>
 
     <ng-template pTemplate="footer">
-        <button pButton label="Save" icon="pi pi-save" [disabled]="setupForm.invalid" (click)="save()"></button>
+        <button pButton label="Save" icon="pi pi-save" [disabled]="setupForm.invalid || setupForm.pristine"  (click)="save()"></button>
     </ng-template>
 </p-dialog>

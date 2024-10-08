@@ -2,7 +2,7 @@
     <div class="col-12">
         <div class="card">
             <div class="text-2xl font-bold tracking-tight truncate sm:text-3xl">Coins History</div>
-            <div class="text-s font-medium font-italic s:text-base text-secondary">This section displays the overall coins distribution history.</div>
+            <div class="text-s font-italic s:text-base text-secondary">This section displays the overall coins distribution history.</div>
             <div class="mt-3">
                 <div class="mb-2 flex justify-content-end flex-wrap gap-2" [formGroup]="filterForm">
                     <div class="flex align-items-center justify-content-center position-relative">
@@ -13,7 +13,7 @@
                             optionLabel="label" 
                             optionValue="value">
                             <ng-template pTemplate="selectedItem" let-selectedItem>
-                                <span>Type: </span>
+                                <span style="color: rgb(173, 172, 172);">Type: </span>
                                 <span>{{selectedItem?.label || 'All'}}</span>
                             </ng-template>
                             <ng-template pTemplate="item" let-option>
@@ -29,8 +29,24 @@
                             optionLabel="label" 
                             optionValue="value">
                             <ng-template pTemplate="selectedItem" let-selectedItem>
-                                <span>Channel: </span>
+                                <span style="color: rgb(173, 172, 172);">Channel: </span>
                                 <span>{{selectedItem?.label || 'All'}}</span>
+                            </ng-template>
+                            <ng-template pTemplate="item" let-option>
+                                <span>{{option.label}}</span>
+                            </ng-template>
+                        </p-dropdown>
+                    </div>
+                    <div class="flex align-items-center justify-content-center position-relative">
+                        <p-dropdown 
+                            placeholder="Select Sort By" 
+                            [formControl]="filterForm.get('sortBy')" 
+                            [options]="sortBy" 
+                            optionLabel="label" 
+                            optionValue="value">
+                            <ng-template pTemplate="selectedItem" let-selectedItem>
+                                <span style="color: rgb(173, 172, 172);">Sort By: </span>
+                                <span>{{selectedItem?.label || 'Date (Descending)'}}</span>
                             </ng-template>
                             <ng-template pTemplate="item" let-option>
                                 <span>{{option.label}}</span>
@@ -82,7 +98,7 @@
                       <td class="border-right text-center">{{ coins.type | titlecase }}</td>
                       <td class="border-right text-center">{{ formatChannel(coins.channel) }}</td>
                       <td class="border-right text-center">{{ coins.status | titlecase }}</td>
-                      <td class="border-right text-center">{{ coins.date | date: 'dd-MM-yyyy' }}</td>
+                      <td class="border-right text-center">{{ coins.date | date: 'dd MMM YYYY' }}</td>
                     </tr>
                   </ng-template>
                   <ng-template pTemplate="emptymessage">
