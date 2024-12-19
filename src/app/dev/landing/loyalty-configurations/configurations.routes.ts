@@ -4,6 +4,9 @@ import { LoyaltySettingsComponent } from './loyalty-settings/loyalty-settings.co
 import { ConversionSettingsComponent } from './conversion-settings/conversion-settings.component';
 import { AppointReferralAgentComponent } from './referral-agents/referral-agents.component';
 import { MicroDealerComponent } from './micro-dealer/micro-dealer.component';
+import { CoinsConversionComponent } from './coins-conversion-settings/coins-conversion-settings.componen';
+import { NotificationConfigComponent } from './notification-config/notification-config.component';
+import { BroadcastSettingsComponent } from './broadcast-settings/broadcast-settings.component';
 
 @NgModule({
     imports: [RouterModule.forChild([
@@ -14,6 +17,18 @@ import { MicroDealerComponent } from './micro-dealer/micro-dealer.component';
         {
             path: 'conversion-settings',
             component: ConversionSettingsComponent
+        },
+        {
+            path: 'coins-conversion-settings',
+            component: CoinsConversionComponent
+        },
+        {
+            path: 'notification-config',
+            component: NotificationConfigComponent
+        },
+        {
+            path: 'broadcast-settings',
+            component: BroadcastSettingsComponent
         },
         {
             path: 'appoint-referral-agents',

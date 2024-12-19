@@ -30,9 +30,21 @@ export class AppMenuComponent implements OnInit {
                                 label: 'Loyalty Tiers', icon: 'pi pi-fw pi-share-alt',
                                 routerLink: ['/configurations/loyalty-settings']
                             },
+                            /* {
+                                label: 'Coins Conversion1', icon: 'pi pi-fw pi-bitcoin',
+                                routerLink: ['/configurations/conversion-settings']
+                            }, */
                             {
                                 label: 'Coins Conversion', icon: 'pi pi-fw pi-bitcoin',
-                                routerLink: ['/configurations/conversion-settings']
+                                routerLink: ['/configurations/coins-conversion-settings']
+                            },
+                            {
+                                label: 'Notfication Configuration', icon: 'pi pi-fw pi-bell',
+                                routerLink: ['/configurations/notification-config']
+                            },
+                            {
+                                label: 'Broadcast', icon: 'pi pi-fw pi-megaphone',
+                                routerLink: ['/configurations/broadcast-settings']
                             },
                             {
                                 label: 'Appoint Referral Agents', icon: 'pi pi-fw pi-users',

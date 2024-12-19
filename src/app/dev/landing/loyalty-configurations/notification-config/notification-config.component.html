@@ -1,0 +1,326 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card">
+            <div class="text-2xl font-bold tracking-tight truncate">Notification Configuration</div>
+            <div class="text-s font-italic text-secondary">This section allows admin to setup the notification message based on the type.</div>
+            <!-- Add new button -->
+            <div class="mt-3">
+                <div class="flex align-items-end justify-content-end position-relative">
+                    <button pButton type="button" label="Add New" icon="pi pi-plus" (click)="addNew()"></button>
+                </div>
+            </div>
+            <div class="mt-3">
+                <p-table [value]="notificationConfig">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th class="border-top-left text-center font-bold text-gray-800" style="border-top-left-radius: 8px;">Type</th>
+                            <th class="border-top text-center font-bold text-gray-800">Body</th>
+                            <th class="border-top text-center font-bold text-gray-800">Status</th>
+                            <th class="border-top-right text-center font-bold text-gray-800" style="border-top-right-radius: 8px;">Actions</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-config>
+                        <tr>
+                            <td class="border-left text-center" style="border-bottom-left-radius: 8px;">
+                                <span [ngSwitch]="config.type">
+                                    <ng-container *ngSwitchCase="'UPGRADE_THRESHOLD'">Upgrade Threshold</ng-container>
+                                    <ng-container *ngSwitchCase="'PERIODENDREMINDER_THRESHOLD'">Period End Reminder</ng-container>
+                                    <ng-container *ngSwitchCase="'UPGRADE_REACHED'">Upgrade Reached</ng-container>
+                                    <ng-container *ngSwitchCase="'DOWNGRADE_REACHED'">Downgrade Reached</ng-container>
+                                    <ng-container *ngSwitchCase="'COINS_EARNED'">Coins Earned</ng-container>
+                                    <ng-container *ngSwitchCase="'BIRTHDAY'">Birthday</ng-container>
+                                    <ng-container *ngSwitchDefault>{{ config.type }}</ng-container>
+                                </span>
+                            </td>
+                            <td class="text-center">{{ config.description }}</td>
+                            <td class="text-center">
+                                <p-badge 
+                                  [value]="config.status" 
+                                  [style]="{
+                                    backgroundColor: config.status === 'ON' ? '#b0f7c8' : '#fca7bb',
+                                    color: 'black',
+                                    'font-weight': 'normal'
+                                  }">
+                                </p-badge>
+                            </td>                                                            
+                            <td class="text-center border-right text-center" style="border-bottom-right-radius: 8px;">
+                                <button pButton pRipple icon="pi pi-pencil" label="Edit" class="border-transparent p-button-raised bg-blue-500 mr-2"></button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td class="border-left-right text-center" colspan="8" style="border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">There are no configuration record found</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add new notifictaion Popup -->
+<p-dialog [(visible)]="addNewDialog" [style]="{width: '600px'}" [modal]="true" class="p-fluid">
+    <ng-template pTemplate="header">
+        <div class="flex justify-between items-center w-full">
+            <div class="font-semibold text-xl mr-2">Notification Setup</div>
+            <!-- Status Switch -->
+            <div class="flex flex-row items-center justify-end">
+                <p-inputSwitch class="mx-2" [(ngModel)]="isOn" (onChange)="updateRewardStatus()"></p-inputSwitch>
+                <span *ngIf="isOn" class="items-center text-center font-semibold px-2 uppercase p-badge p-component p-rounded p-text-sm bg-green-300" style="color: black;">ON</span>
+                <span *ngIf="!isOn" class="items-center text-center font-semibold px-2 uppercase p-badge p-component p-rounded p-text-sm bg-red-300" style="color: black;">OFF</span>
+            </div>
+        </div>
+    </ng-template>   
+    <form [formGroup]="configForm">
+        <!-- Parent Container -->
+        <div class="flex flex-wrap w-full h-full" style="border: 1px dotted gray; border-radius: 0.375rem; overflow: hidden;">
+            <!-- Image Input (Left) -->
+            <div class="w-full h-full p-4">
+                <div class="text-center hover:scale-105 transition-transform duration-300 ease-in-out">
+                    <p-fileUpload name="notificationImage" accept=".jpg, .png, .jpeg" maxFileSize="5000000" 
+                        [customUpload]="true" (onSelect)="onImageChange($event)" mode="basic" 
+                        class="text-center w-auto">
+                        <ng-template pTemplate="content">
+                            <i class="pi pi-plus text-lg" style="color: black; font-size: 1.5rem;"></i>
+                        </ng-template>
+                    </p-fileUpload>
+                </div>
+                <div class="text-xs text-center text-black font-medium mt-2">Add Inbox Image</div>
+                <div class="text-xs text-center text-gray-400 mt-2">*Recommended size: 500×610px</div>
+            </div>
+            <!-- <div class="w-full h-full p-4">
+                <div class="text-center hover:scale-105 transition-transform duration-300 ease-in-out">
+                    <p-fileUpload name="notificationImage" accept=".jpg, .png, .jpeg" maxFileSize="5000000" 
+                        [customUpload]="true" (onSelect)="onImageChange($event)" mode="basic" class="text-center w-auto">
+                    </p-fileUpload>
+                </div>
+                <div class="text-xs text-center text-black font-medium mt-2">Add Inbox Image</div>
+                <div class="text-xs text-center text-gray-400 mt-2">*Recommended size: 500×610px</div>
+            </div> -->                                                                    
+            
+            <!-- Image Preview (Right) -->
+            <div class="w-full p-2 h-72 pt-4 pb-2">
+                <div class="relative flex items-center justify-center w-full h-full bg-white">
+                    <ng-container *ngIf="imageUrl; else noImage">
+                        <img [src]="imageUrl" alt="Preview" style="max-width: 100%; max-height: 100%; object-fit: contain;" (error)="imageUrl = 'assets/images/default-placeholder.jpg'">
+                    </ng-container>
+                    <ng-template #noImage>
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; height: 100%;">
+                            <i class="pi pi-image text-black" style="font-size: 3rem;"></i>
+                            <span class="mt-3 font-semibold items-center justify-center text-black">NO IMAGE</span>
+                        </div>
+                    </ng-template>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="p-grid p-fluid pt-4" style="display: flex; gap: 10px;">
+
+            <!-- Type -->
+            <div class="field" style="flex: 1;">
+                <label for="type" class="font-semibold">
+                    Type <span class="required-asterisk">*</span>
+                </label>
+                <p-dropdown placeholder="Select Type" [options]="types" formControlName="type"
+                    optionLabel="label" optionValue="value" class="flex-1" appendTo="body" [showClear]="true">
+                </p-dropdown>
+                <div *ngIf="configForm.get('type').touched">
+                    <div *ngIf="configForm.get('type').hasError('required')" class="error-message text-red-500">
+                        Field cannot be empty
+                    </div>
+                </div>                
+            </div>
+        
+            <!-- Channel -->
+            <div class="field" style="flex: 1;">
+                <label for="channel" class="font-semibold">
+                    Channel <span class="required-asterisk">*</span>
+                </label>
+                <span class="p-input-icon-left">
+                    <i class="pi pi-box"></i>
+                    <input id="channel" type="text" pInputText autofocus formControlName="channel" placeholder="E-kedai"
+                        [ngClass]="{'border-red-500': configForm.get('channel').invalid && configForm.get('channel').touched}"/>
+                </span>
+                <div *ngIf="configForm.get('channel').hasError('required') && configForm.get('channel').touched" class="error-message text-red-500">
+                    Field cannot be empty
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Title -->
+        <div class="field">
+            <label for="title" class="font-semibold">
+                Title <span class="required-asterisk">*</span>
+            </label>
+            <span class="p-input-icon-left">
+                <i class="pi pi-file-edit"></i>
+                <input id="title" type="text" pInputText autofocus formControlName="title" placeholder="Enter the notification title"
+                    [ngClass]="{'border-red-500': configForm.get('title').invalid && configForm.get('title').touched}"/>
+            </span>
+            <div *ngIf="configForm.get('title').hasError('required') && configForm.get('title').touched" class="error-message text-red-500">
+                Field cannot be empty
+            </div>
+        </div>
+
+        <!-- Notification Body -->
+        <div class="field" style="width: 100%; display: flex; flex-direction: column;">
+            <label for="description" class="font-semibold">
+                Body <span class="required-asterisk">*</span>
+            </label>
+            <textarea id="description" pInputTextarea autofocus formControlName="description" placeholder="Enter the notification body"
+                [ngClass]="{'border-red-500': configForm.get('description').invalid && configForm.get('description').touched}"
+                style="resize: vertical; width: 100%;"></textarea>
+        </div>
+
+        <!-- push notification preview -->
+        <div class="text-base pb-1 text-black font-medium">Push Notification Preview</div>
+        <div class="p-4 border-round-lg bg-bluegray-100 mt-1 mb-2 overflow-hidden">
+            <div class="flex flex-row items-center mb-2">
+                <i class="pi pi-bell text-xl" style="color: #c3035c;"></i>
+                <span class="text-xs pl-3 pt-1 text-gray-600"> HelloSIM</span>
+                <span class="text-xs pl-1 flex items-center pb-2 text-gray-600">.</span> 
+                <span class="text-xs pl-1 pt-1 text-gray-600">now</span>
+            </div>
+            <p class="text-md font-medium text-black mb-0">{{ getNotificationTitle() }}</p>
+            <p class="text-sm text-gray-600">{{ getNotificationBody() }}</p>
+        </div>                        
+
+        <!-- Notification content -->
+        <div class="field pt-2">
+            <label for="content" class="font-semibold">
+                Content <span class="required-asterisk">*</span>
+                <i class="pi pi-question-circle ml-1"
+                    [pTooltip]="'The content will be display in notification inbox'"
+                    tooltipPosition="right"
+                    (mouseover)="onMouseOver($event)"
+                    (mouseout)="onMouseOut($event)">
+                </i>
+            </label>
+            <p-editor formControlName="content" [style]="{ height: '100px' }"></p-editor>
+            <div *ngIf="configForm.get('content').hasError('required') && configForm.get('content').touched" 
+                class="error-message text-red-500">
+                Field cannot be empty
+            </div>
+        </div>
+
+        <!-- Threshold -->
+        <div class="field" *ngIf="isThresholdVisible">
+            <label for="threshold" class="font-semibold">
+                Threshold <span class="required-asterisk">*</span>
+            </label>
+            <i class="pi pi-question-circle ml-1"
+                [pTooltip]="tooltipMessage"
+                tooltipPosition="right"
+                (mouseover)="onMouseOver($event)"
+                (mouseout)="onMouseOut($event)">
+            </i>
+            <span class="p-input-icon-left">
+                <i class="pi pi-calendar"></i>
+                <input id="threshold" type="number" pInputText autofocus formControlName="threshold" placeholder="Enter the notification threshold"
+                    [ngClass]="{'border-red-500': configForm.get('threshold').invalid && configForm.get('threshold').touched}"/>
+            </span>
+            <div *ngIf="configForm.get('threshold').hasError('required')" class="error-message text-red-500">
+                Field cannot be empty
+            </div>
+            <div *ngIf="configForm.get('threshold').hasError('invalidNumber')" class="error-message text-red-500">
+                Field only accepts numbers (0-9)
+            </div>
+        </div>
+         
+        <!-- <div class="field">
+            <label for="threshold" class="font-semibold">
+                Threshold <span class="required-asterisk">*</span>
+            </label>
+            <i class="pi pi-question-circle ml-1"
+                [pTooltip]="tooltipMessage"
+                tooltipPosition="right"
+                (mouseover)="onMouseOver($event)"
+                (mouseout)="onMouseOut($event)">
+            </i>
+            <span class="p-input-icon-left">
+                <i class="pi pi-calendar"></i>
+                <input id="threshold" type="number" pInputText autofocus formControlName="threshold" placeholder="Enter the notification threshold"
+                    [ngClass]="{'border-red-500': configForm.get('threshold').invalid && configForm.get('threshold').touched}"/>
+            </span>
+            <div *ngIf="configForm.get('threshold').hasError('required')" class="error-message text-red-500">
+                Field cannot be empty
+            </div>
+            <div *ngIf="configForm.get('threshold').hasError('invalidNumber')" class="error-message text-red-500">
+                Filed only accepts numbers (0-9)
+            </div>
+        </div> -->
+
+        <!-- rewards checkbox -->
+        <div [formGroup]="rewardForm">
+            <p-checkbox label="Include Rewards?" formControlName="includeRewards"binary="true"></p-checkbox>
+
+            <div *ngIf="rewardForm.get('includeRewards').value">
+                <div class="text-xl py-4 text-black font-medium">Rewards Settings</div>
+                <!-- Reward Type -->
+                <div class="field">
+                    <label for="rewardType" class="font-semibold">
+                        Reward Type <span class="required-asterisk">*</span>
+                    </label>
+                    <p-dropdown placeholder="Select reward type" [options]="rewardType" formControlName="rewardType"
+                        optionLabel="label" optionValue="value" class="flex-1" appendTo="body" [showClear]="true">
+                    </p-dropdown>
+                    <div *ngIf="rewardForm.get('rewardType').touched">
+                        <div *ngIf="rewardForm.get('rewardType').hasError('required')" class="error-message text-red-500">
+                            Field cannot be empty
+                        </div>
+                    </div>                
+                </div>
+    
+                <!-- Rewards -->
+                <div class="field">
+                    <label for="rewards" class="font-semibold">
+                        Rewards <span class="required-asterisk">*</span>
+                    </label>
+                    <span class="p-input-icon-left">
+                        <i class="pi pi-gift"></i>
+                        <input id="rewards" type="text" pInputText autofocus formControlName="rewards" placeholder="Enter reward amount"
+                            [ngClass]="{'border-red-500': rewardForm.get('rewards').invalid && rewardForm.get('rewards').touched}"/>
+                    </span>
+                    <div *ngIf="rewardForm.get('rewards').hasError('required') && rewardForm.get('rewards').touched" class="error-message text-red-500">
+                        Field cannot be empty
+                    </div>
+                </div>
+    
+                <!-- Rewards validity (in days)* -->
+                <div class="field">
+                    <label for="days" class="font-semibold">
+                        Rewards validity (in days) <span class="required-asterisk">*</span>
+                    </label>
+                    <span class="p-input-icon-left">
+                        <i class="pi pi-calendar"></i>
+                        <input id="days" type="number" pInputText autofocus formControlName="days" placeholder="Enter reward validity in days"
+                            [ngClass]="{'border-red-500': rewardForm.get('days').invalid && rewardForm.get('days').touched}"/>
+                    </span>
+                    <div *ngIf="rewardForm.get('days').hasError('required')" class="error-message text-red-500">
+                        Field cannot be empty
+                    </div>
+                    <div *ngIf="rewardForm.get('days').hasError('invalidNumber')" class="error-message text-red-500">
+                        Filed only accepts numbers (0-9)
+                    </div>
+                </div>
+    
+                <!-- Note -->
+                <div class="field pt-1" style="width: 100%; display: flex; flex-direction: column;">
+                    <label for="description" class="font-semibold">Note</label>
+                    <textarea id="description" type="text" pInputTextarea autofocus formControlName="description" placeholder="Enter reward note"
+                        [ngClass]="{'border-red-500': rewardForm.get('description').invalid && rewardForm.get('description').touched}" 
+                        style="resize: vertical; width: 100%;"></textarea>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="flex align-items-end justify-content-end position-relative mt-3">
+            <div class="w-fit">
+              <button pButton type="button" label="Submit" (click)="submit()" [disabled]="!isFormValid()"></button>
+            </div>
+        </div>
+    </form>
+</p-dialog>

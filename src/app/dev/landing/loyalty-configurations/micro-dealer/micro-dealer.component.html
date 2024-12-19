@@ -6,50 +6,148 @@
             <div class="text-s font-italic s:text-base text-secondary">This section allows the admin to setup which user that will be a micro dealer.</div>
             <div class="mt-3">
                 <form [formGroup]="filterForm">
-                    <div class="mb-2 flex justify-content-end flex-wrap gap-2">
-                        <!-- Channel Filter -->
-                        <div class="flex align-items-center justify-content-center position-relative">
-                            <p-dropdown 
-                                placeholder="Select Channel" 
-                                [formControl]="filterForm.get('channel')" 
-                                [options]="channels" 
-                                optionLabel="label" 
-                                optionValue="value">
-                                <ng-template pTemplate="selectedItem" let-selectedItem>
-                                    <span>Channel: </span>
-                                    <span>{{selectedItem?.label || 'All'}}</span>
-                                </ng-template>
-                                <ng-template pTemplate="item" let-option>
-                                    <span>{{option.label}}</span>
-                                </ng-template>
-                            </p-dropdown>
-                        </div>
-
-                        <!-- Status Filter -->
-                        <div class="flex align-items-center justify-content-center position-relative">
-                            <p-dropdown 
-                                placeholder="Select Status" 
-                                [formControl]="filterForm.get('status')" 
-                                [options]="status" 
-                                optionLabel="label" 
-                                optionValue="value">
-                                <ng-template pTemplate="selectedItem" let-selectedItem>
-                                    <span>Status: </span>
-                                    <span>{{selectedItem?.label || 'All'}}</span>
-                                </ng-template>
-                                <ng-template pTemplate="item" let-option>
-                                    <span>{{option.label}}</span>
-                                </ng-template>
-                            </p-dropdown>
-                        </div>
-
-                        <!-- Add New Button -->
-                        <div class="flex align-items-end justify-content-end position-relative">
-                            <button pButton type="button" label="Add New" icon="pi pi-plus" (click)="addNew()"></button>
-                        </div>                                                        
+                  <div class="mb-2 flex justify-content-end flex-wrap gap-2">
+                    <!-- Channel Filter -->
+                    <div id="tourGuideOverlay1" class="tour-overlay">
+                      <p-dropdown 
+                        placeholder="Select Channel" 
+                        [formControl]="filterForm.get('channel')" 
+                        [options]="channels" 
+                        optionLabel="label" 
+                        optionValue="value">
+                        <ng-template pTemplate="selectedItem" let-selectedItem>
+                          <span>Channel: </span>
+                          <span>{{selectedItem?.label || 'All'}}</span>
+                        </ng-template>
+                      </p-dropdown>
                     </div>
+              
+                    <!-- Status Filter -->
+                    <div id="tourGuideOverlay2" class="tour-overlay">
+                      <p-dropdown 
+                        placeholder="Select Status" 
+                        [formControl]="filterForm.get('status')" 
+                        [options]="status" 
+                        optionLabel="label" 
+                        optionValue="value">
+                        <ng-template pTemplate="selectedItem" let-selectedItem>
+                          <span>Status: </span>
+                          <span>{{selectedItem?.label || 'All'}}</span>
+                        </ng-template>
+                      </p-dropdown>
+                    </div>
+              
+                    <!--  <div id="tourGuideOverlay3" class="tour-overlay">
+                        <button pButton type="button" label="Add New" icon="pi pi-plus" (click)="addNew()"></button>
+                    </div> -->
+                    <!-- Add New Button -->
+                    <div id="tourGuideOverlay3" class="tour-overlay">
+                        <button pButton type="button" label="Add New" icon="pi pi-plus" (click)="addNew()"></button>
+                    </div>
+              
+                    <!-- Tour Guide Button -->
+                    <div class="flex align-items-center justify-content-center position-relative">
+                      <button pButton type="button" label="Start Tour" icon="pi pi-play" class="p-button-text p-button-raised p-ml-2 text-black border-gray-200" (click)="startTour()">
+                      </button>
+                    </div>
+                  </div>
                 </form>
-            </div>
+
+
+                <!-- Overlay for tourGuideOverlay1 -->
+                <p-overlayPanel
+                #tourGuideOverlay1 
+                [showCloseIcon]="true" 
+                (onHide)="endTour(false)"
+                [showTransitionOptions]="'500ms ease-out'"
+                focusOnShow="true"
+                [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                  <div class="p-2">
+                      <h4>Channel Filter Guide</h4>
+                      <p>Select a channel to filter the microdealers. Options include "E-Kedai" and "HelloSim".</p>
+                      <button 
+                        pButton 
+                        type="button" 
+                        label="Next" 
+                        icon="pi pi-chevron-right" 
+                        class="p-button-sm p-button-raised" 
+                        (click)="nextStep()">
+                      </button>
+                  </div>
+                </p-overlayPanel>
+
+                <!-- Overlay for tourGuideOverlay2 -->
+                <p-overlayPanel 
+                  #tourGuideOverlay2 
+                  [showCloseIcon]="true" 
+                  (onHide)="endTour(false)"
+                  [showTransitionOptions]="'500ms ease-out'"
+                  focusOnShow="true"
+                  [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                  <div class="p-2">
+                      <h4>Status Filter Guide</h4>
+                      <p>Filter microdealers by status. Options include "Active" and "Inactive".</p>
+                      <div class="flex justify-between gap-2">
+                          <button
+                              pButton
+                              type="button"
+                              label="Back"
+                              icon="pi pi-chevron-left"
+                              class="p-button-sm p-button-raised"
+                              (click)="previousStep()">
+                          </button>
+                          <button 
+                              pButton 
+                              type="button" 
+                              label="Next" 
+                              icon="pi pi-chevron-right" 
+                              class="p-button-sm p-button-raised" 
+                              (click)="nextStep()">
+                          </button>
+                      </div>
+                  </div>
+                </p-overlayPanel>
+
+                <!-- Overlay for tourGuideOverlay3 -->
+                <p-overlayPanel 
+                  #tourGuideOverlay3 
+                  [showCloseIcon]="true" 
+                  (onHide)="endTour(false)"
+                  [showTransitionOptions]="'500ms ease-out'"
+                  focusOnShow="true"
+                  [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                  <div class="p-2">
+                      <h4>Add New Guide</h4>
+                      <p>Add new Micro Dealer. A popup will appear to fill in the details.</p>
+                      <div class="flex justify-between gap-2">
+                          <button
+                              pButton
+                              type="button"
+                              label="Back"
+                              icon="pi pi-chevron-left"
+                              class="p-button-sm p-button-raised"
+                              (click)="previousStep()">
+                          </button>
+                          <button 
+                              pButton 
+                              type="button" 
+                              label="Next" 
+                              icon="pi pi-chevron-right" 
+                              class="p-button-sm p-button-raised" 
+                              (click)="nextStep()">
+                          </button>
+                          <button
+                               pButton
+                               type="button"
+                               label="View"
+                               icon="pi pi-eye"
+                               class="p-button-sm p-button-raised"
+                               (click)="addNew(true)">
+                          </button>
+                      </div>
+                  </div>
+                </p-overlayPanel>
+            </div>                                                              
             <!-- Table -->
             <div class="mt-3">
                 <p-table [value]="filteredMicrodealers" [loading]="isLoading">
@@ -86,14 +184,16 @@
                         <td class="border-right text-center">
                             <!-- Edit button -->
                             <button pButton pRipple 
+                                id="tourGuideOverlay4"
                                 icon="pi pi-pencil" 
-                                class="border-transparent p-button-raised p-button-rounded bg-orange-300 mr-2" 
+                                class="border-transparent p-button-raised p-button-rounded bg-orange-300 mr-2 tour-overlay p-button-raised" 
                                 (click)="updateStatus(i)">
                             </button>
                             <!-- Save button -->
                             <button pButton pRipple 
+                                id="tourGuideOverlay5"
                                 icon="pi pi-save" 
-                                class="border-transparent p-button-raised p-button-rounded bg-green-300 mr-2" 
+                                class="border-transparent p-button-raised p-button-rounded bg-green-300 mr-2 tour-overlay p-button-raised" 
                                 (click)="saveChanges()"
                                 [disabled]="editingRowIndex !== i || !isModified"
                             ></button>
@@ -106,13 +206,78 @@
                     </tr>
                   </ng-template>
                 </p-table>
+
+                <!-- OverlayPanel for tourGuideOverlay4 -->
+                <p-overlayPanel 
+                  #tourGuideOverlay4 
+                  [showCloseIcon]="true" 
+                  (onHide)="endTour(false)"
+                  [showTransitionOptions]="'500ms ease-out'"
+                  focusOnShow="true"
+                  [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                  <div class="p-2">
+                      <h4>Edit Guide</h4>
+                      <p>Edit Micro Dealer status. The status can be edited in the status column</p>
+                      <div class="flex justify-between gap-2">
+                          <button
+                              pButton
+                              type="button"
+                              label="Back"
+                              icon="pi pi-chevron-left"
+                              class="p-button-sm p-button-raised"
+                              (click)="previousStep()">
+                          </button>
+                          <button 
+                              pButton 
+                              type="button" 
+                              label="Next" 
+                              icon="pi pi-chevron-right" 
+                              class="p-button-sm p-button-raised" 
+                              (click)="nextStep()">
+                          </button>
+                      </div>
+                  </div>
+                </p-overlayPanel>
+
+                <!-- OverlayPanel for TourGuide5 -->
+                <p-overlayPanel 
+                  #tourGuideOverlay5 
+                  [showCloseIcon]="true" 
+                  (onHide)="endTour(false)"
+                  [showTransitionOptions]="'500ms ease-out'"
+                  [hideTransitionOptions]="'500ms ease-out'"
+                  focusOnShow="true"
+                  [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                  <div class="p-2">
+                      <h4>Save Guide</h4>
+                      <p>Save Micro Dealer. The status can be saved by clicking the save button</p>
+                      <div class="flex justify-between gap-2">
+                          <button
+                              pButton
+                              type="button"
+                              label="Back"
+                              icon="pi pi-chevron-left"
+                              class="p-button-sm p-button-raised"
+                              (click)="previousStep()">
+                          </button>
+                          <button 
+                              pButton 
+                              type="button" 
+                              label="Finish" 
+                              icon="pi pi-thumbs-up" 
+                              class="p-button-sm p-button-raised" 
+                              (click)="endTour()">
+                          </button>
+                      </div>
+                  </div>
+                </p-overlayPanel>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Add Popup -->
-<p-dialog [(visible)]="addNewDialog" [style]="{width: '450px'}" header="Microdealer Setup Details" [modal]="true" class="p-fluid">
+<p-dialog [(visible)]="addNewDialog" [style]="{width: '450px'}" header="Microdealer Setup Details" [modal]="true" (onHide)="onDialogClose()" class="p-fluid">
     <form [formGroup]="setupForm">
         <div class="field">
             <label for="phone" class="font-semibold">Microdealer's Phone Number</label>

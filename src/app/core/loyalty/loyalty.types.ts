@@ -208,6 +208,7 @@ export interface ServiceConversions {
     loyaltyTiers: LoyaltyTier[];
     microDealer: Discount;
     mergedRow?: boolean;
+    isDeleted?: boolean;
 }
 export interface Discount {
     discountRate: number;
@@ -222,7 +223,6 @@ export interface LoyaltyTier {
     loyaltyRate: number;
     referralRate?: number;
     voucherCode: string;
-    rate?: number;
 }
 export interface LoyaltyConfig {
     _id?: string;

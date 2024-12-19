@@ -23,7 +23,19 @@ import { MessagesModule } from 'primeng/messages';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { LoyaltySettingsComponent } from './loyalty-settings/loyalty-settings.component';
-
+import { CoinsConversionComponent } from './coins-conversion-settings/coins-conversion-settings.componen';
+import { RippleModule } from 'primeng/ripple';
+import { NotificationConfigComponent } from './notification-config/notification-config.component';
+import { BroadcastSettingsComponent } from './broadcast-settings/broadcast-settings.component';
+import { FileUploadModule } from 'primeng/fileupload';
+import { InputSwitchModule } from 'primeng/inputswitch';
+import { EditorModule } from 'primeng/editor';
+import { InputMaskModule } from 'primeng/inputmask';
+import { TabViewModule } from 'primeng/tabview';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { CalendarModule } from 'primeng/calendar';
+import { BadgeModule } from 'primeng/badge';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
 @NgModule({
     imports: [
         CommonModule,
@@ -45,11 +57,24 @@ import { LoyaltySettingsComponent } from './loyalty-settings/loyalty-settings.co
         InputNumberModule,
         MessagesModule,
         ToastModule,
-        ConfirmDialogModule
+        ConfirmDialogModule,
+        RippleModule,
+        FileUploadModule,
+        InputSwitchModule,
+        EditorModule,
+        InputMaskModule,
+        TabViewModule,
+        RadioButtonModule,
+        CalendarModule,
+        BadgeModule,
+        OverlayPanelModule
     ],
     declarations: [
         LoyaltySettingsComponent,
         ConversionSettingsComponent,
+        CoinsConversionComponent,
+        NotificationConfigComponent,
+        BroadcastSettingsComponent,
         AppointReferralAgentComponent,
         MicroDealerComponent
     ]

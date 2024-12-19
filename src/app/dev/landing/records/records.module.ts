@@ -22,6 +22,7 @@ import { OrganizationChartModule } from 'primeng/organizationchart';
 import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
 @NgModule({
     imports: [
         CommonModule,
@@ -42,7 +43,8 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
         OrganizationChartModule,
         TooltipModule,
         DialogModule,
-        ConfirmDialogModule
+        ConfirmDialogModule,
+        OverlayPanelModule
     ],
     declarations: [
         AgingDataComponent,

@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, viewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MessageService, TreeNode } from 'primeng/api';
 import { first, forkJoin, Subject, takeUntil } from 'rxjs';
 import { LoyaltyService } from 'src/app/core/loyalty/loyalty.service';
 import { CoinsData, Members, Pagination, MembershipInfo } from 'src/app/core/loyalty/loyalty.types';
 import { __values } from 'tslib';
+import { OverlayPanel } from 'primeng/overlaypanel';
 
 @Component({
     templateUrl: './member-listing.component.html',
@@ -76,6 +77,30 @@ export class MemberListingComponent implements OnInit, OnDestroy {
     selectedSortBy: string = 'A-Z';
     upgradeDialog: boolean = false;
     geneologyToolTip: string = null;
+    currentStep = 1;
+    showBackdrop = false;
+    tours = {
+        overlaySteps: [
+            'tourGuideOverlay1',
+            'tourGuideOverlay2',
+            'tourGuideOverlay3',
+            'tourGuideOverlay4',
+            'tourGuideOverlay5'
+        ],
+        tourSteps: [
+            'tourGuide1',
+            'tourGuide2',
+            'tourGuide3',
+            'tourGuide4',
+            'tourGuide5',
+            'tourGuide6',
+            'tourGuide7',
+            'tourGuide8'
+        ]
+    };
+    currentTourSteps: string[] = [];
+    tourType: string = 'overlaySteps';
+
     channels: { label: string, value: string }[] = [
         { label: 'All', value: 'ALL' },
         { label: 'E-Kedai', value: 'e-kedai' },
@@ -105,6 +130,21 @@ export class MemberListingComponent implements OnInit, OnDestroy {
         { label: 'Standard', value: 'STANDARD' },
         { label: 'Permanent', value: 'PERMENANT' },
     ];
+    
+    @ViewChild('tourGuideOverlay1') tourGuideOverlay1: OverlayPanel;
+    @ViewChild('tourGuideOverlay2') tourGuideOverlay2: OverlayPanel;
+    @ViewChild('tourGuideOverlay3') tourGuideOverlay3: OverlayPanel;
+    @ViewChild('tourGuideOverlay4') tourGuideOverlay4: OverlayPanel;
+    @ViewChild('tourGuideOverlay5') tourGuideOverlay5: OverlayPanel;
+
+    @ViewChild('tourGuide1') tourGuide1: OverlayPanel;
+    @ViewChild('tourGuide2') tourGuide2: OverlayPanel;
+    @ViewChild('tourGuide3') tourGuide3: OverlayPanel;
+    @ViewChild('tourGuide4') tourGuide4: OverlayPanel;
+    @ViewChild('tourGuide5') tourGuide5: OverlayPanel;
+    @ViewChild('tourGuide6') tourGuide6: OverlayPanel;
+    @ViewChild('tourGuide7') tourGuide7: OverlayPanel;
+    @ViewChild('tourGuide8') tourGuide8: OverlayPanel;
 
     constructor(
         private _loyaltyService: LoyaltyService,
@@ -392,7 +432,258 @@ export class MemberListingComponent implements OnInit, OnDestroy {
         } else {
             return channel;
         }
-    }   
+    }
+
+    ngAfterViewInit(): void {
+        console.log('View initialized, overlays ready.');
+    }
+
+    /* startTour(): void {
+        console.log('Starting the tour');
+        
+        this.currentStep = 0;
+        this.hideAllOverlays();
+        this.showBackdrop = true;
+
+        const firstOverlayId = this.overlaySteps[this.currentStep];
+        console.log('Showing Overlay: ', firstOverlayId);
+
+        setTimeout(() => {
+            this.showTourOverlay(firstOverlayId);
+        }, 200);
+    } */
+
+    startTour(tourType: string): void {
+        this.tourType = tourType;
+
+        // Retreive steps for the selected tour
+        this.currentTourSteps = this.tours[tourType];
+        if (!this.currentTourSteps) {
+            console.error(`Tour type ${tourType} tour`);
+            return;
+        }
+
+        console.log(`Starting the ${tourType} tour`);
+        
+        this.currentStep = 0;
+        this.hideAllOverlays();
+        this.showBackdrop = true;
+
+        const firstOverlayId = this.currentTourSteps[this.currentStep];
+        console.log('Showing Overlay: ', firstOverlayId);
+        
+        setTimeout(() => {
+            this.showTourOverlay(firstOverlayId);
+        }, 200);
+    }
+
+    showTourOverlay(overlayId: string): void {
+        const targetElement = document.getElementById(overlayId);
+        if (!targetElement) {
+            console.error(`Target element with ID '${overlayId}' not found.`);
+            return;
+        }
+    
+        this.hideAllOverlays();
+        this.applyFocusEffect(overlayId);
+    
+        // Determine the correct overlay reference dynamically
+        const overlayKey = this.tourType === 'overlaySteps' 
+            ? `tourGuideOverlay${this.currentStep + 1}` 
+            : `tourGuide${this.currentStep + 1}`;
+        
+        const overlay = this[overlayKey];
+        if (overlay) {
+            overlay.show(new MouseEvent('click'), targetElement);
+        } else {
+            console.error(`Overlay for ID '${overlayId}' is not defined.`);
+        }
+    }    
+
+    applyFocusEffect(activeOverlayId: string): void {
+        this.currentTourSteps.forEach((stepId) => {
+            const element = document.getElementById(stepId);
+            if (element) {
+                if (stepId === activeOverlayId) {
+                    element.style.zIndex = '200';
+                    element.style.boxShadow = '0 0 10px 2px rgba(255, 255, 255, 0.8)';
+                    element.style.background = 'rgba(255, 255, 255, 1)';
+                } else {
+                    element.style.zIndex = '0';
+                    element.style.boxShadow = 'none';
+                    element.style.background = 'rgba(255, 255, 255, 0.3)';
+                }
+            }
+        });
+    }
+
+    hideAllOverlays(): void {
+        // Reset styles for all elements in current tour steps
+        this.currentTourSteps.forEach((stepId) => {
+            const element = document.getElementById(stepId);
+            if (element) {
+                element.style.zIndex = '0';
+                element.style.boxShadow = 'none';
+                element.style.background = '';
+            }
+        });
+    
+        // Dynamically hide all overlays for the current tour type
+        for (let i = 1; i <= this.tours[this.tourType].length; i++) {
+            const overlayKey = this.tourType === 'overlaySteps' 
+                ? `tourGuideOverlay${i}` 
+                : `tourGuide${i}`;
+            const overlay = this[overlayKey];
+            if (overlay) {
+                overlay.hide();
+            }
+        }
+    }    
+
+    nextStep(): void {
+        if (this.currentStep < this.currentTourSteps.length - 1) {
+            this.hideAllOverlays();
+            this.currentStep++;
+
+            const nextOverlayId = this.currentTourSteps[this.currentStep];
+            setTimeout(() => {
+            this.showTourOverlay(nextOverlayId);
+            }, 200);
+        } else {
+            console.log('Tour finished!');
+            this.endTour();
+        }
+    }
+
+    previousStep(): void {
+        if (this.currentStep > 0) {
+            this.hideAllOverlays();
+            this.currentStep--;
+
+            const prevOverlayId = this.currentTourSteps[this.currentStep];
+            setTimeout(() => {
+            this.showTourOverlay(prevOverlayId);
+            }, 200);
+        }
+    }
+
+    endTour(forceReset: boolean = true): void {
+        console.log('Tour ended');
+        this.hideAllOverlays();
+        this.showBackdrop = false;
+        if (forceReset) {
+            this.currentStep = 0;
+        }
+    }
+
+    /* showTourOverlay(overlayId: string): void {
+        const targetElement = document.getElementById(overlayId);
+        if (!targetElement) {
+            console.error(`Target element with ID '${overlayId}' not found.`);
+            return;
+        }
+    
+        this.hideAllOverlays();
+    
+        // Highlight the current step
+        this.applyFocusEffect(overlayId);
+    
+        const overlay = this[`tourGuideOverlay${this.currentStep + 1}`];
+        if (overlay) {
+            overlay.show(new MouseEvent('click'), targetElement);
+        } else {
+            console.error(`Overlay for ID '${overlayId}' is not defined.`);
+        }
+    }
+
+    applyFocusEffect(activeOverlayId: string): void {
+        this.overlaySteps.forEach((stepId) => {
+            const element = document.getElementById(stepId);
+            if (element) {
+                if (stepId === activeOverlayId) {
+                    element.style.zIndex = '200'; // Bring the active element to the front
+                    element.style.boxShadow = '0 0 10px 2px rgba(255, 255, 255, 0.8)';
+                    element.style.background = 'rgba(255, 255, 255, 1)';
+                } else {
+                    element.style.zIndex = '0';
+                    element.style.boxShadow = 'none';
+                    element.style.background = 'rgba(255, 255, 255, 0.3)'; // Dim inactive elements
+                }
+            }
+        });
+    }
+
+    hideAllOverlays(): void {
+        this.overlaySteps.forEach((stepId) => {
+            const element = document.getElementById(stepId);
+            if (element) {
+                element.style.zIndex = '0';
+                element.style.boxShadow = 'none';
+                element.style.background = ''; // Reset styles
+            }
+        });
+    
+        if (this.tourGuideOverlay1) this.tourGuideOverlay1.hide();
+        if (this.tourGuideOverlay2) this.tourGuideOverlay2.hide();
+        if (this.tourGuideOverlay3) this.tourGuideOverlay3.hide();
+        if (this.tourGuideOverlay4) this.tourGuideOverlay4.hide();
+        if (this.tourGuideOverlay5) this.tourGuideOverlay5.hide();
+    } */
+
+    /* hideAllOverlays(): void {
+        console.log('Hide all overlays');
+        // this.showBackdrop = false;
+        if (this.tourGuideOverlay1) this.tourGuideOverlay1.hide();
+        if (this.tourGuideOverlay2) this.tourGuideOverlay2.hide();
+        if (this.tourGuideOverlay3) this.tourGuideOverlay3.hide();
+        if (this.tourGuideOverlay4) this.tourGuideOverlay4.hide();
+        if (this.tourGuideOverlay5) this.tourGuideOverlay5.hide();
+    } */
+
+    /* nextStep(): void {
+        console.log('Current step before next:', this.currentStep);
+        
+        if (this.currentStep < this.overlaySteps.length - 1) {
+            this.hideAllOverlays();
+
+            this.currentStep++;
+            const nextOverlayId = this.overlaySteps[this.currentStep];
+
+            console.log('Next step index:', this.currentStep);
+            console.log('Attempting to show overlay:', nextOverlayId);
+
+            setTimeout(() => {
+                this.showTourOverlay(nextOverlayId);
+            },200);
+        } else {
+            console.log('Tour finished!');
+            this.endTour();
+        }
+    }
+
+    previousStep(): void {
+        if (this.currentStep > 0) {
+            console.log('Moving to previous step', this.currentStep - 1);
+            
+            this.hideAllOverlays();
+            this.currentStep--;
+
+            setTimeout(() => {
+                const prevOverlayId = this.overlaySteps[this.currentStep];
+                console.log('Showing overlay:', prevOverlayId);
+                this.showTourOverlay(prevOverlayId);
+            }, 200);
+        }
+    }
+
+    endTour(forceReset: boolean = true): void {
+        console.log('Tour ended');
+        this.hideAllOverlays();
+        this.showBackdrop = false;
+        if (forceReset) {
+            this.currentStep = 0;
+        }
+    } */
 
     ngOnDestroy() {
         this._unsubscribeAll.next(null);

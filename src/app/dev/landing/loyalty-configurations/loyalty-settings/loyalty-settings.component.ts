@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ConfirmationService, Message, MessageService } from 'primeng/api';
 import { Subject } from 'rxjs';
@@ -7,6 +7,7 @@ import { LoyaltyService } from 'src/app/core/loyalty/loyalty.service';
 import { LoyaltyConfig } from 'src/app/core/loyalty/loyalty.types';
 import { ValidationService } from 'src/app/core/validation/validation.service';
 import { trigger, style, transition, animate } from '@angular/animations';
+import { OverlayPanel } from 'primeng/overlaypanel';
 @Component({
     templateUrl: './loyalty-settings.component.html',
     providers: [MessageService, ConfirmationService],
@@ -38,6 +39,45 @@ export class LoyaltySettingsComponent implements OnInit, OnDestroy {
     helloSim: boolean = false;
     messages: Message[] = [];
     editMode: boolean = false;
+    isTourActive = false;
+    currentStep = 1;
+    tours = {
+        overlaySteps: [
+            'tourGuideOverlay1',
+            'tourGuideOverlay2'
+        ],
+        tourSteps: [
+            'tourGuide1',
+            'tourGuide2',
+            'tourGuide3',
+            'tourGuide4',
+            'tourGuide5'
+        ],
+        overlayTourSteps: [
+            'guide1',
+            'guide2',
+            'guide3',
+            'guide4',
+            'guide5'
+        ]
+    };
+    currentTourSteps: string[] = [];
+    tourType: string = 'overlaySteps';
+
+    @ViewChild('tourGuideOverlay1') tourGuideOverlay1: OverlayPanel;
+    @ViewChild('tourGuideOverlay2') tourGuideOverlay2: OverlayPanel;
+
+    @ViewChild('tourGuide1') tourGuide1: OverlayPanel;
+    @ViewChild('tourGuide2') tourGuide2: OverlayPanel;
+    @ViewChild('tourGuide3') tourGuide3: OverlayPanel;
+    @ViewChild('tourGuide4') tourGuide4: OverlayPanel;
+    @ViewChild('tourGuide5') tourGuide5: OverlayPanel;
+
+    @ViewChild('guide1') guide1: OverlayPanel;
+    @ViewChild('guide2') guide2: OverlayPanel;
+    @ViewChild('guide3') guide3: OverlayPanel;
+    @ViewChild('guide4') guide4: OverlayPanel;
+    @ViewChild('guide5') guide5: OverlayPanel;
 
     constructor(
         private _loyaltyService: LoyaltyService,
@@ -131,12 +171,6 @@ export class LoyaltySettingsComponent implements OnInit, OnDestroy {
             return channel;
         }
     }
-
-    /* addNew() {
-        this.setupForm.reset();
-        this.setDefaultValues(); // Reset to default values when adding a new entry
-        this.addNewDialog = true;
-    } */
 
     addNew(): void {
         this.setupForm.reset();      // Reset the form
@@ -240,63 +274,7 @@ export class LoyaltySettingsComponent implements OnInit, OnDestroy {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message });
             }
         );
-    }       
-
-    /* save(): void {
-        if (this.setupForm.invalid) {
-            this.messageService.add({ severity: 'error', summary: 'Validation Error', detail: 'Please complete all required fields.' });
-            return;
-        }
-    
-        const selectedChannels = [];
-        if (this.setupForm.value.eKedai) selectedChannels.push('e-kedai');
-        if (this.setupForm.value.helloSim) selectedChannels.push('hello-sim');
-    
-        const type = selectedChannels.length > 1 ? 'unique' : 'basic';
-    
-        (this.setupForm.get('loyaltySetup') as FormArray).controls.forEach(group => {
-            const groupForm = group as FormGroup;
-            if (!groupForm.contains('type')) {
-                groupForm.addControl('type', this._formBuilder.control(type));
-            } else {
-                groupForm.get('type').setValue(type);
-            }
-        });
-    
-        const body: any = {
-            channels: selectedChannels,
-            loyaltySetup: this.setupForm.getRawValue().loyaltySetup
-        };
-    
-        // Check if loyaltyTierDetails is defined
-        if (this.editMode && (!this.loyaltyTierDetails || !this.loyaltyTierDetails._id)) {
-            console.error('LoyaltyTierDetails is not defined or missing _id.');
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'LoyaltyTierDetails is missing. Cannot save changes.' });
-            return;
-        }
-    
-        const saveOperation = this.editMode ? 
-            this._loyaltyService.editLoyaltyConfig(this.loyaltyTierDetails._id, body) :
-            this._loyaltyService.setLoyaltyConfig(body);
-    
-        saveOperation.subscribe(
-            (data) => {
-                const successMessage = this.editMode ? 'Loyalty Config updated successfully' : 'Loyalty Config created successfully';
-                this.messageService.add({ severity: 'success', summary: 'Success', detail: successMessage });
-                this.confirmationService.confirm({
-                    message: `You have successfully ${this.editMode ? 'updated' : 'created'} the configuration.`,
-                    accept: () => {
-                        this.addNewDialog = false;
-                        this.editMode = false; // Reset edit mode after successful save
-                        this._loyaltyService.getLoyaltyConfig({ page: 1, pageSize: 10 }).subscribe(); // Refresh data
-                    }
-                });
-            },
-            (error) => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message });
-            }
-        );
-    } */
+    } 
 
     edit(loyaltyConfig: LoyaltyConfig): void {
         // Set edit mode to true
@@ -329,177 +307,114 @@ export class LoyaltySettingsComponent implements OnInit, OnDestroy {
     
         // Show the dialog for editing
         this.addNewDialog = true;
-    }    
+    }
+
+    ngAfterViewInit(): void {
+        console.log('View initialized, overlays ready.');
+    }
+
+    startTour(tourType: string): void {
+        this.tourType = tourType;
+
+        // Retreive steps for the selected tour
+        this.currentTourSteps = this.tours[tourType];
+        if (!this.currentTourSteps) {
+            console.error(`Tour type ${tourType} tour`);
+            return;
+        }
+
+        console.log(`Starting the ${tourType} tour`);
         
-    /* edit(loyaltyConfig: LoyaltyConfig): void {
-        // Set edit mode to true
-        this.editMode = true;
+        this.currentStep = 0;
+        this.hideAllOverlays();
+
+        const firstOverlayId = this.currentTourSteps[this.currentStep];
+        console.log('Showing Overlay: ', firstOverlayId);
+        
+        setTimeout(() => {
+            this.showTourOverlay(firstOverlayId);
+        }, 200);
+    }
+
+    showTourOverlay(overlayId: string): void {
+        const targetElement = document.getElementById(overlayId);
+        if (!targetElement) {
+            console.error(`Target element with ID '${overlayId}' not found.`);
+            return;
+        }
     
-        // Populate the form with selected configuration data
-        const loyaltySetupArray = this.setupForm.get('loyaltySetup') as FormArray;
-        loyaltySetupArray.clear(); // Clear existing form array controls
+        this.hideAllOverlays();
     
-        loyaltyConfig.loyaltySetup.forEach(setup => {
-            const loyaltyGroup = this.createLoyaltyTierGroup();
-            loyaltyGroup.patchValue({
-                tier: setup.tier,
-                target: setup.target,
-                timeFrame: setup.timeFrame,
-                type: setup.type
-            });
-            loyaltySetupArray.push(loyaltyGroup);
+        // Determine overlay key dynamically based on tourType
+        const overlayKey = `${this.tourType === 'overlaySteps' ? 'tourGuideOverlay' : 
+            this.tourType === 'overlayTourSteps' ? 'guide' : 'tourGuide'}${this.currentStep + 1}`;
+        
+        const overlay = this[overlayKey];
+        if (overlay) {
+            overlay.show(new MouseEvent('click'), targetElement);
+        } else {
+            console.error(`Overlay for ID '${overlayId}' is not defined.`);
+        }
+    }        
+
+    hideAllOverlays(): void {
+        this.currentTourSteps.forEach((stepId) => {
+            const element = document.getElementById(stepId);
+            if (element) {
+                element.style.zIndex = '0';
+                element.style.boxShadow = 'none';
+                element.style.background = '';
+            }
         });
     
-        // Set selected channels in the form
-        this.setupForm.patchValue({
-            eKedai: loyaltyConfig.channels.includes('e-kedai'),
-            helloSim: loyaltyConfig.channels.includes('hello-sim')
-        });
+        // Dynamically hide all overlays for the current tour type
+        for (let i = 1; i <= this.tours[this.tourType].length; i++) {
+            const overlayKey = `${this.tourType === 'overlaySteps' ? 'tourGuideOverlay' : 
+                this.tourType === 'overlayTourSteps' ? 'guide' : 'tourGuide'}${i}`;
+            const overlay = this[overlayKey];
+            if (overlay) {
+                overlay.hide();
+            }
+        }
+    }    
     
-        // Disable fields based on the tier after populating the form
-        this.disableFields();
-    
-        // Show the dialog for editing
-        this.addNewDialog = true;
-    } */   
+    nextStep(): void {
+        if (this.currentStep < this.currentTourSteps.length - 1) {
+            this.hideAllOverlays();
+            this.currentStep++;
+
+            const nextOverlayId = this.currentTourSteps[this.currentStep];
+            setTimeout(() => {
+            this.showTourOverlay(nextOverlayId);
+            }, 200);
+        } else {
+            console.log('Tour finished!');
+            this.endTour();
+        }
+    }
+
+    previousStep(): void {
+        if (this.currentStep > 0) {
+            this.hideAllOverlays();
+            this.currentStep--;
+
+            const prevOverlayId = this.currentTourSteps[this.currentStep];
+            setTimeout(() => {
+            this.showTourOverlay(prevOverlayId);
+            }, 200);
+        }
+    }
+
+    endTour(forceReset: boolean = true): void {
+        console.log('Tour ended');
+        this.hideAllOverlays();
+        if (forceReset) {
+            this.currentStep = 0;
+        }
+    }
     
     ngOnDestroy(): void {
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
     }
 }
-
-/* save(): void {
-        if (this.setupForm.invalid) {
-            this.messageService.add({ severity: 'error', summary: 'Validation Error', detail: 'Please complete all required fields.' });
-            return;
-        }
-    
-        const selectedChannels = [];
-        if (this.setupForm.value.eKedai) selectedChannels.push('e-kedai');
-        if (this.setupForm.value.helloSim) selectedChannels.push('hello-sim');
-    
-        const type = selectedChannels.length > 1 ? 'unique' : 'basic';
-    
-        (this.setupForm.get('loyaltySetup') as FormArray).controls.forEach(group => {
-            const groupForm = group as FormGroup;
-            if (!groupForm.contains('type')) {
-                groupForm.addControl('type', this._formBuilder.control(type));
-            } else {
-                groupForm.get('type').setValue(type);
-            }
-        });
-    
-        const body: any = {
-            channels: selectedChannels,
-            loyaltySetup: this.setupForm.getRawValue().loyaltySetup
-        };
-    
-        const saveOperation = this.editMode ? 
-            this._loyaltyService.editLoyaltyConfig(this.loyaltyTierDetails._id, body) :
-            this._loyaltyService.setLoyaltyConfig(body);
-    
-        saveOperation.subscribe(
-            (data) => {
-                const successMessage = this.editMode ? 'Loyalty Config updated successfully' : 'Loyalty Config created successfully';
-                this.messageService.add({ severity: 'success', summary: 'Success', detail: successMessage });
-                this.confirmationService.confirm({
-                    message: `You have successfully ${this.editMode ? 'updated' : 'created'} the configuration.`,
-                    accept: () => {
-                        this.addNewDialog = false;
-                        this.editMode = false; // Reset edit mode after successful save
-                        this._loyaltyService.getLoyaltyConfig({ page: 1, pageSize: 10 }).subscribe(); // Refresh data
-                    }
-                });
-            },
-            (error) => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message });
-            }
-        );
-    }  */   
-
-/* save(): void {
-        // Ensure the form is valid before proceeding
-        if (this.setupForm.invalid) {
-            this.messageService.add({ severity: 'error', summary: 'Validation Error', detail: 'Please complete all required fields.' });
-            return;
-        }
-    
-        // Get selected channels based on the form values
-        const selectedChannels = [];
-        if (this.setupForm.value.eKedai) {
-            selectedChannels.push('e-kedai');
-        }
-        if (this.setupForm.value.helloSim) {
-            selectedChannels.push('hello-sim');
-        }
-    
-        // Determine the type based on the number of selected channels
-        const type = selectedChannels.length > 1 ? 'unique' : 'basic';
-    
-        // Add or update the type field in each loyalty setup group
-        (this.setupForm.get('loyaltySetup') as FormArray).controls.forEach(group => {
-            const groupForm = group as FormGroup; // Cast to FormGroup
-            if (!groupForm.contains('type')) {
-                groupForm.addControl('type', this._formBuilder.control(type));
-            } else {
-                groupForm.get('type').setValue(type);
-            }
-        });
-    
-        // Prepare the body for the API request
-        const body: any = {
-            channels: selectedChannels,
-            loyaltySetup: this.setupForm.getRawValue().loyaltySetup
-        };
-    
-        // Determine if we're editing or adding new
-        const saveOperation = this.editMode ? this._loyaltyService.editLoyaltyConfig(this.loyaltyTierDetails._id, body) :
-            this._loyaltyService.setLoyaltyConfig(body);
-    
-        saveOperation.subscribe(
-            (data) => {
-                const successMessage = this.editMode ? 'Loyalty Config updated successfully' : 'Loyalty Config created successfully';
-                this.messageService.add({ severity: 'success', summary: 'Success', detail: successMessage });
-                this.confirmationService.confirm({
-                    message: `You have successfully ${this.editMode ? 'updated' : 'created'} the configuration.`,
-                    accept: () => {
-                        this.addNewDialog = false;
-                        this._loyaltyService.getLoyaltyConfig({ page: 1, pageSize: 10 }).subscribe(); // Refresh data
-                    }
-                });
-            },
-            (error) => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message });
-            }
-        );
-    } */
-
-/* edit(loyaltyConfig: LoyaltyConfig, index: number): void {
-        this.editMode = true; // Set the component to edit mode
-        this.loyaltyTierDetails = loyaltyConfig; // Store the selected loyalty configuration details
-        this.addNewDialog = true; // Open the dialog for editing
-    
-        // Reset the form and set values to match the selected loyalty configuration
-        this.setupForm.reset();
-        this.setupForm.patchValue({
-            eKedai: loyaltyConfig.channels.includes('e-kedai'),
-            helloSim: loyaltyConfig.channels.includes('hello-sim')
-        });
-    
-        // Populate the form array for loyalty setup
-        const loyaltySetupControls = this.setupForm.get('loyaltySetup') as FormArray;
-        loyaltySetupControls.clear(); // Clear existing form array
-    
-        // Populate the form array with the selected loyalty configuration details
-        loyaltyConfig.loyaltySetup.forEach((setup) => {
-            loyaltySetupControls.push(this._formBuilder.group({
-                tier: [setup.tier, Validators.required],
-                target: [setup.target, [Validators.required, ValidationService.numberOnlyValidator]],
-                timeFrame: [setup.timeFrame, [Validators.required, ValidationService.numberOnlyValidator]],
-                type: [setup.type]
-            }));
-        });
-    
-        this.cdr.markForCheck(); // Mark for change detection to update the view
-    } */ 

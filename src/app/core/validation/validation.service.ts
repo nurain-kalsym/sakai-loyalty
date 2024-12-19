@@ -88,4 +88,18 @@ export class ValidationService {
             return { invalidType: true };  // Invalid input (contains non-numeric characters)
         }
     }
+
+    // formatChannel method
+    formatChannel(channel: string): string {
+        if (channel === 'hello-sim') {
+            return channel
+                .split('-')
+                .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+                .join('');
+        } else if (channel === 'e-kedai') {
+            return 'E-Kedai';
+        } else {
+            return channel;
+        }
+    }
 }

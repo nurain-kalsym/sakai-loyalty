@@ -5,6 +5,7 @@ export interface IAppConfig {
     serviceUrl: {
         loyaltyService: string;
         profileService: string;
+        communicationService: string;
     };
     logging: number;
 }

@@ -1,0 +1,577 @@
+<div class="grid">
+    <p-toast key="toast" position="top-right"></p-toast>
+    <div class="col-12">
+        <div class="card">
+            <div class="text-2xl font-bold tracking-tight truncate">Broadcast</div>
+            <div class="text-s font-italic text-secondary">This section allows admin to directly send broadcast messages to user.</div>
+
+            <div class="mt-4" style="min-height: 100%; height: auto;">
+                <p-tabView [style]="{ height: '100%', width: '100%' }">
+                    <p-tabPanel class="text-base">
+                        <ng-template pTemplate="header">
+                            <span [class.text-black]="activeTabIndex !== 0">Send</span>
+                        </ng-template>
+                        <form [formGroup]="broadcastForm">
+
+                            <div class="text-base mt-4 text-black font-medium">Image</div>
+
+                            <!-- Image -->
+                            <div class="flex flex-wrap w-full h-full mb-4 mt-2" style="border: 1px dotted gray; border-radius: 0.375rem; overflow: hidden;">
+                                <!-- Image Input (Left) -->
+                                <div class="w-full h-full p-4">
+                                    <div class="text-center hover:scale-105 transition-transform duration-300 ease-in-out">
+                                        <p-fileUpload 
+                                            name="notificationImage" 
+                                            accept=".jpg, .png, .jpeg" 
+                                            maxFileSize="5000000" 
+                                            [customUpload]="true" 
+                                            (onSelect)="onImageChange($event)" 
+                                            mode="basic" 
+                                            class="text-center w-auto" 
+                                            [style]="{
+                                                background: 'none', 
+                                                color: 'black',
+                                                border: 'none', 
+                                                display: 'inline-flex', 
+                                                alignItems: 'center', 
+                                                justifyContent: 'center'
+                                            }">
+                                        </p-fileUpload>
+                                    </div>
+                                    <div class="text-xs text-center text-black font-medium mt-2">Add Inbox Image</div>
+                                    <div class="text-xs text-center text-gray-400 mt-2">*Recommended size: 500×610px</div>
+                                </div>                                                                   
+                                
+                                <!-- Image Preview (Right) -->
+                                <div class="w-full p-2 h-72 pt-4 pb-2">
+                                    <div class="relative flex items-center justify-center w-full h-full bg-white">
+                                        <ng-container *ngIf="imageUrl; else noImage">
+                                            <img [src]="imageUrl" alt="Preview" style="max-width: 100%; max-height: 100%; object-fit: contain;" (error)="imageUrl = 'assets/images/default-placeholder.jpg'">
+                                        </ng-container>
+                                        <ng-template #noImage>
+                                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; height: 100%;">
+                                                <i class="pi pi-image text-black" style="font-size: 3rem;"></i>
+                                                <span class="mt-3 font-semibold items-center justify-center text-black">NO IMAGE</span>
+                                            </div>
+                                        </ng-template>
+                                    </div>
+                                </div>
+                    
+                            </div>
+
+                            <!-- Broadcast Title -->
+                            <div class="field" style="width: 100%; display: flex; flex-direction: column;">
+                                <label for="title" class="font-semibold">
+                                    Title <span class="required-asterisk">*</span>
+                                </label>
+                                <span class="p-input-icon-left" style="width: 100%;">
+                                    <i class="pi pi-file-edit"></i>
+                                    <input id="title" type="text" pInputText autofocus formControlName="title" placeholder="Enter broadcast title"
+                                        [ngClass]="{'border-red-500': broadcastForm.get('title').invalid && broadcastForm.get('title').touched}" 
+                                        style="width: 100%;" />
+                                </span>
+                                <div *ngIf="broadcastForm.get('title').hasError('required') && broadcastForm.get('title').touched" class="error-message text-red-500">
+                                    Field cannot be empty
+                                </div>
+                            </div>
+
+                            <!-- Broadcast Body -->
+                            <div class="field" style="width: 100%; display: flex; flex-direction: column;">
+                                <label for="description" class="font-semibold">
+                                    Body <span class="required-asterisk">*</span>
+                                </label>
+                                <textarea id="description" pInputTextarea autofocus formControlName="description" placeholder="Enter broadcast body"
+                                    [ngClass]="{'border-red-500': broadcastForm.get('description').invalid && broadcastForm.get('description').touched}"
+                                    style="resize: vertical; width: 100%;"></textarea>
+                            </div>                            
+
+                            <!-- Push Notification Preview -->
+                            <div class="text-base pb-1 text-black font-medium">Push Notification Preview</div>
+                            <div class="p-4 border-round-lg bg-bluegray-100 mt-1 mb-2 overflow-hidden">
+                                <div class="flex flex-row items-center mb-2">
+                                    <i class="pi pi-bell text-xl" style="color: #c3035c;"></i>
+                                    <span class="text-xs pl-3 pt-1 text-gray-600"> HelloSIM</span>
+                                    <span class="text-xs pl-1 flex items-center pb-2 text-gray-600">.</span> 
+                                    <span class="text-xs pl-1 pt-1 text-gray-600">now</span>
+                                </div>
+                                <p class="text-md font-medium text-black mb-0">{{ getNotificationTitle() }}</p>
+                                <p class="text-sm text-gray-600">{{ getNotificationBody() }}</p>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="field pt-2" style="width: 100%; display: flex; flex-direction: column;">
+                                <label for="body" class="font-semibold">
+                                    Content <span class="required-asterisk">*</span>
+                                    <i class="pi pi-question-circle ml-1"
+                                        [pTooltip]="'The content will be displayed in the notification inbox'"
+                                        tooltipPosition="right"
+                                        (mouseover)="onMouseOver($event)"
+                                        (mouseout)="onMouseOut($event)">
+                                    </i>
+                                </label>
+                                <p-editor formControlName="body" [style]="{ height: '180px' }"></p-editor>
+                                <div *ngIf="broadcastForm.get('body').hasError('required') && broadcastForm.get('body').touched" 
+                                    class="error-message text-red-500">
+                                    Field cannot be empty
+                                </div>
+                            </div>
+
+                            <!-- Notification Date and Time -->
+                            <div class="text-base pb-3 text-black font-medium">Notification Time</div>
+                            <div class="pb-5">
+                                <p-radioButton
+                                    class="pr-2" 
+                                    name="sendMethod" 
+                                    value="IMMEDIATE" 
+                                    label="Send Now"
+                                    formControlName="sendMethod">
+                                </p-radioButton>
+                                <p-radioButton 
+                                    class="pl-2"
+                                    name="sendMethod" 
+                                    value="SCHEDULED" 
+                                    label="Schedule to send" 
+                                    formControlName="sendMethod">
+                                </p-radioButton>
+
+                                <!-- Calendar -->
+                                <div *ngIf="broadcastForm.get('sendMethod')?.value === 'SCHEDULED'" class="p-fluid p-grid p-formgrid pt-4" style="display: flex; gap: 10px;">
+                                    <!-- Date -->
+                                    <div class="field" style="flex: 1;">
+                                        <label for="scheduled" class="font-medium">
+                                           Select Date <span class="required-asterisk">*</span>
+                                        </label>
+                                        <p-calendar
+                                            formControlName="notificationDate"
+                                            [showIcon]="true"
+                                            [iconDisplay]="'input'"
+                                            [minDate]="minDate">
+                                        </p-calendar>
+                                    </div>
+
+                                    <!-- Time -->
+                                    <div class="field" style="flex: 1;">
+                                        <label for="scheduled" class="font-medium">
+                                           Pick a Time <span class="required-asterisk">*</span>
+                                        </label>
+                                        <p-calendar 
+                                            formControlName="notificationTime"
+                                            [showIcon]="true"
+                                            [iconDisplay]="'input'"
+                                            [timeOnly]="true"> 
+                                                <ng-template pTemplate="inputicon" let-clickCallBack="clickCallBack">
+                                                    <i 
+                                                        class="pi pi-clock pointer-events-none pointer-events-none"
+                                                        (click)="clickCallBack($event)"></i>
+                                                </ng-template>
+                                        </p-calendar>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- Reward Settings -->
+                            <div [formGroup]="rewardForm">
+                                <p-checkbox label="Include Rewards?" formControlName="includeRewards" binary="true"></p-checkbox>
+
+                                <div *ngIf="rewardForm.get('includeRewards').value">
+                                    <div class="text-xl py-4 text-black font-medium">Rewards Settings</div>
+                                    <!-- Reward Type -->
+                                    <div class="field pt-1" style="width: 100%; display: flex; flex-direction: column;">
+                                        <label for="rewardType" class="font-semibold">
+                                            Reward Type <span class="required-asterisk">*</span>
+                                        </label>
+                                        <p-dropdown placeholder="Select reward type" [options]="rewardType" formControlName="rewardType"
+                                            optionLabel="label" optionValue="value" class="flex-1" appendTo="body" [showClear]="true">
+                                        </p-dropdown>
+                                        <div *ngIf="rewardForm.get('rewardType').touched">
+                                            <div *ngIf="rewardForm.get('rewardType').hasError('required')" class="error-message text-red-500">
+                                                Field cannot be empty
+                                            </div>
+                                        </div>                
+                                    </div>
+
+                                    <style>
+                                        ::ng-deep .p-dropdown {
+                                            width: 100% !important;
+                                            box-sizing: border-box;
+                                        }
+                                    </style>
+                        
+                                    <!-- Rewards -->
+                                    <div class="field pt-1" style="width: 100%; display: flex; flex-direction: column;">
+                                        <label for="rewards" class="font-semibold">
+                                            Rewards <span class="required-asterisk">*</span>
+                                        </label>
+                                        <span class="p-input-icon-left">
+                                            <i class="pi pi-gift"></i>
+                                            <input id="rewards" type="text" pInputText autofocus formControlName="rewards" placeholder="Enter reward amount"
+                                                [ngClass]="{'border-red-500': rewardForm.get('rewards').invalid && rewardForm.get('rewards').touched}"
+                                                style="resize: vertical; width: 100%;"/>
+                                        </span>
+                                        <div *ngIf="rewardForm.get('rewards').hasError('required') && rewardForm.get('rewards').touched" class="error-message text-red-500">
+                                            Field cannot be empty
+                                        </div>
+                                    </div>
+                        
+                                    <!-- Rewards validity (in days) -->
+                                    <div class="field pt-1" style="width: 100%; display: flex; flex-direction: column;">
+                                        <label for="days" class="font-semibold">
+                                            Rewards validity (in days) <span class="required-asterisk">*</span>
+                                        </label>
+                                        <span class="p-input-icon-left">
+                                            <i class="pi pi-calendar"></i>
+                                            <input id="days" type="number" pInputText autofocus formControlName="days" placeholder="Enter reward validity in days"
+                                                [ngClass]="{'border-red-500': rewardForm.get('days').invalid && rewardForm.get('days').dirty}"
+                                                style="resize: vertical; width: 100%;"/>
+                                        </span>
+                                        <div *ngIf="rewardForm.get('days').hasError('required')" class="error-message text-red-500">
+                                            Field cannot be empty
+                                        </div>
+                                        <div *ngIf="rewardForm.get('days').hasError('invalidNumber')" class="error-message text-red-500">
+                                            Filed only accepts numbers (0-9)
+                                        </div>
+                                    </div>
+                        
+                                    <!-- Note -->
+                                    <div class="field pt-1" style="width: 100%; display: flex; flex-direction: column;">
+                                        <label for="description" class="font-semibold">Note</label>
+                                        <textarea id="description" type="text" pInputTextarea autofocus formControlName="description" placeholder="Enter reward note"
+                                            [ngClass]="{'border-red-500': rewardForm.get('description').invalid && rewardForm.get('description').touched}" 
+                                            style="resize: vertical; width: 100%;"></textarea>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Button -->
+                            <div class="flex align-items-end justify-content-end position-relative mt-3">
+                                <div class="w-fit">
+                                    <button pButton type="button" label="Reset" style="margin-right: 1rem;" (click)="reset()"></button>
+                                    <button pButton type="button" label="Submit" [disabled]="!isFormValid()" (click)="submitBtn()"></button>
+                                </div>
+                            </div>
+
+                        </form>
+                    </p-tabPanel>
+                    
+                    <!-- Sent notification tab -->
+                    <p-tabPanel class="text-base">
+                        <ng-template pTemplate="header">
+                            <span [class.text-black]="activeTabIndex !== 1">Sent</span>
+                        </ng-template>
+                        
+                        <div class="text-base mt-4 text-black font-medium mb-4">Send Notification</div>
+                        
+                        <p-table [value]="broadcastNotification">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th class="border-top-left text-center font-bold text-gray-800" style="border-top-left-radius: 8px;">Title</th>
+                                    <th class="border-top text-center font-bold text-gray-800">Body</th>
+                                    <th class="border-top text-center font-bold text-gray-800">Type</th>
+                                    <th class="border-top text-center font-bold text-gray-800">Schedule Date</th>
+                                    <th class="border-top text-center font-bold text-gray-800">Status</th>
+                                    <th class="border-top-right text-center font-bold text-gray-800" style="border-top-right-radius: 8px;">Actions</th>
+                                </tr>
+                            </ng-template>
+
+                            <ng-template pTemplate="body" let-broadcast>
+                                <tr>
+                                    <td class="border-left text-center" style="border-bottom-left-radius: 8px;">{{ broadcast.title }}</td>
+                                    <td class="text-center">{{ broadcast.description }}</td>
+                                    <td class="text-center">{{ broadcast.sendMethod | titlecase }}</td>
+                                    <td class="text-center">
+                                        <div>{{ formatDate(broadcast.sendDate) ? (broadcast.sendDate | date: 'MMM d, y') : 'N/A' }}</div>
+                                        <div>{{ formatDate(broadcast.sendDate) ? (broadcast.sendDate | date: 'h:mm a') : '' }}</div>
+                                    </td>                                                                        
+                                    <td class="text-center">
+                                        <p-badge 
+                                            [value]="broadcast.status" 
+                                            [style]="{
+                                                'background-color': broadcast.status === 'PENDING' ? '#fed7aa' : (broadcast.status === 'SENT' ? '#bbf7d0' : ''),
+                                                'color': 'black',
+                                                'font-weight': '500'
+                                            }">
+                                        </p-badge>
+                                      </td>
+                                      <td class="text-center border-right text-center" style="border-bottom-right-radius: 8px;">
+                                        <button pButton 
+                                            label="Edit" 
+                                            type="button"
+                                            icon="pi pi-pencil" 
+                                            class="p-button-sm p-button-primary" 
+                                            (click)="onEditBroadcast(broadcastNotification)">
+                                        </button>
+                                    </td>                                    
+                                </tr>
+                            </ng-template>
+
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td class="border-left-right text-center" colspan="8" 
+                                        style="border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                                        There are no broadcast notification found
+                                    </td>
+                                </tr>
+                            </ng-template>
+
+                        </p-table>
+
+                    </p-tabPanel>
+
+                </p-tabView>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- Edit Broadcast Notification Modal -->
+<p-dialog [(visible)]="addNewDialog" [style]="{width: '600px'}" [modal]="true" class="p-fluid">
+    <ng-template pTemplate="header">
+        <div class="flex justify-between items-center w-full">
+            <div class="font-semibold text-xl mr-2">Update Broadcast</div>
+        </div>
+    </ng-template>
+    <form [formGroup]="broadcastForm">
+        <div class="text-base mt-2 text-black font-medium">Image</div>
+
+        <!-- Image -->
+        <div class="flex flex-wrap w-full h-full mb-4 mt-2" style="border: 1px dotted gray; border-radius: 0.375rem; overflow: hidden;">
+            <!-- Image Input (Left) -->
+            <div class="w-full h-full p-4">
+                <div class="text-center hover:scale-105 transition-transform duration-300 ease-in-out">
+                    <p-fileUpload 
+                        name="notificationImage" 
+                        accept=".jpg, .png, .jpeg" 
+                        maxFileSize="5000000" 
+                        [customUpload]="true" 
+                        (onSelect)="onImageChange($event)" 
+                        mode="basic" 
+                        class="text-center w-auto" 
+                        [style]="{
+                            background: 'none', 
+                            color: 'black',
+                            border: 'none', 
+                            display: 'inline-flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center'
+                        }">
+                    </p-fileUpload>
+                </div>
+                <div class="text-xs text-center text-black font-medium mt-2">Add Inbox Image</div>
+                <div class="text-xs text-center text-gray-400 mt-2">*Recommended size: 500×610px</div>
+            </div>                                                                   
+            
+            <!-- Image Preview (Right) -->
+            <div class="w-full p-2 h-72 pt-4 pb-2">
+                <div class="relative flex items-center justify-center w-full h-full bg-white">
+                    <ng-container *ngIf="imageUrl; else noImage">
+                        <img [src]="imageUrl" alt="Preview" style="max-width: 100%; max-height: 100%; object-fit: contain;" (error)="imageUrl = 'assets/images/default-placeholder.jpg'">
+                    </ng-container>
+                    <ng-template #noImage>
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; height: 100%;">
+                            <i class="pi pi-image text-black" style="font-size: 3rem;"></i>
+                            <span class="mt-3 font-semibold items-center justify-center text-black">NO IMAGE</span>
+                        </div>
+                    </ng-template>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Broadcast Title -->
+        <div class="field" style="width: 100%; display: flex; flex-direction: column;">
+            <label for="title" class="font-semibold">
+                Title <span class="required-asterisk">*</span>
+            </label>
+            <span class="p-input-icon-left" style="width: 100%;">
+                <i class="pi pi-file-edit"></i>
+                <input id="title" type="text" pInputText autofocus formControlName="title" placeholder="Enter broadcast title"
+                    [ngClass]="{'border-red-500': broadcastForm.get('title').invalid && broadcastForm.get('title').touched}"
+                    style="width: 100%"/>
+            </span>
+            <div *ngIf="broadcastForm.get('title').hasError('required') && broadcastForm.get('title').touched" class="error-message text-red-500">
+                Field cannot be empty
+            </div>
+        </div>
+
+        <!-- Broadcast Body -->
+        <div class="field" style="width: 100%; display: flex; flex-direction: column;">
+            <label for="description" class="font-semibold">
+                Body <span class="required-asterisk">*</span>
+            </label>
+            <textarea id="description" pInputTextarea autofocus formControlName="description" placeholder="Enter broadcast body"
+                [ngClass]="{'border-red-500': broadcastForm.get('description').invalid && broadcastForm.get('description').touched}"
+                style="resize: vertical; width: 100%;"></textarea>
+        </div>
+
+        <!-- Push Notification Preview -->
+        <div class="text-base pb-1 text-black font-medium">Push Notification Preview</div>
+        <div class="p-4 border-round-lg bg-bluegray-100 mt-1 mb-2 overflow-hidden">
+            <div class="flex flex-row items-center mb-2">
+                <i class="pi pi-bell text-xl" style="color: #c3035c;"></i>
+                <span class="text-xs pl-1 pt-1 text-gray-600">HelloSIM</span>
+                <span class="text-xs pl-1 flex items-center pb-2 text-gray-600">.</span>
+                <span class="text-xs pl-1 pt-1 text-gray-600">now</span>
+            </div>
+            <p class="text-md font-medium text-black mb-0">{{ getNotificationTitle() }}</p>
+            <p class="text-sm text-gray-600">{{ getNotificationBody() }}</p>
+        </div>
+
+        <!-- Content -->
+        <div class="field pt-2" style="width: 100%; display: flex; flex-direction: column;">
+            <label for="body" class="font-semibold">
+                Content <span class="required-asterisk">*</span>
+                <i class="pi pi-question-circle ml-1"
+                    [pTooltip]="'The content willbe displayed in the notification inbox'"
+                    tooltipPosition="right"
+                    (mouseover)="onMouseOver($event)"
+                    (mouseout)="onMouseOut($event)">
+                </i>
+            </label>
+            <p-editor formControlName="body" [style]="{ height:'180px' }"></p-editor>
+            <div *ngIf="broadcastForm.get('body').hasError('required') && broadcastForm.get('body').touched"
+                class="error-message text-red-500">
+                Field cannot be empty
+            </div>
+        </div>
+
+        <!-- Notification Date and Time -->
+        <div class="text-base pb-3 text-black font-medium">Notification Time</div>
+        <div class="pb-5">
+            <p-radioButton 
+                class="pr-2"
+                name="sendMethod"
+                value="IMMEDIATE"
+                label="Send Now"
+                formControlName="sendMethod">
+            </p-radioButton>
+            <p-radioButton 
+                class="pl-2"
+                name="sendMethod"
+                value="SCHEDULED"
+                label="Schedule to send"
+                formControlName="sendMethod">
+            </p-radioButton>
+
+            <!-- Calendar -->
+            <div *ngIf="broadcastForm.get('sendMethod')?.value === 'SCHEDULED'" class="p-fluid p-grid p-formgrid pt-4" style="display: flex; gap: 10px;">
+                <!-- Date -->
+                <div class="field" style="flex: 1;">
+                    <label for="scheduled" class="font-medium">
+                        Select Date <span class="required-asterisk">*</span>
+                    </label>
+                    <p-calendar
+                        formControlName="notificationDate"
+                        [showIcon]="true"
+                        [iconDisplay]="'input'"
+                        [minDate]="minDate">
+                    </p-calendar>
+                </div>
+
+                <!-- Time -->
+                <div class="field" style="flex: 1;">
+                    <label for="scheduled" class="font-medium">
+                       Pick a Time <span class="required-asterisk">*</span> 
+                    </label>
+                    <p-calendar
+                        formControlName="notificationTime"
+                        [showIcon]="true"
+                        [iconDisplay]="'input'"
+                        [timeOnly]="true">
+                            <ng-template pTemplate="inputicon" let-clickCallBack="clickCallBack">
+                                <i 
+                                    class="pi pi-clock pointer-events-none"
+                                    (click)="clickCallBack($event)"></i>
+                            </ng-template>
+                    </p-calendar>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Reward Settings -->
+        <div [formGroup]="rewardForm">
+            <p-checkbox label="Include Rewards?" formControlName="includeRewards" binary="true"></p-checkbox>
+
+            <div *ngIf="rewardForm.get('includeRewards').value">
+                <div class="text-xl py-4 text-black font-medium">Rewards Settings</div>
+                <!-- Reward Type -->
+                <div class="field pt-1" style="width: 100%; display: flex; flex-direction: column;">
+                    <label for="rewardType" class="font-medium">
+                        Reward Type <span class="required-asterisk">*</span>
+                    </label>
+                    <p-dropdown placeholder="Select reward type" [options]="rewardType" formControlName="rewardType"
+                        optionLabel="label" optionValue="value" class="flex-1" appendTo="body" [showClear]="true">
+                    </p-dropdown>
+                    <div *ngIf="rewardForm.get('rewardType').touched">
+                        <div *ngIf="rewardForm.get('rewardType').hasError('required')" class="error-message text-red-500">
+                            Field cannot be empty
+                        </div>
+                    </div>
+                </div>
+
+                <style>
+                    ::ng-deep .p-dropdown {
+                        width: 100% !important;
+                        box-sizing: border-box;
+                    }
+                </style>
+
+                <!-- Rewards -->
+                <div class="field pt-1" style="width: 100%; display: flex; flex-direction: column;">
+                    <label for="rewards" class="font-semibold">
+                        Rewards <span class="required-asterisk">*</span>
+                    </label>
+                    <span class="p-input-icon-left">
+                        <i class="pi pi-gift"></i>
+                        <input id="rewards" type="text" pInputText autofocus formControlName="rewards" placeholder="Enter reward amount"
+                            [ngClass]="{'border-red-500': rewardForm.get('rewards').invalid && rewardForm.get('rewards').touched}"
+                            style="resize: vertical; width: 100%;"/>
+                    </span>
+                    <div *ngIf="rewardForm.get('rewards').hasError('required') && rewardForm.get('rewards').touched" class="error-message text-red-500">
+                        Field cannot be empty
+                    </div>
+                </div>
+
+                <!-- Rewards validity (in days) -->
+                <div class="field pt-1" style="width: 100%; display: flex; flex-direction: column;">
+                    <label for="days" class="font-semibold">
+                        Reward Validity (in days) <span class="required-asterisk">*</span>
+                    </label>
+                    <span class="p-input-icon-left">
+                        <i class="pi pi-calendar"></i>
+                        <input id="days" type="number" pInputText autofocus formControlName="days" placeholder="Enter reward validity in days"
+                            [ngClass]="{'border-red-500': rewardForm.get('days').invalid && rewardForm.get('days').dirty}"
+                            style="resize: vertical; width: 100%;">
+                    </span>
+                    <div *ngIf="rewardForm.get('days').hasError('required')" class="error-message text-red-500">
+                        Field cannot be empty
+                    </div>
+                    <div *ngIf="rewardForm.get('days').hasError('invalidNumber')" class="error-message text-red-500">
+                        Field only accepts numbers (0-9)
+                    </div>
+                </div>
+
+                <!-- Note -->
+                <div class="field pt-1" style="width: 100%; display: flex; flex-direction: column;">
+                    <label for="description" class="font-semibold">Note</label>
+                    <textarea id="description" type="text" pInputTextarea autofocus formControlName="description" placeholder="Enter reward note"
+                        [ngClass]="{'border-red-500': rewardForm.get('description').invalid && rewardForm.get('description').touched}"
+                        style="resize: vertical; width: 100%;"></textarea>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Button -->
+        <div class="flex align-items-end justify-content-end position-relative mt-3">
+            <div class="w-fit">
+                <button pButton type="button" label="Save" style="margin-right: 1rem;"></button>
+            </div>
+        </div>
+
+    </form>
+</p-dialog>

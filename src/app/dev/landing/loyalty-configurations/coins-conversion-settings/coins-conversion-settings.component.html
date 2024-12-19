@@ -1,0 +1,926 @@
+<div class="grid">
+    <p-toast key="toast" position="top-right"></p-toast>
+    <div class="col-12">
+        <div class="card">
+            <div class="text-2xl font-bold tracking-tight truncate">Coins Conversion Settings</div>
+            <div class="text-s font-italic text-secondary">This section allows the admin to manage the channel and setup a new service and the programs that it includes.</div>
+            <div class="mt-3">
+                <div id="tourGuideOverlay1" class="tour-overlay">
+                    <p-table *ngIf="allConversion && allConversion.length" [value]="allConversion" [loading]="isLoading">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th id="tourGuideOverlay2" class="border-top-left text-center font-bold text-gray-800 tour-overlay">Channel</th>
+                                <th id="tourGuideOverlay3" class="border-top text-center font-bold text-gray-800 tour-overlay">Expiration Duration (months)</th>
+                                <th class="border-top-right text-center font-bold text-gray-800">Operation</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-conversion>
+                            <tr>
+                                <td class="border-left-right text-center">{{ conversion.channel }}</td>
+                                <td class="border-right text-center">{{ conversion.expiryDuration }}</td>
+                                <td class="border-right text-center">
+                                    <button id="tourGuideOverlay4" pButton pRipple 
+                                        icon="pi pi-cog"
+                                        label="Manage Service"
+                                        class="border-transparent p-button-raised bg-orange-300 mr-2 tour-overlay"
+                                        (click)="manageService(conversion)">
+                                    </button>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+
+                <!-- Tour Guide Button -->
+                <div class="flex align-items-center justify-content-end pt-4">
+                    <button pButton type="button" label="Start Tour" icon="pi pi-play" class="p-button-text p-button-raised p-ml-2 text-white bg-yellow-800" (click)="startTour('overlaySteps')" pTooltip="Need a quick tour of the application? Click here to start!" tooltipPosition="top">
+                    </button>
+                </div>
+
+                <!-- Overlay for tourGuideOverlay1 -->
+                <p-overlayPanel
+                    #tourGuideOverlay1
+                    [showCloseIcon]="true"
+                    (onHide)="endTour(false)"
+                    [showTransitionOptions]="'500ms ease-out'"
+                    focusOnShow="true"
+                    [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                    <div class="p-2">
+                        <h4>List of Configurations</h4>
+                        <p>This table is a listing of configurations for the points conversion.</p>
+                        <button 
+                            pButton
+                            type="button"
+                            label="Next"
+                            icon="pi pi-chevron-right"
+                            class="p-button-sm p-button-raised"
+                            (click)="nextStep()">
+                        </button>
+                    </div>
+                </p-overlayPanel>
+
+                <!-- Overlay for tourGuideOverlay2 -->
+                <p-overlayPanel 
+                    #tourGuideOverlay2 
+                    [showCloseIcon]="true" 
+                    (onHide)="endTour(false)"
+                    [showTransitionOptions]="'500ms ease-out'"
+                    focusOnShow="true"
+                    [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                    <div class="p-2">
+                        <h4>Channel</h4>
+                        <p>Represents the Channel's ID.</p>
+                        <div class="flex justify-between gap-2">
+                            <button
+                                pButton
+                                type="button"
+                                label="Back"
+                                icon="pi pi-chevron-left"
+                                class="p-button-sm p-button-raised"
+                                (click)="previousStep()">
+                            </button>
+                            <button 
+                                pButton 
+                                type="button" 
+                                label="Next" 
+                                icon="pi pi-chevron-right"
+                                class="p-button-sm p-button-raised" 
+                                (click)="nextStep()">
+                            </button>
+                        </div>
+                    </div>
+                </p-overlayPanel>
+
+                <!-- Overlay for tourGuideOverlay3 -->
+                <p-overlayPanel 
+                    #tourGuideOverlay3 
+                    [showCloseIcon]="true" 
+                    (onHide)="endTour(false)"
+                    [showTransitionOptions]="'500ms ease-out'"
+                    focusOnShow="true"
+                    [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                    <div class="p-2">
+                        <h4>Expiration Duration</h4>
+                        <p>Represents the duration for the coins to expired.</p>
+                        <div class="flex justify-between gap-2">
+                            <button
+                                pButton
+                                type="button"
+                                label="Back"
+                                icon="pi pi-chevron-left"
+                                class="p-button-sm p-button-raised"
+                                (click)="previousStep()">
+                            </button>
+                            <button 
+                                pButton 
+                                type="button" 
+                                label="Next" 
+                                icon="pi pi-chevron-right"
+                                class="p-button-sm p-button-raised" 
+                                (click)="nextStep()">
+                            </button>
+                        </div>
+                    </div>
+                </p-overlayPanel>
+
+                <!-- Overlay for tourGuideOverlay4 -->
+                <p-overlayPanel 
+                    #tourGuideOverlay4
+                    [showCloseIcon]="true" 
+                    (onHide)="endTour(false)"
+                    [showTransitionOptions]="'500ms ease-out'"
+                    focusOnShow="true"
+                    [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                    <div class="p-2">
+                        <h4>Manage Service</h4>
+                        <p>Click this button to view the details and manage the configurations.</p>
+                        <div class="flex justify-between gap-2">
+                            <button
+                                pButton
+                                type="button"
+                                label="Back"
+                                icon="pi pi-chevron-left"
+                                class="p-button-sm p-button-raised"
+                                (click)="previousStep()">
+                            </button>
+                            <button 
+                                pButton 
+                                type="button" 
+                                label="Finish" 
+                                icon="pi pi-thumbs-up"
+                                class="p-button-sm p-button-raised" 
+                                (click)="endTour()">
+                            </button>
+                        </div>
+                    </div>
+                </p-overlayPanel>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Manage Conversion -->
+<p-dialog [(visible)]="manageServiceDialog" [style]="{width: '860px'}" [modal]="true" header="Manage Conversion Settings" class="p-fluid">
+    <form [formGroup]="manageConversionForm">
+        <div class="p-grid p-fluid" style="display: flex; gap: 10px;">
+            <div id="tourGuide1" class="field tour-overlay" style="flex: 1;">
+                <label for="channel" class="font-semibold">Channel</label>
+                <span class="p-input-icon-right">
+                    <i class="pi pi-mobile"></i>
+                    <input type="text" pInputText formControlName="channel"
+                        [attr.readonly]="true"
+                        class="text-300"
+                        style="pointer-events: none;"/>
+                </span>
+            </div>
+
+            <div id="tourGuide2" class="field tour-overlay" style="flex: 1;">
+                <label for="expired" class="font-semibold">Expiration Duration (Months)</label>
+                <span class="p-input-icon-right">
+                    <i class="pi pi-clock"></i>
+                    <input id="expired" type="text" pInputText autofocus formControlName="expired" 
+                        placeholder="Enter Months"
+                        [ngClass]="{'border-red-500': manageConversionForm.get('expired').invalid && manageConversionForm.get('expired').touched}"/>
+                </span>
+                <div *ngIf="manageConversionForm.get('expired').touched">
+                    <div *ngIf="manageConversionForm.get('expired').hasError('required')" class="error-message text-red-500">
+                        Filed cannot be empty
+                    </div>
+                    <div *ngIf="manageConversionForm.get('expired').hasError('invalidNumber')" class="error-message text-red-500">
+                        Filed only accepts numbers (0-9)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex align-items-center justify-content-between position-relative mt-3">
+            <span class="text-start text-base font-semibold mb-2 mt-2">List of Services</span>
+
+            <div class="flex align-items-center gap-2">
+                <!-- Search  -->
+                <form [formGroup]="filterForm">
+                    <span class="p-input-icon-right p-input-icon-left">
+                        <i class="pi pi-clock"></i>
+                        <input id="tourGuide4" pInputText type="text" formControlName="search" placeholder="Search..." class="w-full tour-overlay" pTooltip="Search by service Name or Service ID" tooltipPosition="top">
+                        <i class="pi pi-times" (click)="clearSearch()" pTooltip="Clear Search" tooltipPosition="top"></i>
+                    </span>
+                </form>                
+                
+                <!-- Add Service -->
+                <div>
+                    <button id="tourGuide5" pButton icon="pi pi-plus" type="button" label="Add Service" class="tour-overlay" (click)="addNewService()" [disabled]="isServiceBeingAdded"></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <div id="tourGuide3" class="tour-overlay">
+                <p-table [value]="allServiceConversion">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th class="border-top-left text-center">Service Name</th>
+                            <th class="border-top text-center">Service ID</th>
+                            <th class="border-top text-center">Loyalty</th>
+                            <th class="border-top text-center">Referral</th>
+                            <th class="border-top-right text-center">Action</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-service>
+                        <tr *ngIf="!service.mergedRow">
+                            <td class="border-left text-center">{{ service.serviceName }}</td>
+                            <td class="text-center">
+                                {{ service.serviceId }}
+                                <button pButton icon="pi pi-clone" class="p-button p-button-icon-only" aria-label="Copy"
+                                    style="background: transparent; border: none; box-shadow: none; text-align: center; padding: 4px; color: black;"
+                                    (click)="copyToClipboard(service.serviceId)">
+                                </button>
+                            </td>
+                            <td class="text-center">
+                                <span
+                                    class="p-badge p-component p-rounded p-text-sm uppercase"
+                                    [ngStyle]="{
+                                        'background-color': service.loyaltyTiers && service.loyaltyTiers.length > 0 && service.loyaltyTiers[0]?.tier !== undefined ? '#d4edda' : '#f8d7da',
+                                        'color': service.loyaltyTiers && service.loyaltyTiers.length > 0 && service.loyaltyTiers[0]?.tier !== undefined ? '#155724' : '#721c24',
+                                        'white-space': 'nowrap',
+                                        'display': 'inline-block',
+                                        'min-width': '100px'
+                                    }">
+                                    {{ service.loyaltyTiers && service.loyaltyTiers.length > 0 && service.loyaltyTiers[0]?.tier !== undefined ? 'Active' : 'Inactive' }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span 
+                                class="p-badge p-component p-rounded p-text-sm uppercase"
+                                [ngStyle]="{
+                                    'background-color': service.referralTiers?.length > 0 ? '#d4edda' : '#f8d7da',
+                                    'color': service.referralTiers?.length > 0 ? '#155724' : '#721c24',
+                                    'white-space': 'nowrap',
+                                    'display': 'inline-block',
+                                    'min-width': '100px'
+                                }">
+                                {{ service.referralTiers?.length > 0 ? 'Active' : 'Inactive' }}
+                                </span>
+                            </td>
+                            <td class=" border-right text-center">
+                                <div style="display: flex; justify-content: center; align-items: center; gap: 8px;">
+    
+                                    <button pButton pRipple type="button" icon="pi pi-info-circle" 
+                                        class="p-button p-button-icon-only"
+                                        [ngStyle]="{ color: hoveredIcons[service.serviceId] === 'info' ? 'var(--primary-color)' : 'black' }"
+                                        style="background: transparent; border: none; box-shadow: none; text-align: center; padding: 8px;" 
+                                        (mouseenter)="hoveredIcons[service.serviceId] = 'info'" 
+                                        (mouseleave)="hoveredIcons[service.serviceId] = ''" 
+                                        (click)="toggleExpandRow(service.serviceId)"
+                                        pTooltip="View Details" tooltipPosition="bottom">
+                                    </button>
+                                
+                                    <button pButton pRipple type="button" icon="pi pi-pencil"
+                                        class="p-button p-button-icon-only"
+                                        [ngStyle]="{ color: hoveredIcons[service.serviceId] === 'edit' ? 'var(--primary-color)' : 'black' }"
+                                        style="background: transparent; border: none; box-shadow: none; text-align: center; padding: 8px;"
+                                        (mouseenter)="hoveredIcons[service.serviceId] = 'edit'"
+                                        (mouseleave)="hoveredIcons[service.serviceId] = ''"
+                                        pTooltip="Edit" tooltipPosition="bottom"
+                                        (click)="editService(service.serviceId)">
+                                    </button>
+                                
+                                    <button pButton pRipple type="button" icon="pi pi-trash" 
+                                        class="p-button p-button-icon-only "
+                                        [ngStyle]="{ color: hoveredIcons[service.serviceId] === 'delete' ? 'var(--primary-color)' : 'black' }"
+                                        style="background: transparent; border: none; box-shadow: none; text-align: center; padding: 8px;" 
+                                        (mouseenter)="hoveredIcons[service.serviceId] = 'delete'" 
+                                        (mouseleave)="hoveredIcons[service.serviceId] = ''" 
+                                        pTooltip="Delete" tooltipPosition="bottom"
+                                        (click)="deleteService(service.serviceId)">
+                                    </button>
+                                
+                                </div>
+                            </td>                                                
+                        </tr>
+    
+                        <!-- Expanded Row: Loyalty & Referral Details -->
+                        <tr *ngIf="isRowExpanded(service.serviceId)">
+                            <td colspan="6">
+                                <div *ngIf="service.referralTiers?.length > 0 || service.loyaltyTiers?.length > 0">
+                                    <div class="text-md font-semibold tracking-tight truncate pb-1">
+                                        Loyalty & Referral Details
+                                    </div>
+                                    <div class="overflow-hidden rounded-lg border border-gray-200 mt-2 mb-5">
+                                        <table class="table-auto w-full pb-2">
+                                            <thead>
+                                                <tr class="bg-primary text-white text-center">
+                                                    <th class="px-4 py-2">Tiers</th>
+                                                    <th class="px-4 py-2">Label</th>
+                                                    <th class="px-4 py-2">Loyalty Rate (%)</th>
+                                                    <th class="px-4 py-2">Referral Rate (%)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody style="background-color: #d0e1fd;">
+                                                <tr *ngFor="let summary of service.loyaltyTiers">
+                                                    <td class="px-4 py-2 text-center">{{ summary.tier }}</td>
+                                                    <td class="px-4 py-2 text-center">
+                                                        <span *ngIf="summary.tier === 1">Platinum</span>
+                                                        <span *ngIf="summary.tier === 2">Gold</span>
+                                                        <span *ngIf="summary.tier === 3">Silver</span>
+                                                    </td>
+                                                    <td class="px-4 py-2 border border-gray-200 text-center">
+                                                        {{ summary.loyaltyRate !== null && summary.loyaltyRate !== undefined && summary.loyaltyRate !== 0 && summary.loyaltyRate !== '' ? (summary.loyaltyRate | number:'1.2-2') : 'Not Applied' }}
+                                                    </td>
+                                                    <td class="px-4 py-2 border border-gray-200 text-center">
+                                                        {{ summary.referralRate !== null && summary.referralRate !== undefined && summary.referralRate !== 0 && summary.referralRate !== '' ? (summary.referralRate | number:'1.2-2') : 'Not Applied' }}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+    
+                        <!-- New Service -->
+                        <tr *ngIf="service.mergedRow"> 
+                            <td [attr.colspan]="6" class="border-left-right">
+                              <div class="mt-3">
+                                <div class="flex items-center justify-between font-bold text-xl pb-2">
+                                  <span>Add New Service</span>
+                                  <button pButton pRipple type="button" icon="pi pi-times" class="p-button p-button-icon-only ml-auto"
+                                    pTooltip="Close Service Form" 
+                                    tooltipPosition="left" 
+                                    style="background: transparent; border: none; box-shadow: none;" 
+                                    (click)="closeForm()">
+                                        <i class="pi pi-times" style="font-size: 15px; color: red;"></i>
+                                  </button>
+                                </div>                                
+                                <form [formGroup]="conversionServiceForm">
+                                  <div class="p-grid p-fluid" style="display: flex; gap: 10px;">
+                
+                                        <!-- Service Name -->
+                                        <div id="guide1" class="field tour-overlay" style="flex: 1;">
+                                            <label for="serviceName" class="font-semibold">Service Name<span class="required-asterisk">*</span></label>
+                                            <span class="p-input-icon-right">
+                                                <i class="pi pi-cart-plus"></i>
+                                                <input id="serviceName" type="text" pInputText autofocus formControlName="serviceName" placeholder="Enter service name" 
+                                                    [ngClass]="{'border-red-500': conversionServiceForm.get('serviceName').invalid && conversionServiceForm.get('serviceName').touched}"/>
+                                            </span>
+                                            <div *ngIf="conversionServiceForm.get('serviceName').touched">
+                                                <div *ngIf="conversionServiceForm.get('serviceName').hasError('required')" class="error-message text-red-500">
+                                                    Field cannot be empty
+                                                </div>
+                                                <div *ngIf="conversionServiceForm.get('serviceName').hasError('invalidServiceName') && conversionServiceForm.get('serviceName').touched" class="error-message text-red-500">
+                                                    Field only accept space and alphabets (A-Z).
+                                                </div>
+                                            </div>                
+                                        </div>
+                                    
+                                        <!-- Service ID -->
+                                        <div id="guide2" class="field tour-overlay" style="flex: 1;">
+                                            <label for="serviceId" class="font-semibold">Service ID<span class="required-asterisk">*</span></label>
+                                            <span class="p-input-icon-right">
+                                                <i class="pi pi-dollar"></i>
+                                                <input id="serviceId" type="text" pInputText autofocus formControlName="serviceId" placeholder="Auto Generated ID" 
+                                                    [attr.disabled]="manageConversionForm.get('channel')?.disabled ? true : null"
+                                                    [ngClass]="{'border-red-500': conversionServiceForm.get('serviceId').invalid && conversionServiceForm.get('serviceId').touched}" readonly/>
+                                            </span>
+                                            <div *ngIf="conversionServiceForm.get('serviceId').hasError('required') && conversionServiceForm.get('serviceId').touched" class="error-message text-red-500">
+                                                <small>Field cannot be empty</small>
+                                            </div>
+                                        </div>
+    
+                                    </div>
+    
+                                    <!-- Check Box -->
+                                    <div class="pb-4">
+                                        <form [formGroup]="conversionServiceForm" style="display: flex; gap: 1rem;">
+                                        <div id="guide3" class="tour-overlay" style="display: flex; align-items: center; gap: 1rem;">
+                                            <p-checkbox formControlName="loyaltyProgram" binary="true" label="Include loyalty & referral program?" (change)="loyaltyCheckbox($event)"></p-checkbox>
+                                        </div>
+                                        </form>
+                                    </div>
+    
+                                    <div *ngIf="loyaltyProgram" [@expandCollapse]>
+                                        <form [formGroup]="loyaltyServiceForm">
+                                            <div class="flex flex-row justify-between w-full h-full">
+                                                <h2 class="text-xl font-bold leading-6 tracking-tight">
+                                                    Loyalty Tiers Settings
+                                                </h2>
+                                            </div>
+                                            <p class="text-gray-600 text-sm">Fill in the fields below</p>
+    
+                                            <div formArrayName="loyaltyTiers">
+                                                <div *ngFor="let tier of loyaltyTiers.controls; let i = index" 
+                                                    [formGroupName]="i" class="p-grid p-fluid" 
+                                                    style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px;">
+    
+                                                    <!-- Tier -->
+                                                    <!-- <div class="field" style="flex: 1;">
+                                                        <label for="tier" class="font-semibold">
+                                                            Tier <span class="required-asterisk">*</span>
+                                                            <i class="pi pi-question-circle ml-2"
+                                                                [pTooltip]="getTierTooltip(tier.get('tier').value)"
+                                                                tooltipPosition="right"
+                                                                [ngStyle]="{ color: isTierTooltipHovered ? 'var(--primary-color)' : 'inherit' }"
+                                                                (mouseover)="isTierTooltipHovered = true"
+                                                                (mouseout)="isTierTooltipHovered = false">
+                                                            </i>
+                                                        </label>
+                                                        <span class="p-input-icon-left">
+                                                            <i class="pi pi-users"></i>
+                                                            <input id="tier" type="number" pInputText formControlName="tier" placeholder="Enter Tier" readonly/>
+                                                        </span>
+                                                    </div> -->
+    
+                                                    <div id="guide4" class="field tour-overlay" style="flex: 1;">
+                                                        <label for="tier" class="font-semibold">Tier <span class="required-asterisk">*</span>
+                                                            <i class="pi pi-question-circle ml-2" [pTooltip]="getTierTooltip(tier.get('tier').value)" tooltipPosition="right"></i>
+                                                        </label>
+                                                        <span class="p-input-icon-left">
+                                                        <i class="pi pi-users"></i>
+                                                        <input id="tier" type="number" pInputText formControlName="tier" placeholder="Enter Tier" readonly/>
+                                                        </span>
+                                                    </div>
+    
+                                                    <!-- Loyalty Rate -->
+                                                    <div id="guide5" class="field tour-overlay" style="flex: 1;">
+                                                        <label for="loyaltyRate" class="font-semibold">Loyalty Rate (%)<span class="required-asterisk">*</span></label>
+                                                        <span class="p-input-icon-right">
+                                                            <i class="pi pi-percentage"></i>
+                                                            <input id="loyaltyRate" type="number" pInputText 
+                                                                formControlName="loyaltyRate" 
+                                                                placeholder="Enter Rate"
+                                                                [ngClass]="{'border-red-500': tier.get('loyaltyRate').invalid && tier.get('loyaltyRate').touched}" />
+                                                        </span>
+                                                    </div>
+    
+                                                    <!-- Referral Rate -->
+                                                    <div id="guide6" class="field tour-overlay" style="flex: 1;">
+                                                        <label for="referralRate" class="font-semibold">Referral Rate (%)<span class="required-asterisk">*</span></label>
+                                                        <span class="p-input-icon-right">
+                                                            <i class="pi pi-percentage"></i>
+                                                            <input id="referralRate" type="number" pInputText 
+                                                                formControlName="referralRate" 
+                                                                placeholder="Enter Rate"
+                                                                [ngClass]="{'border-red-500': tier.get('referralRate').invalid && tier.get('referralRate').touched}" />
+                                                        </span>
+                                                    </div>
+    
+                                                    <!-- Action Buttons (Add/Delete) -->
+                                                    <div class="flex flex-row mt-4">
+                                                        <!-- Delete Button -->
+                                                        <span *ngIf="loyaltyTiers.length > 1 && loyaltyTiers.length <= maxTiers" class="pr-2">
+                                                            <button pButton pRipple type="button" icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="removeLoyaltyTier(i)"></button>
+                                                        </span>
+    
+                                                        <!-- Add Button -->
+                                                        <span *ngIf="loyaltyTiers.length < maxTiers">
+                                                            <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="addLoyaltyTier()"></button>
+                                                        </span>
+                                                    </div>
+    
+                                                </div>
+                                            </div>
+    
+                                        </form>
+    
+                                        <!-- Error message if the total percentage exceeds 100% -->
+                                        <div>
+                                            <mat-error *ngIf="!sumPercentage" class="text-red-600 font-medium" @expandCollapse>Total referral rate must not exceed 100% </mat-error>
+                                        </div>
+    
+                                    </div>
+    
+                                    <div class="mb-2 flex justify-content-end flex-wrap gap-2">
+                                        <div class="flex align-items-center justify-content-center">
+                                            <button pButton type="button" icon="pi pi-play" label="Start Tour" (click)="startTour('overlayTourSteps')"></button>
+                                        </div>
+                                        <div>
+                                            <button id="guide7" class="tour-overlay" pButton type="button" label="Submit" [disabled]="!conversionServiceForm.valid" (click)="submitBtn()"></button>
+                                        </div>
+                                    </div>
+    
+                                </form>
+                              </div>
+                            </td>
+
+                            <!-- overlay for guide1 -->
+                            <p-overlayPanel
+                                #guide1
+                                [showCloseIcon]="true"
+                                (onHide)="endTour(false)"
+                                [showTransitionOptions]="'500ms ease-out'"
+                                focusOnShow="true"
+                                [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                                <div class="p-2">
+                                    <h4>Service Name</h4>
+                                    <p>Represent the name of the service or setup.</p>
+                                    <button 
+                                        pButton
+                                        type="button"
+                                        label="Next"
+                                        icon="pi pi-chevron-right"
+                                        class="p-button-sm p-button-raised"
+                                        (click)="nextStep()">
+                                    </button>
+                                </div>
+                            </p-overlayPanel>
+
+                            <!-- Overlay for guide2 -->
+                            <p-overlayPanel 
+                                #guide2 
+                                [showCloseIcon]="true" 
+                                (onHide)="endTour(false)"
+                                [showTransitionOptions]="'500ms ease-out'"
+                                focusOnShow="true"
+                                [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                                <div class="p-2">
+                                    <h4>Service ID</h4>
+                                    <p>Represent the id of the service or setup. This is auto generated based on the Service Name.</p>
+                                    <div class="flex justify-between gap-2">
+                                        <button
+                                            pButton
+                                            type="button"
+                                            label="Back"
+                                            icon="pi pi-chevron-left"
+                                            class="p-button-sm p-button-raised"
+                                            (click)="previousStep()">
+                                        </button>
+                                        <button 
+                                            pButton 
+                                            type="button" 
+                                            label="Next" 
+                                            icon="pi pi-chevron-right"
+                                            class="p-button-sm p-button-raised" 
+                                            (click)="nextStep()">
+                                        </button>
+                                    </div>
+                                </div>
+                            </p-overlayPanel>
+
+                            <!-- Overlay for guide3 -->
+                            <p-overlayPanel 
+                                #guide3 
+                                [showCloseIcon]="true"
+                                (onHide)="endTour(false)"
+                                [showTransitionOptions]="'500ms ease-out'"
+                                focusOnShow="true"
+                                [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                                <div class="p-2">
+                                    <h4>Include Loyalty & Referral</h4>
+                                    <p>Represent if the service will include loyalty & referral settings to it.</p>
+                                    <div class="flex justify-between gap-2">
+                                        <button
+                                            pButton
+                                            type="button"
+                                            label="Back"
+                                            icon="pi pi-chevron-left"
+                                            class="p-button-sm p-button-raised"
+                                            (click)="previousStep()">
+                                        </button>
+                                        <button 
+                                            pButton 
+                                            type="button" 
+                                            label="Next" 
+                                            icon="pi pi-chevron-right"
+                                            class="p-button-sm p-button-raised" 
+                                            (click)="nextStep()">
+                                        </button>
+                                    </div>
+                                </div>
+                            </p-overlayPanel>
+
+                            <!-- Overlay for guide4 -->
+                            <p-overlayPanel 
+                                #guide4 
+                                [showCloseIcon]="true" 
+                                (onHide)="endTour(false)"
+                                [showTransitionOptions]="'500ms ease-out'"
+                                focusOnShow="true"
+                                [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                                <div class="p-2">
+                                    <h4>Tier</h4>
+                                    <p>Represent the loyalty tiers: Platinum (Tier1), Gold(Tier2), and Silver(Tier3).</p>
+                                    <div class="flex justify-between gap-2">
+                                        <button
+                                            pButton
+                                            type="button"
+                                            label="Back"
+                                            icon="pi pi-chevron-left"
+                                            class="p-button-sm p-button-raised"
+                                            (click)="previousStep()">
+                                        </button>
+                                        <button 
+                                            pButton 
+                                            type="button" 
+                                            label="Next" 
+                                            icon="pi pi-chevron-right"
+                                            class="p-button-sm p-button-raised" 
+                                            (click)="nextStep()">
+                                        </button>
+                                    </div>
+                                </div>
+                            </p-overlayPanel>
+
+                            <!-- Overlay for guide5 -->
+                            <p-overlayPanel 
+                                #guide5
+                                [showCloseIcon]="true" 
+                                (onHide)="endTour(false)"
+                                [showTransitionOptions]="'500ms ease-out'"
+                                focusOnShow="true"
+                                [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                                <div class="p-2">
+                                    <h4>Loyaty Rate</h4>
+                                    <p>Represent the loyalty rate that will be used to calculate the coins that user will receive upon buying a product. <b>Formula: Product Price X Loyalty Rate X Cash Coins Rate(100) = Coins Received</b></p>
+                                    <div class="flex justify-between gap-2">
+                                        <button
+                                            pButton
+                                            type="button"
+                                            label="Back"
+                                            icon="pi pi-chevron-left"
+                                            class="p-button-sm p-button-raised"
+                                            (click)="previousStep()">
+                                        </button>
+                                        <button 
+                                            pButton 
+                                            type="button" 
+                                            label="Next" 
+                                            icon="pi pi-chevron-right"
+                                            class="p-button-sm p-button-raised" 
+                                            (click)="nextStep()">
+                                        </button>
+                                    </div>
+                                </div>
+                            </p-overlayPanel>
+
+                            <!-- Overlay for guide6 -->
+                            <p-overlayPanel 
+                                #guide6 
+                                [showCloseIcon]="true" 
+                                (onHide)="endTour(false)"
+                                [showTransitionOptions]="'500ms ease-out'"
+                                focusOnShow="true"
+                                [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                                <div class="p-2">
+                                    <h4>Referral Rate</h4>
+                                    <p>Represent the referral rate that will be used to calculate the coins user will receive when their downline buys a product. <b>Formula: Product price X Referral Rate X Cash Coins Rate(100) = Coins Received</b></p>
+                                    <div class="flex justify-between gap-2">
+                                        <button
+                                            pButton
+                                            type="button"
+                                            label="Back"
+                                            icon="pi pi-chevron-left"
+                                            class="p-button-sm p-button-raised"
+                                            (click)="previousStep()">
+                                        </button>
+                                        <button 
+                                            pButton 
+                                            type="button" 
+                                            label="Next" 
+                                            icon="pi pi-chevron-right"
+                                            class="p-button-sm p-button-raised" 
+                                            (click)="nextStep()">
+                                        </button>
+                                    </div>
+                                </div>
+                            </p-overlayPanel>
+
+                            <!-- Overlay for guide7 -->
+                            <p-overlayPanel 
+                                #guide7
+                                [showCloseIcon]="true" 
+                                (onHide)="endTour(false)"
+                                [showTransitionOptions]="'500ms ease-out'"
+                                focusOnShow="true"
+                                [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                                <div class="p-2">
+                                    <h4>Submit</h4>
+                                    <p>Click this button to add the service to the list.</p>
+                                    <div class="flex justify-between gap-2">
+                                        <button
+                                            pButton
+                                            type="button"
+                                            label="Back"
+                                            icon="pi pi-chevron-left"
+                                            class="p-button-sm p-button-raised"
+                                            (click)="previousStep()">
+                                        </button>
+                                        <button 
+                                            pButton 
+                                            type="button" 
+                                            label="Finish" 
+                                            icon="pi pi-thumbs-up"
+                                            class="p-button-sm p-button-raised" 
+                                            (click)="endTour()">
+                                        </button>
+                                    </div>
+                                </div>
+                            </p-overlayPanel>
+
+                        </tr>                     
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td class="border-left-right text-center" colspan="5">There are no service found</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </div>
+
+        <div class="flex align-items-center justify-content-between position-relative mt-3">
+
+            <div class="w-fit">
+                <button pButton icon="pi pi-play" label="Start Tour" (click)="startTour('tourSteps')" class="p-button-text p-button-raised text-white bg-primary-700"></button>
+            </div>
+
+            <div class="w-fit">
+              <button id="tourGuide6" pButton icon="pi pi-save" type="button" label="Save" class="tour-overlay" [disabled]="!manageConversionForm.valid" (click)="save()"></button>
+            </div>
+        </div>
+
+    </form>
+
+    <!-- Overlay for tourGuide1 -->
+    <p-overlayPanel 
+        #tourGuide1
+        [showCloseIcon]="true"
+        (onHide)="endTour(false)"
+        focusOnShow="true"
+        [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+        <div class="p-2">
+            <h4>Channel</h4>
+            <p>Represent the Channel's ID related to the services</p>
+            <div class="flex justify-between gap-2">
+                <button 
+                    pButton 
+                    type="button"
+                    label="Next"
+                    icon="pi pi-chevron-right"
+                    class="p-button-sm p-button-raised"
+                    (click)="nextStep()">
+                </button>
+            </div>
+        </div>
+    </p-overlayPanel>
+
+    <!-- Overlay for tourGuide2 -->
+    <p-overlayPanel 
+        #tourGuide2 
+        [showCloseIcon]="true" 
+        (onHide)="endTour(false)"
+        [showTransitionOptions]="'500ms ease-out'"
+        focusOnShow="true"
+        [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+        <div class="p-2">
+            <h4>Expiration Duration</h4>
+            <p>Represent the duration for the coins to expired.</p>
+            <div class="flex justify-between gap-2">
+                <button
+                    pButton
+                    type="button"
+                    label="Back"
+                    icon="pi pi-chevron-left"
+                    class="p-button-sm p-button-raised"
+                    (click)="previousStep()">
+                </button>
+                <button 
+                    pButton 
+                    type="button" 
+                    label="Next" 
+                    icon="pi pi-chevron-right"
+                    class="p-button-sm p-button-raised" 
+                    (click)="nextStep()">
+                </button>
+            </div>
+        </div>
+    </p-overlayPanel>
+
+    <!-- Overlay for tourGuide3 -->
+    <p-overlayPanel 
+        #tourGuide3 
+        [showCloseIcon]="true" 
+        (onHide)="endTour(false)"
+        [showTransitionOptions]="'500ms ease-out'"
+        focusOnShow="true"
+        [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+        <div class="p-2">
+            <h4>Lost of Services</h4>
+            <p>This table is a listing of services for the points coins/points conversion.</p>
+            <div class="flex justify-between gap-2">
+                <button
+                    pButton
+                    type="button"
+                    label="Back"
+                    icon="pi pi-chevron-left"
+                    class="p-button-sm p-button-raised"
+                    (click)="previousStep()">
+                </button>
+                <button 
+                    pButton 
+                    type="button" 
+                    label="Next" 
+                    icon="pi pi-chevron-right"
+                    class="p-button-sm p-button-raised" 
+                    (click)="nextStep()">
+                </button>
+            </div>
+        </div>
+    </p-overlayPanel>
+
+    <!-- Overlay for tourGuide4 -->
+    <p-overlayPanel 
+        #tourGuide4 
+        [showCloseIcon]="true" 
+        (onHide)="endTour(false)"
+        [showTransitionOptions]="'500ms ease-out'"
+        focusOnShow="true"
+        [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+        <div class="p-2">
+            <h4>Search</h4>
+            <p>Admin can search for a specific service name or service ID.</p>
+            <div class="flex justify-between gap-2">
+                <button
+                    pButton
+                    type="button"
+                    label="Back"
+                    icon="pi pi-chevron-left"
+                    class="p-button-sm p-button-raised"
+                    (click)="previousStep()">
+                </button>
+                <button 
+                    pButton 
+                    type="button" 
+                    label="Next" 
+                    icon="pi pi-chevron-right"
+                    class="p-button-sm p-button-raised" 
+                    (click)="nextStep()">
+                </button>
+            </div>
+        </div>
+    </p-overlayPanel>
+
+    <!-- Overlay for tourGuide5 -->
+    <p-overlayPanel 
+        #tourGuide5 
+        [showCloseIcon]="true" 
+        (onHide)="endTour(false)"
+        [showTransitionOptions]="'500ms ease-out'"
+        focusOnShow="true"
+        [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+        <div class="p-2">
+            <h4>Loyalty Rate</h4>
+            <p>Click this to add a new service to the list.</p>
+            <div class="flex justify-between gap-2">
+                <button
+                    pButton
+                    type="button"
+                    label="Back"
+                    icon="pi pi-chevron-left"
+                    class="p-button-sm p-button-raised"
+                    (click)="previousStep()">
+                </button>
+                <button 
+                    pButton 
+                    type="button" 
+                    label="Next" 
+                    icon="pi pi-chevron-right"
+                    class="p-button-sm p-button-raised" 
+                    (click)="nextStep()">
+                </button>
+            </div>
+        </div>
+    </p-overlayPanel>
+
+    <!-- Overlay for tourGuide6 -->
+    <p-overlayPanel 
+        #tourGuide6 
+        [showCloseIcon]="true" 
+        (onHide)="endTour(false)"
+        [showTransitionOptions]="'500ms ease-out'"
+        focusOnShow="true"
+        [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+        <div class="p-2">
+            <h4>Save</h4>
+            <p>The configuration will be applied only when it approved.</p>
+            <div class="flex justify-between gap-2">
+                <button
+                    pButton
+                    type="button"
+                    label="Back"
+                    icon="pi pi-chevron-left"
+                    class="p-button-sm p-button-raised"
+                    (click)="previousStep()">
+                </button>
+                <button 
+                    pButton 
+                    type="button" 
+                    label="Finish" 
+                    icon="pi pi-thumbs-up"
+                    class="p-button-sm p-button-raised" 
+                    (click)="endTour()">
+                </button>
+            </div>
+        </div>
+    </p-overlayPanel>
+
+</p-dialog>

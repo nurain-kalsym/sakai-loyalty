@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { BehaviorSubject, catchError, map, Observable, ReplaySubject, switchMap, take, tap, throwError } from "rxjs";
+import { BehaviorSubject, catchError, map, Observable, of, ReplaySubject, switchMap, take, tap, throwError } from "rxjs";
 import { Aging, CoinsHistory, Conversion, Earner, LoyaltyConfig, Members, MembershipInfo, MicrodealerDetails, Pagination, ReferralTree, ReferralUsers } from "./loyalty.types";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { AppConfig } from "src/app/config/service.config";
@@ -908,7 +908,10 @@ export class LoyaltyService {
         });
 
         return this._httpClient
-            .get<any>(loyaltyService + '/conversion-setup/get-conversions', header)
+            .get<any>(
+                loyaltyService + '/conversion-setup/get-conversions', 
+                header
+            )
             .pipe(
                 map((response) => {
                     const conversionList = response.data.data;
@@ -936,9 +939,9 @@ export class LoyaltyService {
                     return conversionList;
                 })
             );
-        }
+    }
         
-    updateConversions(id: string, body: Conversion): Observable<any> {
+    updateConversions(id: string, body: Conversion): Observable<Conversion> {
         let loyaltyService = this._apiServer.settings.serviceUrl.loyaltyService;
 
         if (body.serviceConversions.length > 0) {
@@ -961,7 +964,10 @@ export class LoyaltyService {
             take(1),
             switchMap((conversion) =>
                 this._httpClient
-                    .put<any>(loyaltyService + '/conversion-setup/update/' + id, body)
+                    .put<any>(
+                        loyaltyService + '/conversion-setup/update/' + id, 
+                        body
+                    )
                     .pipe(
                         map((response) => {
                             this._logging.debug(

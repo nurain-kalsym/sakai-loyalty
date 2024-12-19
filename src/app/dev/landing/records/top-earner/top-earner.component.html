@@ -4,54 +4,128 @@
         <div class="text-2xl font-bold tracking-tight truncate sm:text-3xl">List of Top 20 Earners</div>
         <div class="text-s font-italic s:text-base text-secondary">This section displays the top 20 users that earned the most coins based on type of programs and channel.</div>
         <div class="mt-3">
-          <div class="mb-2 flex justify-content-end flex-wrap gap-2" [formGroup]="filterForm">
-            <!-- Program Type Filter -->
-            <div class="flex align-items-center justify-content-center">
-              <p-dropdown 
-                placeholder="Select Type" 
-                [formControl]="filterForm.get('type')" 
-                [options]="types" 
-                optionLabel="label" 
-                optionValue="value">
-                <ng-template pTemplate="selectedItem" let-selectedItem>
-                  <span style="color: rgb(173, 172, 172);">Type: </span>
-                  <span>{{selectedItem?.label || 'All'}}</span>
-                </ng-template>
-                <ng-template pTemplate="item" let-option>
-                  <span>{{option.label}}</span>
-                </ng-template>
-              </p-dropdown>
+          <form [formGroup]="filterForm">
+            <div class="mb-2 flex justify-content-end flex-wrap gap-2">
+              <div id="tourGuideOverlay1" class="tour-overlay">
+                <!-- Program Type Filter -->
+                <p-dropdown 
+                  placeholder="Select Type" 
+                  [formControl]="filterForm.get('type')" 
+                  [options]="types" 
+                  optionLabel="label" 
+                  optionValue="value">
+                  <ng-template pTemplate="selectedItem" let-selectedItem>
+                    <span style="color: rgb(173, 172, 172);">Type: </span>
+                    <span>{{selectedItem?.label || 'All'}}</span>
+                  </ng-template>
+                  <ng-template pTemplate="item" let-option>
+                    <span>{{option.label}}</span>
+                  </ng-template>
+                </p-dropdown>
+              </div>
+              <!-- Channel Filter -->
+              <div id="tourGuideOverlay2" class="tour-overlay">
+                <p-dropdown 
+                  placeholder="Select Channel" 
+                  [formControl]="filterForm.get('channel')" 
+                  [options]="channels" 
+                  optionLabel="label" 
+                  optionValue="value">
+                  <ng-template pTemplate="selectedItem" let-selectedItem>
+                    <span style="color: rgb(173, 172, 172);">Channel: </span>
+                    <span>{{selectedItem?.label || 'All'}}</span>
+                  </ng-template>
+                  <ng-template pTemplate="item" let-option>
+                    <span>{{option.label}}</span>
+                  </ng-template>
+                </p-dropdown>
+              </div>
+  
+              <!-- Tour Guide Button -->
+              <div class="flex align-items-center justify-content-center">
+                <button 
+                  pButton 
+                  type="button" 
+                  label="Start Tour" 
+                  icon="pi pi-play" 
+                  class="p-button-text p-button-raised p-ml-2 text-black bg-primary" 
+                  (click)="startTour()"
+                  pTooltip="Need a quick tour of the application? Click here to start!"
+                  tooltipPosition="top">
+                </button>
+              </div>
+  
             </div>
-            <!-- Channel Filter -->
-            <div class="flex align-items-center justify-content-center">
-              <p-dropdown 
-                placeholder="Select Channel" 
-                [formControl]="filterForm.get('channel')" 
-                [options]="channels" 
-                optionLabel="label" 
-                optionValue="value">
-                <ng-template pTemplate="selectedItem" let-selectedItem>
-                  <span style="color: rgb(173, 172, 172);">Channel: </span>
-                  <span>{{selectedItem?.label || 'All'}}</span>
-                </ng-template>
-                <ng-template pTemplate="item" let-option>
-                  <span>{{option.label}}</span>
-                </ng-template>
-              </p-dropdown>
+          </form>
+
+          <!-- Overlay for tourGuideOverlay1 -->
+          <p-overlayPanel
+            #tourGuideOverlay1
+            [showCloseIcon]="true"
+            (onHide)="endTour(false)"
+            [showTransitionOptions]="'500ms ease-out'"
+            focusOnShow="true"
+            [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+            <div class="p-2">
+              <h4>Type Filter Guide</h4>
+              <p>Select a type to filter the list of top 20 earners. Option include "All", "Referral" and "Loyalty"</p>
+              <button
+                pButton
+                type="button"
+                label="Next"
+                icon="pi pi-chevron-right"
+                class="p-button-sm p-button-raised"
+                (click)="nextStep()">
+              </button>
             </div>
-          </div>
+          </p-overlayPanel>
+
+          <!-- Overlay for tourGuideOverlay2 -->
+          <p-overlayPanel
+            #tourGuideOverlay2
+            [showCloseIcon]="true"
+            (onHide)="endTour(false)"
+            [showTransitionOptions]="'500ms ease-out'"
+            focusOnShow="true"
+            [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+            <div class="p-2">
+              <h4>Channel Filter Guide</h4>
+              <p>Select a channel to filter the list of top 20 earners. Options include "All", "E-kedai" and "HelloSim"</p>
+              <div class="flex justify-between gap-2">
+                <button
+                    pButton
+                    type="button"
+                    label="Back"
+                    icon="pi pi-chevron-left"
+                    class="p-button-sm p-button-raised"
+                    (click)="previousStep()">
+                </button>
+                <button 
+                    pButton 
+                    type="button" 
+                    label="Finish" 
+                    icon="pi pi-thumbs-up" 
+                    class="p-button-sm p-button-raised" 
+                    (click)="endTour()">
+                </button>
+              </div>
+            </div>
+          </p-overlayPanel>
+
         </div>
+
         <!-- Table -->
         <div class="mt-3">
           <p-table [value]="allEarner" [loading]="isLoading">
             <ng-template pTemplate="header">
               <tr>
-                <th class="border-top-left text-center font-bold text-gray-800">Rank</th>
+                <th class="border-top-left text-center font-bold text-gray-800" style="border-top-left-radius: 8px;">Rank</th>
                 <th class="border-top text-center font-bold text-gray-800">Name</th>
                 <th class="border-top text-center font-bold text-gray-800">Phone Number</th>
-                <th class="border-top-right text-center font-bold text-gray-800">Total Coins</th>
+                <th class="border-top-right text-center font-bold text-gray-800" style="border-top-right-radius: 8px;">Total Coins</th>
               </tr>
             </ng-template>
+
             <ng-template pTemplate="body" let-top>
               <tr>
                 <td class="border-left-right text-center">
@@ -72,6 +146,16 @@
                 <td class="border-right text-center">{{ top.totalCoins | number:'1.0-0' }}</td>
               </tr>
             </ng-template>
+
+            <style>
+              tr:last-child td:first-child {
+                border-bottom-left-radius: 8px;
+              }
+              tr:last-child td:last-child {
+                border-bottom-right-radius: 8px;
+              }
+            </style>
+
           </p-table>
         </div>
       </div>

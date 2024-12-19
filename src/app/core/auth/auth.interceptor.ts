@@ -8,7 +8,7 @@ export class AuthInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     let loyaltyToken = environment.loyaltyToken;
 
-    // Clone the request to add the new header
+    // Clone the request to add the Authorization header with the loyalty token
     const authReq = req.clone({
       setHeaders: {
         Authorization: `Bearer ${loyaltyToken}`

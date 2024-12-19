@@ -4,49 +4,145 @@
       <div class="text-2xl font-bold tracking-tight truncate sm:text-3xl">Aging Data</div>
       <div class="text-s font-italic s:text-base text-secondary">This section displays the aging data of coins based on month, year and channel.</div>
       <div class="mt-3">
-        <div class="mb-2 flex justify-content-end flex-wrap gap-2" [formGroup]="filterForm">
-          <!-- Month Filter -->
-          <div class="flex align-items-center justify-content-center">
-            <p-dropdown placeholder="Select month" [formControlName]="'month'" [options]="months" optionLabel="display" optionValue="month">
-              <ng-template pTemplate="selectedItem" let-selectedItem>
-                <span style="color: rgb(173, 172, 172);">Month: </span>
-                <span>{{selectedItem?.display || 'Select month'}}</span>
-              </ng-template>
-              <ng-template pTemplate="item" let-option>
-                <span>{{option.display}}</span>
-              </ng-template>
-            </p-dropdown>
+        <form [formGroup]="filterForm">
+          <div class="mb-2 flex justify-content-end flex-wrap gap-2">
+            <!-- Month Filter -->
+            <div id="tourGuideOverlay1" class="tour-overlay">
+              <p-dropdown placeholder="Select month" [formControlName]="'month'" [options]="months" optionLabel="display" optionValue="month">
+                <ng-template pTemplate="selectedItem" let-selectedItem>
+                  <span style="color: rgb(173, 172, 172);">Month: </span>
+                  <span>{{selectedItem?.display || 'Select month'}}</span>
+                </ng-template>
+                <ng-template pTemplate="item" let-option>
+                  <span>{{option.display}}</span>
+                </ng-template>
+              </p-dropdown>
+            </div>
+            <!-- Year Filter -->
+            <div id="tourGuideOverlay2" class="tour-overlay">
+              <p-dropdown placeholder="Select year" [formControlName]="'year'" [options]="years">
+                <ng-template pTemplate="selectedItem" let-selectedItem>
+                  <span style="color: rgb(173, 172, 172);">Year: </span>
+                  <span>{{selectedItem || 'Select year'}}</span>
+                </ng-template>
+                <ng-template pTemplate="item" let-option>
+                  <span>{{option}}</span>
+                </ng-template>
+              </p-dropdown>
+            </div>
+            <!-- Channel Filter -->
+            <div id="tourGuideOverlay3" class="tour-overlay">
+              <p-dropdown 
+                placeholder="Select Channel" 
+                [formControl]="filterForm.get('channel')" 
+                [options]="channels" 
+                optionLabel="label" 
+                optionValue="value">
+                <ng-template pTemplate="selectedItem" let-selectedItem>
+                  <span style="color: rgb(173, 172, 172);">Channel: </span>
+                  <span>{{selectedItem?.label || 'All'}}</span>
+                </ng-template>
+                <ng-template pTemplate="item" let-option>
+                  <span>{{option.label}}</span>
+                </ng-template>
+              </p-dropdown>
+            </div>
+
+            <!-- Tour Guide Button -->
+            <div class="flex align-items-center justify-content-center">
+              <button pButton type="button" label="Start Tour" icon="pi pi-play" class="p-button-text p-button-raised p-ml-2 text-black bg-primary" (click)="startTour()">
+              </button>
+            </div>
+
           </div>
-          <!-- Year Filter -->
-          <div class="flex align-items-center justify-content-center">
-            <p-dropdown placeholder="Select year" [formControlName]="'year'" [options]="years">
-              <ng-template pTemplate="selectedItem" let-selectedItem>
-                <span style="color: rgb(173, 172, 172);">Year: </span>
-                <span>{{selectedItem || 'Select year'}}</span>
-              </ng-template>
-              <ng-template pTemplate="item" let-option>
-                <span>{{option}}</span>
-              </ng-template>
-            </p-dropdown>
+        </form>
+
+        <!-- Overlay for tourGuideOverlay1 -->
+        <p-overlayPanel
+          #tourGuideOverlay1
+          [showCloseIcon]="true"
+          (onHide)="endTour(false)"
+          [showTransitionOptions]="'500ms ease-out'"
+          focusOnShow="true"
+          [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+          <div class="p-2">
+            <h4>Month Filter Guide</h4>
+            <p>Select a month to filter the aging data.</p>
+            <button
+              pButton 
+              type="button" 
+              label="Next" 
+              icon="pi pi-chevron-right" 
+              class="p-button-sm p-button-raised" 
+              (click)="nextStep()">
+            </button>
           </div>
-          <!-- Channel Filter -->
-          <div class="flex align-items-center justify-content-center">
-            <p-dropdown 
-              placeholder="Select Channel" 
-              [formControl]="filterForm.get('channel')" 
-              [options]="channels" 
-              optionLabel="label" 
-              optionValue="value">
-              <ng-template pTemplate="selectedItem" let-selectedItem>
-                <span style="color: rgb(173, 172, 172);">Channel: </span>
-                <span>{{selectedItem?.label || 'All'}}</span>
-              </ng-template>
-              <ng-template pTemplate="item" let-option>
-                <span>{{option.label}}</span>
-              </ng-template>
-            </p-dropdown>
+        </p-overlayPanel>
+
+        <!-- Overlay for tourGuideOverlay2 -->
+        <p-overlayPanel
+          #tourGuideOverlay2
+          [showCloseIcon]="true"
+          (onHide)="endTour(false)"
+          [showTransitionOptions]="'500ms ease-out'"
+          focusOnShow="true"
+          [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+          <div class="p-2">
+            <h4>Year Filter Guide</h4>
+            <p>Select a month to filter the aging data.</p>
+            <div class="flex justify-between gap-2">
+              <button
+                pButton
+                type="button"
+                label="Back"
+                icon="pi pi-chevron-left"
+                class="p-button-sm p-button-raised"
+                (click)="previousStep()">
+              </button>
+              <button 
+                pButton 
+                type="button" 
+                label="Next" 
+                icon="pi pi-chevron-right" 
+                class="p-button-sm p-button-raised" 
+                (click)="nextStep()">
+              </button>
+            </div>
           </div>
-        </div>
+        </p-overlayPanel>
+
+        <!-- Overlay for tourGuideOverlay3 -->
+        <p-overlayPanel
+          #tourGuideOverlay3
+          [showCloseIcon]="true"
+          (onHide)="endTour(false)"
+          [showTransitionOptions]="'500ms ease-out'"
+          focusOnShow="true"
+          [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+          <div class="p-2">
+            <h4>Channel Filter Guide</h4>
+            <p>Select a channel to filter the aging data. Options include "All", "E-kedai" and "HelloSim".</p>
+            <div class="flex justify-between gap-2">
+              <button
+                pButton
+                type="button"
+                label="Back"
+                icon="pi pi-chevron-left"
+                class="p-button-sm p-button-raised"
+                (click)="previousStep()">
+              </button>
+              <button 
+                pButton 
+                type="button" 
+                label="Finish" 
+                icon="pi pi-thumbs-up" 
+                class="p-button-sm p-button-raised" 
+                (click)="endTour()">
+              </button>
+            </div>
+          </div>
+        </p-overlayPanel>
+
         <!-- Table -->
         <div class="mt-3">
           <p-table [value]="allAging" [loading]="isLoading" [paginator]="true" [rows]="5" 
