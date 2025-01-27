@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { CommunicationService } from 'src/app/core/communication/communication.service';
 import { NotificationConfig } from 'src/app/core/communication/communication.types';
 import { Message, MessageService } from 'primeng/api';
 import { ValidationService } from 'src/app/core/validation/validation.service';
+import { OverlayPanel } from 'primeng/overlaypanel';
 
 @Component({
     templateUrl: './notification-config.component.html',
@@ -51,6 +52,57 @@ export class NotificationConfigComponent implements OnInit, OnDestroy {
         { label: 'Coins', value: 'COINS' },
         /* { label: 'Voucher', value: 'VOUCHER' } */
     ];
+    currentStep = 1;
+    tours ={
+        overlaySteps: [
+            'tourGuideOverlay1',
+            'tourGuideOverlay2',
+            'tourGuideOverlay3',
+            'tourGuideOverlay4',
+            'tourGuideOverlay5',
+            'tourGuideOverlay6'
+        ],
+        tourSteps: [
+            'tourGuide1',
+            'tourGuide2',
+            'tourGuide3',
+            'tourGuide4',
+            'tourGuide5',
+            'tourGuide6',
+            'tourGuide7',
+            'tourGuide8',
+            'tourGuide9',
+            'tourGuide10',
+            'tourGuide11',
+            'tourGuide12',
+            'tourGuide13',
+            'tourGuide14'
+        ]
+    };
+    currentTourSteps: string[] = [];
+    tourType: string = `overlaySteps`;
+
+    @ViewChild('tourGuideOverlay1') tourGuideOverlay1: OverlayPanel;
+    @ViewChild('tourGuideOverlay2') tourGuideOverlay2: OverlayPanel;
+    @ViewChild('tourGuideOverlay3') tourGuideOverlay3: OverlayPanel;
+    @ViewChild('tourGuideOverlay4') tourGuideOverlay4: OverlayPanel;
+    @ViewChild('tourGuideOverlay5') tourGuideOverlay5: OverlayPanel;
+    @ViewChild('tourGuideOverlay6') tourGuideOverlay6: OverlayPanel;
+
+    @ViewChild('tourGuide1') tourGuide1: OverlayPanel;
+    @ViewChild('tourGuide2') tourGuide2: OverlayPanel;
+    @ViewChild('tourGuide3') tourGuide3: OverlayPanel;
+    @ViewChild('tourGuide4') tourGuide4: OverlayPanel;
+    @ViewChild('tourGuide5') tourGuide5: OverlayPanel;
+    @ViewChild('tourGuide6') tourGuide6: OverlayPanel;
+    @ViewChild('tourGuide7') tourGuide7: OverlayPanel;
+    @ViewChild('tourGuide8') tourGuide8: OverlayPanel;
+    @ViewChild('tourGuide9') tourGuide9: OverlayPanel;
+    @ViewChild('tourGuide10') tourGuide10: OverlayPanel;
+    @ViewChild('tourGuide11') tourGuide11: OverlayPanel;
+    @ViewChild('tourGuide12') tourGuide12: OverlayPanel;
+    @ViewChild('tourGuide13') tourGuide13: OverlayPanel;
+    @ViewChild('tourGuide14') tourGuide14: OverlayPanel;
 
     constructor(
         private _communicationService: CommunicationService,
@@ -247,6 +299,113 @@ export class NotificationConfigComponent implements OnInit, OnDestroy {
     }
 
     editConfig(): void {
+    }
+
+    ngAfterViewInit(): void {
+        console.log('View initialized, overlays ready.');
+    }
+
+    startTour(tourType: string): void {
+        this.tourType = tourType;
+
+        // Retreive steps for the selected tour
+        this.currentTourSteps = this.tours[tourType];
+        if (!this.currentTourSteps) {
+            console.error(`Tour type ${tourType} tour`);
+            return;
+        }
+
+        console.log(`Starting the ${tourType} tour`);
+        
+        this.currentStep = 0;
+        this.hideAllOverlays();
+        
+        const firstOverlayId = this.currentTourSteps[this.currentStep];
+        console.log('Showing Overlay: ', firstOverlayId);
+        
+        setTimeout(() => {
+            this.showTourOverlay(firstOverlayId);
+        }, 200);
+    }
+
+    showTourOverlay(overlayId: string): void {
+        const targetElement = document.getElementById(overlayId);
+        if (!targetElement) {
+            console.error(`Target element with ID '${overlayId}' not found.`);
+            return;
+        }
+
+        this.hideAllOverlays();
+
+        // Determine the correct overlay reference dynamically
+        const overlayKey = this.tourType === 'overlaySteps'
+            ? `tourGuideOverlay${this.currentStep + 1}`
+            : `tourGuide${this.currentStep + 1}`;
+        
+        const overlay = this[overlayKey];
+        if (overlay) {
+            overlay.show(new MouseEvent('click'), targetElement);
+
+            // if (overlayId === 'guide9') {}
+        } else {
+            console.error(`Overlay for ID '${overlayId}' is not defined.`);
+        }
+    }
+
+    hideAllOverlays(): void {
+        this.currentTourSteps.forEach((stepId) => {
+            const element = document.getElementById(stepId);
+            if (element) {
+                element.style.zIndex = '0';
+                element.style.boxShadow = 'none';
+                element.style.background = '';
+            }
+        });
+
+        // Dynamically hide all overlays for the current tour type
+        for (let i = 1; i <= this.tours[this.tourType].length; i++) {
+            const overlayKey = `${this.tourType === 'overlaySteps' ? 'tourGuideOverlay' : 
+                this.tourType === 'overlayTourSteps' ? 'guide' : 'tourGuide'}${i}`;
+            const overlay = this[overlayKey];
+            if (overlay) {
+                overlay.hide();
+            }
+        }
+    }
+
+    nextStep(): void {
+        if (this.currentStep < this.currentTourSteps.length - 1) {
+            this.hideAllOverlays();
+            this.currentStep++;
+
+            const nextOverlayId = this.currentTourSteps[this.currentStep];
+            setTimeout(() => {
+            this.showTourOverlay(nextOverlayId);
+            }, 200);
+        } else {
+            console.log('Tour finished!');
+            this.endTour();
+        }
+    }
+
+    previousStep(): void {
+        if (this.currentStep > 0) {
+            this.hideAllOverlays();
+            this.currentStep--;
+
+            const prevOverlayId = this.currentTourSteps[this.currentStep];
+            setTimeout(() => {
+            this.showTourOverlay(prevOverlayId);
+            }, 200);
+        }
+    }
+
+    endTour(forceReset: boolean = true): void {
+        console.log('Tour ended');
+        this.hideAllOverlays();
+        if (forceReset) {
+            this.currentStep = 0;
+        }
     }
 
     ngOnDestroy(): void {

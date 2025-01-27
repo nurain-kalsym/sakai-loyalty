@@ -6,17 +6,17 @@
             <!-- Add new button -->
             <div class="mt-3">
                 <div class="flex align-items-end justify-content-end position-relative">
-                    <button pButton type="button" label="Add New" icon="pi pi-plus" (click)="addNew()"></button>
+                    <button id="tourGuideOverlay6" pButton type="button" label="Add New" icon="pi pi-plus" (click)="addNew()" class="tour-overlay"></button>
                 </div>
             </div>
             <div class="mt-3">
-                <p-table [value]="notificationConfig">
+                <p-table id="tourGuideOverlay1" [value]="notificationConfig" class="tour-overlay">
                     <ng-template pTemplate="header">
                         <tr>
-                            <th class="border-top-left text-center font-bold text-gray-800" style="border-top-left-radius: 8px;">Type</th>
-                            <th class="border-top text-center font-bold text-gray-800">Body</th>
-                            <th class="border-top text-center font-bold text-gray-800">Status</th>
-                            <th class="border-top-right text-center font-bold text-gray-800" style="border-top-right-radius: 8px;">Actions</th>
+                            <th id="tourGuideOverlay2" class="border-top-left text-center font-bold text-gray-800 tour-overlay" style="border-top-left-radius: 8px;">Type</th>
+                            <th id="tourGuideOverlay3" class="border-top text-center font-bold text-gray-800 tour-overlay">Body</th>
+                            <th id="tourGuideOverlay4" class="border-top text-center font-bold text-gray-800 tour-overlay">Status</th>
+                            <th id="tourGuideOverlay5" class="border-top-right text-center font-bold text-gray-800 tour-overlay" style="border-top-right-radius: 8px;">Actions</th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-config>
@@ -54,7 +54,193 @@
                         </tr>
                     </ng-template>
                 </p-table>
+                <div class="flex align-items-end justify-content-end position-relative pt-3">
+                    <button pButton type="button" label="Start Tour" icon="pi pi-play" class="p-button-text p-ml-2 text-white border-black bg-primary-700 border-round-lg" (click)="startTour('overlaySteps')" pTooltip="Need a quick tour of the application? Click here to start!" tooltipPosition="top"></button>
+                </div>
             </div>
+
+            <!-- Overlay for tourGuideOverlay1 -->
+            <p-overlayPanel
+                #tourGuideOverlay1
+                [showCloseIcon]="true"
+                (onHide)="endTour(false)"
+                [showTransitionOptions]="'500ms ease-out'"
+                focusOnShow="true"
+                [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                <div class="p-2">
+                    <h4>List of Configurations</h4>
+                    <p>This table is a listing of configurations for the notifications.</p>
+                    <button 
+                        pButton
+                        type="button"
+                        label="Next"
+                        icon="pi pi-chevron-right"
+                        class="p-button-sm p-button-raised"
+                        (click)="nextStep()">
+                    </button>
+                </div>
+            </p-overlayPanel>
+
+            <!-- Overlay for tourGuideOverlay2 -->
+            <p-overlayPanel 
+                #tourGuideOverlay2 
+                [showCloseIcon]="true" 
+                (onHide)="endTour(false)"
+                [showTransitionOptions]="'500ms ease-out'"
+                focusOnShow="true"
+                [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                <div class="p-2">
+                    <h4>Type</h4>
+                    <p>Represents the type of notification.</p>
+                    <div class="flex justify-between gap-2">
+                        <button
+                            pButton
+                            type="button"
+                            label="Back"
+                            icon="pi pi-chevron-left"
+                            class="p-button-sm p-button-raised"
+                            (click)="previousStep()">
+                        </button>
+                        <button 
+                            pButton 
+                            type="button" 
+                            label="Next" 
+                            icon="pi pi-chevron-right"
+                            class="p-button-sm p-button-raised" 
+                            (click)="nextStep()">
+                        </button>
+                    </div>
+                </div>
+            </p-overlayPanel>
+
+            <!-- Overlay for tourGuideOverlay3 -->
+            <p-overlayPanel 
+                #tourGuideOverlay3 
+                [showCloseIcon]="true" 
+                (onHide)="endTour(false)"
+                [showTransitionOptions]="'500ms ease-out'"
+                focusOnShow="true"
+                [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                <div class="p-2">
+                    <h4>Body</h4>
+                    <p>Represents the body of push notification.</p>
+                    <div class="flex justify-between gap-2">
+                        <button
+                            pButton
+                            type="button"
+                            label="Back"
+                            icon="pi pi-chevron-left"
+                            class="p-button-sm p-button-raised"
+                            (click)="previousStep()">
+                        </button>
+                        <button 
+                            pButton 
+                            type="button" 
+                            label="Next" 
+                            icon="pi pi-chevron-right"
+                            class="p-button-sm p-button-raised" 
+                            (click)="nextStep()">
+                        </button>
+                    </div>
+                </div>
+            </p-overlayPanel>
+
+            <!-- Overlay for tourGuideOverlay4 -->
+            <p-overlayPanel 
+                #tourGuideOverlay4 
+                [showCloseIcon]="true" 
+                (onHide)="endTour(false)"
+                [showTransitionOptions]="'500ms ease-out'"
+                focusOnShow="true"
+                [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                <div class="p-2">
+                    <h4>Status</h4>
+                    <p>Represents the status of the notification. Status 'ON' means that the notification is active, while status 'OFF' means that the notification is inactive.</p>
+                    <div class="flex justify-between gap-2">
+                        <button
+                            pButton
+                            type="button"
+                            label="Back"
+                            icon="pi pi-chevron-left"
+                            class="p-button-sm p-button-raised"
+                            (click)="previousStep()">
+                        </button>
+                        <button 
+                            pButton 
+                            type="button" 
+                            label="Next" 
+                            icon="pi pi-chevron-right"
+                            class="p-button-sm p-button-raised" 
+                            (click)="nextStep()">
+                        </button>
+                    </div>
+                </div>
+            </p-overlayPanel>
+
+            <!-- Overlay for tourGuideOverlay5 -->
+            <p-overlayPanel 
+                #tourGuideOverlay5 
+                [showCloseIcon]="true" 
+                (onHide)="endTour(false)"
+                [showTransitionOptions]="'500ms ease-out'"
+                focusOnShow="true"
+                [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                <div class="p-2">
+                    <h4>Action</h4>
+                    <p>Admin can perform actions such as 'Edit' to the configuration.</p>
+                    <div class="flex justify-between gap-2">
+                        <button
+                            pButton
+                            type="button"
+                            label="Back"
+                            icon="pi pi-chevron-left"
+                            class="p-button-sm p-button-raised"
+                            (click)="previousStep()">
+                        </button>
+                        <button 
+                            pButton 
+                            type="button" 
+                            label="Next" 
+                            icon="pi pi-chevron-right"
+                            class="p-button-sm p-button-raised" 
+                            (click)="nextStep()">
+                        </button>
+                    </div>
+                </div>
+            </p-overlayPanel>
+
+            <!-- Overlay for tourGuideOverlay6 -->
+            <p-overlayPanel 
+                #tourGuideOverlay6 
+                [showCloseIcon]="true" 
+                (onHide)="endTour(false)"
+                [showTransitionOptions]="'500ms ease-out'"
+                focusOnShow="true"
+                [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+                <div class="p-2">
+                    <h4>Add New</h4>
+                    <p>Click this to add a new notification configuration.</p>
+                    <div class="flex justify-between gap-2">
+                        <button
+                            pButton
+                            type="button"
+                            label="Back"
+                            icon="pi pi-chevron-left"
+                            class="p-button-sm p-button-raised"
+                            (click)="previousStep()">
+                        </button>
+                        <button 
+                            pButton 
+                            type="button" 
+                            label="Finish" 
+                            icon="pi pi-thumbs-up"
+                            class="p-button-sm p-button-raised" 
+                            (click)="endTour()">
+                        </button>
+                    </div>
+                </div>
+            </p-overlayPanel>
+
         </div>
     </div>
 </div>
@@ -66,261 +252,357 @@
             <div class="font-semibold text-xl mr-2">Notification Setup</div>
             <!-- Status Switch -->
             <div class="flex flex-row items-center justify-end">
-                <p-inputSwitch class="mx-2" [(ngModel)]="isOn" (onChange)="updateRewardStatus()"></p-inputSwitch>
+            <p-inputSwitch id="tourGuide1" class="mx-2 tour-overlay" [(ngModel)]="isOn" (onChange)="updateRewardStatus()"></p-inputSwitch>
                 <span *ngIf="isOn" class="items-center text-center font-semibold px-2 uppercase p-badge p-component p-rounded p-text-sm bg-green-300" style="color: black;">ON</span>
                 <span *ngIf="!isOn" class="items-center text-center font-semibold px-2 uppercase p-badge p-component p-rounded p-text-sm bg-red-300" style="color: black;">OFF</span>
             </div>
         </div>
-    </ng-template>   
-    <form [formGroup]="configForm">
-        <!-- Parent Container -->
-        <div class="flex flex-wrap w-full h-full" style="border: 1px dotted gray; border-radius: 0.375rem; overflow: hidden;">
-            <!-- Image Input (Left) -->
-            <div class="w-full h-full p-4">
-                <div class="text-center hover:scale-105 transition-transform duration-300 ease-in-out">
-                    <p-fileUpload name="notificationImage" accept=".jpg, .png, .jpeg" maxFileSize="5000000" 
-                        [customUpload]="true" (onSelect)="onImageChange($event)" mode="basic" 
-                        class="text-center w-auto">
-                        <ng-template pTemplate="content">
-                            <i class="pi pi-plus text-lg" style="color: black; font-size: 1.5rem;"></i>
-                        </ng-template>
-                    </p-fileUpload>
-                </div>
-                <div class="text-xs text-center text-black font-medium mt-2">Add Inbox Image</div>
-                <div class="text-xs text-center text-gray-400 mt-2">*Recommended size: 500×610px</div>
-            </div>
-            <!-- <div class="w-full h-full p-4">
-                <div class="text-center hover:scale-105 transition-transform duration-300 ease-in-out">
-                    <p-fileUpload name="notificationImage" accept=".jpg, .png, .jpeg" maxFileSize="5000000" 
-                        [customUpload]="true" (onSelect)="onImageChange($event)" mode="basic" class="text-center w-auto">
-                    </p-fileUpload>
-                </div>
-                <div class="text-xs text-center text-black font-medium mt-2">Add Inbox Image</div>
-                <div class="text-xs text-center text-gray-400 mt-2">*Recommended size: 500×610px</div>
-            </div> -->                                                                    
-            
-            <!-- Image Preview (Right) -->
-            <div class="w-full p-2 h-72 pt-4 pb-2">
-                <div class="relative flex items-center justify-center w-full h-full bg-white">
-                    <ng-container *ngIf="imageUrl; else noImage">
-                        <img [src]="imageUrl" alt="Preview" style="max-width: 100%; max-height: 100%; object-fit: contain;" (error)="imageUrl = 'assets/images/default-placeholder.jpg'">
-                    </ng-container>
-                    <ng-template #noImage>
-                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; height: 100%;">
-                            <i class="pi pi-image text-black" style="font-size: 3rem;"></i>
-                            <span class="mt-3 font-semibold items-center justify-center text-black">NO IMAGE</span>
-                        </div>
-                    </ng-template>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="p-grid p-fluid pt-4" style="display: flex; gap: 10px;">
-
-            <!-- Type -->
-            <div class="field" style="flex: 1;">
-                <label for="type" class="font-semibold">
-                    Type <span class="required-asterisk">*</span>
-                </label>
-                <p-dropdown placeholder="Select Type" [options]="types" formControlName="type"
-                    optionLabel="label" optionValue="value" class="flex-1" appendTo="body" [showClear]="true">
-                </p-dropdown>
-                <div *ngIf="configForm.get('type').touched">
-                    <div *ngIf="configForm.get('type').hasError('required')" class="error-message text-red-500">
-                        Field cannot be empty
+    </ng-template>  
+    <ng-template pTemplate="content">
+        <form [formGroup]="configForm">
+            <!-- Parent Container -->
+            <div id="tourGuide2" class="flex flex-wrap w-full h-full tour-overlay" style="border: 1px dotted gray; border-radius: 0.375rem; overflow: hidden;">
+                <!-- Image Input (Left) -->
+                <div class="w-full h-full p-4">
+                    <div class="text-center hover:scale-105 transition-transform duration-300 ease-in-out">
+                        <p-fileUpload name="notificationImage" accept=".jpg, .png, .jpeg" maxFileSize="5000000" 
+                            [customUpload]="true" (onSelect)="onImageChange($event)" mode="basic" 
+                            class="text-center w-auto">
+                            <ng-template pTemplate="content">
+                                <i class="pi pi-plus text-lg" style="color: black; font-size: 1.5rem;"></i>
+                            </ng-template>
+                        </p-fileUpload>
                     </div>
-                </div>                
-            </div>
-        
-            <!-- Channel -->
-            <div class="field" style="flex: 1;">
-                <label for="channel" class="font-semibold">
-                    Channel <span class="required-asterisk">*</span>
-                </label>
-                <span class="p-input-icon-left">
-                    <i class="pi pi-box"></i>
-                    <input id="channel" type="text" pInputText autofocus formControlName="channel" placeholder="E-kedai"
-                        [ngClass]="{'border-red-500': configForm.get('channel').invalid && configForm.get('channel').touched}"/>
-                </span>
-                <div *ngIf="configForm.get('channel').hasError('required') && configForm.get('channel').touched" class="error-message text-red-500">
-                    Field cannot be empty
+                    <div class="text-xs text-center text-black font-medium mt-2">Add Inbox Image</div>
+                    <div class="text-xs text-center text-gray-400 mt-2">*Recommended size: 500×610px</div>
                 </div>
+                <!-- <div class="w-full h-full p-4">
+                    <div class="text-center hover:scale-105 transition-transform duration-300 ease-in-out">
+                        <p-fileUpload name="notificationImage" accept=".jpg, .png, .jpeg" maxFileSize="5000000" 
+                            [customUpload]="true" (onSelect)="onImageChange($event)" mode="basic" class="text-center w-auto">
+                        </p-fileUpload>
+                    </div>
+                    <div class="text-xs text-center text-black font-medium mt-2">Add Inbox Image</div>
+                    <div class="text-xs text-center text-gray-400 mt-2">*Recommended size: 500×610px</div>
+                </div> -->                                                                    
+                
+                <!-- Image Preview (Right) -->
+                <div class="w-full p-2 h-72 pt-4 pb-2">
+                    <div class="relative flex items-center justify-center w-full h-full bg-white">
+                        <ng-container *ngIf="imageUrl; else noImage">
+                            <img [src]="imageUrl" alt="Preview" style="max-width: 100%; max-height: 100%; object-fit: contain;" (error)="imageUrl = 'assets/images/default-placeholder.jpg'">
+                        </ng-container>
+                        <ng-template #noImage>
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; height: 100%;">
+                                <i class="pi pi-image text-black" style="font-size: 3rem;"></i>
+                                <span class="mt-3 font-semibold items-center justify-center text-black">NO IMAGE</span>
+                            </div>
+                        </ng-template>
+                    </div>
+                </div>
+    
             </div>
-        </div>
-
-        <!-- Notification Title -->
-        <div class="field">
-            <label for="title" class="font-semibold">
-                Title <span class="required-asterisk">*</span>
-            </label>
-            <span class="p-input-icon-left">
-                <i class="pi pi-file-edit"></i>
-                <input id="title" type="text" pInputText autofocus formControlName="title" placeholder="Enter the notification title"
-                    [ngClass]="{'border-red-500': configForm.get('title').invalid && configForm.get('title').touched}"/>
-            </span>
-            <div *ngIf="configForm.get('title').hasError('required') && configForm.get('title').touched" class="error-message text-red-500">
-                Field cannot be empty
-            </div>
-        </div>
-
-        <!-- Notification Body -->
-        <div class="field" style="width: 100%; display: flex; flex-direction: column;">
-            <label for="description" class="font-semibold">
-                Body <span class="required-asterisk">*</span>
-            </label>
-            <textarea id="description" pInputTextarea autofocus formControlName="description" placeholder="Enter the notification body"
-                [ngClass]="{'border-red-500': configForm.get('description').invalid && configForm.get('description').touched}"
-                style="resize: vertical; width: 100%;"></textarea>
-        </div>
-
-        <!-- push notification preview -->
-        <div class="text-base pb-1 text-black font-medium">Push Notification Preview</div>
-        <div class="p-4 border-round-lg bg-bluegray-100 mt-1 mb-2 overflow-hidden">
-            <div class="flex flex-row items-center mb-2">
-                <i class="pi pi-bell text-xl" style="color: #c3035c;"></i>
-                <span class="text-xs pl-3 pt-1 text-gray-600"> HelloSIM</span>
-                <span class="text-xs pl-1 flex items-center pb-2 text-gray-600">.</span> 
-                <span class="text-xs pl-1 pt-1 text-gray-600">now</span>
-            </div>
-            <p class="text-md font-medium text-black mb-0">{{ getNotificationTitle() }}</p>
-            <p class="text-sm text-gray-600">{{ getNotificationBody() }}</p>
-        </div>                        
-
-        <!-- Notification content -->
-        <div class="field pt-2">
-            <label for="content" class="font-semibold">
-                Content <span class="required-asterisk">*</span>
-                <i class="pi pi-question-circle ml-1"
-                    [pTooltip]="'The content will be display in notification inbox'"
-                    tooltipPosition="right"
-                    (mouseover)="onMouseOver($event)"
-                    (mouseout)="onMouseOut($event)">
-                </i>
-            </label>
-            <p-editor formControlName="content" [style]="{ height: '100px' }"></p-editor>
-            <div *ngIf="configForm.get('content').hasError('required') && configForm.get('content').touched" 
-                class="error-message text-red-500">
-                Field cannot be empty
-            </div>
-        </div>
-
-        <!-- Threshold -->
-        <div class="field" *ngIf="isThresholdVisible">
-            <label for="threshold" class="font-semibold">
-                Threshold <span class="required-asterisk">*</span>
-            </label>
-            <i class="pi pi-question-circle ml-1"
-                [pTooltip]="tooltipMessage"
-                tooltipPosition="right"
-                (mouseover)="onMouseOver($event)"
-                (mouseout)="onMouseOut($event)">
-            </i>
-            <span class="p-input-icon-left">
-                <i class="pi pi-calendar"></i>
-                <input id="threshold" type="number" pInputText autofocus formControlName="threshold" placeholder="Enter the notification threshold"
-                    [ngClass]="{'border-red-500': configForm.get('threshold').invalid && configForm.get('threshold').touched}"/>
-            </span>
-            <div *ngIf="configForm.get('threshold').hasError('required')" class="error-message text-red-500">
-                Field cannot be empty
-            </div>
-            <div *ngIf="configForm.get('threshold').hasError('invalidNumber')" class="error-message text-red-500">
-                Field only accepts numbers (0-9)
-            </div>
-        </div>
-         
-        <!-- <div class="field">
-            <label for="threshold" class="font-semibold">
-                Threshold <span class="required-asterisk">*</span>
-            </label>
-            <i class="pi pi-question-circle ml-1"
-                [pTooltip]="tooltipMessage"
-                tooltipPosition="right"
-                (mouseover)="onMouseOver($event)"
-                (mouseout)="onMouseOut($event)">
-            </i>
-            <span class="p-input-icon-left">
-                <i class="pi pi-calendar"></i>
-                <input id="threshold" type="number" pInputText autofocus formControlName="threshold" placeholder="Enter the notification threshold"
-                    [ngClass]="{'border-red-500': configForm.get('threshold').invalid && configForm.get('threshold').touched}"/>
-            </span>
-            <div *ngIf="configForm.get('threshold').hasError('required')" class="error-message text-red-500">
-                Field cannot be empty
-            </div>
-            <div *ngIf="configForm.get('threshold').hasError('invalidNumber')" class="error-message text-red-500">
-                Filed only accepts numbers (0-9)
-            </div>
-        </div> -->
-
-        <!-- rewards checkbox -->
-        <div [formGroup]="rewardForm">
-            <p-checkbox label="Include Rewards?" formControlName="includeRewards"binary="true"></p-checkbox>
-
-            <div *ngIf="rewardForm.get('includeRewards').value">
-                <div class="text-xl py-4 text-black font-medium">Rewards Settings</div>
-                <!-- Reward Type -->
-                <div class="field">
-                    <label for="rewardType" class="font-semibold">
-                        Reward Type <span class="required-asterisk">*</span>
+    
+            <div class="p-grid p-fluid pt-4" style="display: flex; gap: 10px;">
+    
+                <!-- Type -->
+                <div id="tourGuide3" class="field tour-overlay" style="flex: 1;">
+                    <label for="type" class="font-semibold">
+                        Type <span class="required-asterisk">*</span>
                     </label>
-                    <p-dropdown placeholder="Select reward type" [options]="rewardType" formControlName="rewardType"
+                    <p-dropdown placeholder="Select Type" [options]="types" formControlName="type"
                         optionLabel="label" optionValue="value" class="flex-1" appendTo="body" [showClear]="true">
                     </p-dropdown>
-                    <div *ngIf="rewardForm.get('rewardType').touched">
-                        <div *ngIf="rewardForm.get('rewardType').hasError('required')" class="error-message text-red-500">
+                    <div *ngIf="configForm.get('type').touched">
+                        <div *ngIf="configForm.get('type').hasError('required')" class="error-message text-red-500">
                             Field cannot be empty
                         </div>
                     </div>                
                 </div>
-    
-                <!-- Rewards -->
-                <div class="field">
-                    <label for="rewards" class="font-semibold">
-                        Rewards <span class="required-asterisk">*</span>
+            
+                <!-- Channel -->
+                <div id="tourGuide4" class="field tour-overlay" style="flex: 1;">
+                    <label for="channel" class="font-semibold">
+                        Channel <span class="required-asterisk">*</span>
                     </label>
                     <span class="p-input-icon-left">
-                        <i class="pi pi-gift"></i>
-                        <input id="rewards" type="text" pInputText autofocus formControlName="rewards" placeholder="Enter reward amount"
-                            [ngClass]="{'border-red-500': rewardForm.get('rewards').invalid && rewardForm.get('rewards').touched}"/>
+                        <i class="pi pi-box"></i>
+                        <input id="channel" type="text" pInputText autofocus formControlName="channel" placeholder="E-kedai"
+                            [ngClass]="{'border-red-500': configForm.get('channel').invalid && configForm.get('channel').touched}"/>
                     </span>
-                    <div *ngIf="rewardForm.get('rewards').hasError('required') && rewardForm.get('rewards').touched" class="error-message text-red-500">
+                    <div *ngIf="configForm.get('channel').hasError('required') && configForm.get('channel').touched" class="error-message text-red-500">
                         Field cannot be empty
                     </div>
                 </div>
+            </div>
     
-                <!-- Rewards validity (in days)* -->
-                <div class="field">
-                    <label for="days" class="font-semibold">
-                        Rewards validity (in days) <span class="required-asterisk">*</span>
-                    </label>
-                    <span class="p-input-icon-left">
-                        <i class="pi pi-calendar"></i>
-                        <input id="days" type="number" pInputText autofocus formControlName="days" placeholder="Enter reward validity in days"
-                            [ngClass]="{'border-red-500': rewardForm.get('days').invalid && rewardForm.get('days').touched}"/>
-                    </span>
-                    <div *ngIf="rewardForm.get('days').hasError('required')" class="error-message text-red-500">
-                        Field cannot be empty
+            <!-- Notification Title -->
+            <div id="tourGuide5" class="field tour-overlay">
+                <label for="title" class="font-semibold">
+                    Title <span class="required-asterisk">*</span>
+                </label>
+                <span class="p-input-icon-left">
+                    <i class="pi pi-file-edit"></i>
+                    <input id="title" type="text" pInputText autofocus formControlName="title" placeholder="Enter the notification title"
+                        [ngClass]="{'border-red-500': configForm.get('title').invalid && configForm.get('title').touched}"/>
+                </span>
+                <div *ngIf="configForm.get('title').hasError('required') && configForm.get('title').touched" class="error-message text-red-500">
+                    Field cannot be empty
+                </div>
+            </div>
+    
+            <!-- Notification Body -->
+            <div id="tourGuide6" class="field tour-overlay" style="width: 100%; display: flex; flex-direction: column;">
+                <label for="description" class="font-semibold">
+                    Body <span class="required-asterisk">*</span>
+                </label>
+                <textarea id="description" pInputTextarea autofocus formControlName="description" placeholder="Enter the notification body"
+                    [ngClass]="{'border-red-500': configForm.get('description').invalid && configForm.get('description').touched}"
+                    style="resize: vertical; width: 100%;"></textarea>
+            </div>
+    
+            <!-- push notification preview -->
+            <div class="text-base pb-1 text-black font-medium">Push Notification Preview</div>
+            <div id="tourGuide7" class="p-4 border-round-lg bg-bluegray-100 mt-1 mb-2 overflow-hidden tour-overlay">
+                <div class="flex flex-row items-center mb-2">
+                    <i class="pi pi-bell text-xl" style="color: #c3035c;"></i>
+                    <span class="text-xs pl-3 pt-1 text-gray-600"> HelloSIM</span>
+                    <span class="text-xs pl-1 flex items-center pb-2 text-gray-600">.</span> 
+                    <span class="text-xs pl-1 pt-1 text-gray-600">now</span>
+                </div>
+                <p class="text-md font-medium text-black mb-0">{{ getNotificationTitle() }}</p>
+                <p class="text-sm text-gray-600">{{ getNotificationBody() }}</p>
+            </div>                        
+    
+            <!-- Notification content -->
+            <div id="tourGuide8" class="field pt-2 tour-overlay">
+                <label for="content" class="font-semibold">
+                    Content <span class="required-asterisk">*</span>
+                    <i class="pi pi-question-circle ml-1"
+                        [pTooltip]="'The content will be display in notification inbox'"
+                        tooltipPosition="right"
+                        (mouseover)="onMouseOver($event)"
+                        (mouseout)="onMouseOut($event)">
+                    </i>
+                </label>
+                <p-editor formControlName="content" [style]="{ height: '100px' }"></p-editor>
+                <div *ngIf="configForm.get('content').hasError('required') && configForm.get('content').touched" 
+                    class="error-message text-red-500">
+                    Field cannot be empty
+                </div>
+            </div>
+    
+            <!-- Threshold -->
+            <div class="field" *ngIf="isThresholdVisible">
+                <label for="threshold" class="font-semibold">
+                    Threshold <span class="required-asterisk">*</span>
+                </label>
+                <i class="pi pi-question-circle ml-1"
+                    [pTooltip]="tooltipMessage"
+                    tooltipPosition="right"
+                    (mouseover)="onMouseOver($event)"
+                    (mouseout)="onMouseOut($event)">
+                </i>
+                <span class="p-input-icon-left">
+                    <i class="pi pi-calendar"></i>
+                    <input id="threshold" type="number" pInputText autofocus formControlName="threshold" placeholder="Enter the notification threshold"
+                        [ngClass]="{'border-red-500': configForm.get('threshold').invalid && configForm.get('threshold').touched}"/>
+                </span>
+                <div *ngIf="configForm.get('threshold').hasError('required')" class="error-message text-red-500">
+                    Field cannot be empty
+                </div>
+                <div *ngIf="configForm.get('threshold').hasError('invalidNumber')" class="error-message text-red-500">
+                    Field only accepts numbers (0-9)
+                </div>
+            </div>
+             
+            <!-- <div class="field">
+                <label for="threshold" class="font-semibold">
+                    Threshold <span class="required-asterisk">*</span>
+                </label>
+                <i class="pi pi-question-circle ml-1"
+                    [pTooltip]="tooltipMessage"
+                    tooltipPosition="right"
+                    (mouseover)="onMouseOver($event)"
+                    (mouseout)="onMouseOut($event)">
+                </i>
+                <span class="p-input-icon-left">
+                    <i class="pi pi-calendar"></i>
+                    <input id="threshold" type="number" pInputText autofocus formControlName="threshold" placeholder="Enter the notification threshold"
+                        [ngClass]="{'border-red-500': configForm.get('threshold').invalid && configForm.get('threshold').touched}"/>
+                </span>
+                <div *ngIf="configForm.get('threshold').hasError('required')" class="error-message text-red-500">
+                    Field cannot be empty
+                </div>
+                <div *ngIf="configForm.get('threshold').hasError('invalidNumber')" class="error-message text-red-500">
+                    Filed only accepts numbers (0-9)
+                </div>
+            </div> -->
+    
+            <!-- rewards checkbox -->
+            <div [formGroup]="rewardForm">
+                <div id="tourGuide9" class="tour-overlay">
+                    <p-checkbox label="Include Rewards?" formControlName="includeRewards"binary="true"></p-checkbox>
+                </div>
+    
+                <div *ngIf="rewardForm.get('includeRewards').value">
+                    <div class="text-xl py-4 text-black font-medium">Rewards Settings</div>
+                    <!-- Reward Type -->
+                    <div id="tourGuide10" class="field tour-overlay">
+                        <label for="rewardType" class="font-semibold">
+                            Reward Type <span class="required-asterisk">*</span>
+                        </label>
+                        <p-dropdown placeholder="Select reward type" [options]="rewardType" formControlName="rewardType"
+                            optionLabel="label" optionValue="value" class="flex-1" appendTo="body" [showClear]="true">
+                        </p-dropdown>
+                        <div *ngIf="rewardForm.get('rewardType').touched">
+                            <div *ngIf="rewardForm.get('rewardType').hasError('required')" class="error-message text-red-500">
+                                Field cannot be empty
+                            </div>
+                        </div>                
                     </div>
-                    <div *ngIf="rewardForm.get('days').hasError('invalidNumber')" class="error-message text-red-500">
-                        Filed only accepts numbers (0-9)
+        
+                    <!-- Rewards -->
+                    <div id="tourGuide11" class="field tour-overlay">
+                        <label for="rewards" class="font-semibold">
+                            Rewards <span class="required-asterisk">*</span>
+                        </label>
+                        <span class="p-input-icon-left">
+                            <i class="pi pi-gift"></i>
+                            <input id="rewards" type="text" pInputText autofocus formControlName="rewards" placeholder="Enter reward amount"
+                                [ngClass]="{'border-red-500': rewardForm.get('rewards').invalid && rewardForm.get('rewards').touched}"/>
+                        </span>
+                        <div *ngIf="rewardForm.get('rewards').hasError('required') && rewardForm.get('rewards').touched" class="error-message text-red-500">
+                            Field cannot be empty
+                        </div>
+                    </div>
+        
+                    <!-- Rewards validity (in days)* -->
+                    <div id="tourGuide12" class="field tour-overlay">
+                        <label for="days" class="font-semibold">
+                            Rewards validity (in days) <span class="required-asterisk">*</span>
+                        </label>
+                        <span class="p-input-icon-left">
+                            <i class="pi pi-calendar"></i>
+                            <input id="days" type="number" pInputText autofocus formControlName="days" placeholder="Enter reward validity in days"
+                                [ngClass]="{'border-red-500': rewardForm.get('days').invalid && rewardForm.get('days').touched}"/>
+                        </span>
+                        <div *ngIf="rewardForm.get('days').hasError('required')" class="error-message text-red-500">
+                            Field cannot be empty
+                        </div>
+                        <div *ngIf="rewardForm.get('days').hasError('invalidNumber')" class="error-message text-red-500">
+                            Filed only accepts numbers (0-9)
+                        </div>
+                    </div>
+        
+                    <!-- Note -->
+                    <div id="tourGuide13" class="field pt-1 tour-overlay" style="width: 100%; display: flex; flex-direction: column;">
+                        <label for="description" class="font-semibold">Note</label>
+                        <textarea id="description" type="text" pInputTextarea autofocus formControlName="description" placeholder="Enter reward note"
+                            [ngClass]="{'border-red-500': rewardForm.get('description').invalid && rewardForm.get('description').touched}" 
+                            style="resize: vertical; width: 100%;"></textarea>
                     </div>
                 </div>
     
-                <!-- Note -->
-                <div class="field pt-1" style="width: 100%; display: flex; flex-direction: column;">
-                    <label for="description" class="font-semibold">Note</label>
-                    <textarea id="description" type="text" pInputTextarea autofocus formControlName="description" placeholder="Enter reward note"
-                        [ngClass]="{'border-red-500': rewardForm.get('description').invalid && rewardForm.get('description').touched}" 
-                        style="resize: vertical; width: 100%;"></textarea>
+            </div>
+    
+            <div class="flex align-items-center justify-content-between position-relative mt-3">
+                <div class="w-fit">
+                    <button pButton icon="pi pi-play" label="Start Tour" (click)="startTour('tourSteps')" class="p-button-text p-button-raised text-white bg-primary-700"></button>
+                </div>
+                <div class="w-fit">
+                  <button id="tourGuide14" pButton type="button" label="Submit" class="tour-overlay" (click)="submit()" [disabled]="!isFormValid()"></button>
                 </div>
             </div>
+        </form>
 
-        </div>
-
-        <div class="flex align-items-end justify-content-end position-relative mt-3">
-            <div class="w-fit">
-              <button pButton type="button" label="Submit" (click)="submit()" [disabled]="!isFormValid()"></button>
+         <!-- Overlay for tourGuide1 -->
+         <p-overlayPanel 
+            #tourGuide1
+            [showCloseIcon]="true"
+            (onHide)="endTour(false)"
+            [showTansitionOptions]="'500ms ease-out'"
+            focusOnShow="true"
+            [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+            <div class="p-2">
+                <h4>ON/OFF Switch</h4>
+                <p>Switch between status. 'ON' means it is active. 'OFF' means it in inactive.</p>
+                <div class="flex justify-between gap-2">
+                    <button 
+                        pButton 
+                        type="button"
+                        label="Next"
+                        icon="pi pi-chevron-right"
+                        class="p-button-sm p-button-raised"
+                        (click)="nextStep()">
+                    </button>
+                </div>
             </div>
-        </div>
-    </form>
+        </p-overlayPanel>
+
+        <!-- Overlay for tourGuide2 -->
+        <p-overlayPanel 
+            #tourGuide2
+            [showCloseIcon]="true"
+            (onHide)="endTour(false)"
+            [showTansitionOptions]="'500ms ease-out'"
+            focusOnShow="true"
+            [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+            <div class="p-2">
+                <h4>Inbox Banner</h4>
+                <p>This banner(image) will be displayed in the inbox received on e-byzarr application.</p>
+                <div class="flex justify-between gap-2">
+                    <button 
+                        pButton 
+                        type="button"
+                        label="Back"
+                        icon="pi pi-chevron-left"
+                        class="p-button-sm p-button-raised"
+                        (click)="previousStep()">
+                    </button>
+                    <button 
+                        pButton 
+                        type="button"
+                        label="Next"
+                        icon="pi pi-chevron-right"
+                        class="p-button-sm p-button-raised"
+                        (click)="nextStep()">
+                    </button>
+                </div>
+            </div>
+        </p-overlayPanel>
+
+        <!-- Overlay for tourGuide3 -->
+        <p-overlayPanel 
+            #tourGuide3
+            [showCloseIcon]="true"
+            (onHide)="endTour(false)"
+            [showTansitionOptions]="'500ms ease-out'"
+            focusOnShow="true"
+            [style]="{ background: '#edf0f5', border: '2px solid #383838', 'border-radius': '5px' }">
+            <div class="p-2">
+                <h4>Type</h4>
+                <p>Select the type of notification. To see the function of each, hover on the options of the dropdown.</p>
+                <div class="flex justify-between gap-2">
+                    <button 
+                        pButton 
+                        type="button"
+                        label="Back"
+                        icon="pi pi-chevron-left"
+                        class="p-button-sm p-button-raised"
+                        (click)="previousStep()">
+                    </button>
+                    <button 
+                        pButton 
+                        type="button"
+                        label="Next"
+                        icon="pi pi-chevron-right"
+                        class="p-button-sm p-button-raised"
+                        (click)="nextStep()">
+                    </button>
+                </div>
+            </div>
+        </p-overlayPanel>
+
+    </ng-template> 
 </p-dialog>
